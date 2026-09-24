@@ -243,12 +243,16 @@ window.AisaApp = {
     if (!el) return;
 
     const hour = new Date().getHours();
-    let text = "✨ Buổi sáng năng lượng";
-    if (hour >= 12 && hour < 18) text = "☀️ Buổi chiều tập trung";
-    if (hour >= 18 && hour < 22) text = "🌆 Buổi tối thư giãn";
-    if (hour >= 22 || hour < 5) text = "🌙 Đêm muộn an yên";
+    let text = "🌸 Harmony: Chào buổi sáng an yên nè! • 😈 Echo: Dậy vươn vai vào việc thôi!";
+    if (hour >= 12 && hour < 18) {
+      text = "🌸 Harmony: Buổi chiều tập trung nha cậu • 😈 Echo: Đừng có lén lướt mạng xã hội đấy!";
+    } else if (hour >= 18 && hour < 22) {
+      text = "🌸 Harmony: Buổi tối thư thái nhé cậu • 😈 Echo: Xong việc hôm nay chưa nào?";
+    } else if (hour >= 22 || hour < 5) {
+      text = "🌸 Harmony: Đêm muộn rồi, nhớ ngủ sớm nha... • 😈 Echo: Thức khuya mắt gấu trúc đấy!";
+    }
 
-    el.innerHTML = text;
+    el.textContent = text;
   },
 
   getCurrentTimeString() {
