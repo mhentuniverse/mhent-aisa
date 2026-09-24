@@ -1,10 +1,10 @@
 /**
- * AISA COMPANION - COMPONENT STYLING & MODALS
+ * AISA COMPANION - COMPONENT STYLING & MODALS (SLIM RIGHT SIDEBAR & MULTIMODAL)
  * Miyazaki Haruto Entertainment Co., Ltd. - Project MHEnt. Universe
  */
 
 /* ==========================================================================
-   1. SIDEBAR COMPONENTS (SLEEK & ORGANIC SANCTUARY)
+   1. LEFT SIDEBAR COMPONENTS (SLEEK & ORGANIC SANCTUARY)
    ========================================================================== */
 /* New Session Button */
 .btn-new-session {
@@ -12,8 +12,8 @@
   border: 1px solid rgba(244, 114, 182, 0.3);
   color: #ffffff;
   border-radius: var(--radius-md);
-  padding: 10px 16px;
-  font-size: 0.84rem;
+  padding: 9px 14px;
+  font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
   display: flex;
@@ -25,7 +25,7 @@
 .btn-new-session:hover {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.28) 0%, rgba(139, 92, 246, 0.28) 100%);
   border-color: rgba(244, 114, 182, 0.6);
-  box-shadow: 0 0 16px rgba(236, 72, 153, 0.25);
+  box-shadow: 0 0 14px rgba(236, 72, 153, 0.25);
   transform: translateY(-1px);
 }
 
@@ -48,8 +48,8 @@
   border: none;
   color: var(--text-muted);
   border-radius: var(--radius-md);
-  padding: 8px 6px;
-  font-size: 0.74rem;
+  padding: 7px 4px;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-smooth);
@@ -60,7 +60,7 @@
 }
 
 .mode-btn .mode-icon {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 
 .mode-btn:hover {
@@ -72,7 +72,7 @@
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(139, 92, 246, 0.25));
   border: 1px solid rgba(244, 114, 182, 0.4);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(236, 72, 153, 0.22);
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.22);
 }
 
 /* Companion Presence Card */
@@ -80,7 +80,7 @@
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 14px;
   position: relative;
   overflow: hidden;
 }
@@ -89,15 +89,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .presence-avatar-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 5px 10px;
   border-radius: var(--radius-full);
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--border-subtle);
@@ -116,31 +116,31 @@
 }
 
 .presence-icon {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
 }
 
 .presence-name {
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   letter-spacing: 0.2px;
 }
 .name-pink { color: var(--harmony-soft); }
 .name-purple { color: var(--echo-soft); }
 
 .presence-status-quote {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-medium);
   font-style: italic;
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.45;
   background: rgba(0, 0, 0, 0.2);
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
 }
 
 /* Quick Navigation Links */
 .sidebar-section-title {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -161,15 +161,15 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 9px 12px;
-  font-size: 0.76rem;
+  padding: 8px 10px;
+  font-size: 0.74rem;
   color: var(--text-medium);
   cursor: pointer;
   transition: var(--transition-smooth);
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 .sidebar-prompt-item:hover {
   background: rgba(236, 72, 153, 0.12);
@@ -179,7 +179,154 @@
 }
 
 /* ==========================================================================
-   2. MODALS SYSTEM (MEMORY VAULT, VISION OCR, SETTINGS)
+   2. SLIM RIGHT SIDEBAR (UTILITIES, COMPACT MEMORY & AMBIENCE)
+   ========================================================================== */
+.slim-card {
+  background: var(--bg-glass-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slim-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slim-card-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--text-high);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-slim-link {
+  background: transparent;
+  border: none;
+  color: #38bdf8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-slim-link:hover {
+  text-decoration: underline;
+}
+
+/* Memory Quick Form */
+.quick-add-fact-row {
+  display: flex;
+  gap: 6px;
+}
+
+.input-sidebar-fact {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 0.76rem;
+  color: var(--text-high);
+  outline: none;
+}
+.input-sidebar-fact:focus {
+  border-color: var(--harmony-primary);
+}
+
+.btn-sidebar-add-fact {
+  background: rgba(236, 72, 153, 0.2);
+  border: 1px solid rgba(236, 72, 153, 0.4);
+  color: #f472b6;
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-sidebar-add-fact:hover {
+  background: var(--harmony-primary);
+  color: white;
+}
+
+/* Ambient Player Card */
+.ambient-player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.ambient-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ambient-label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #f472b6;
+}
+
+.ambient-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.btn-ambient-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-medium);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-ambient-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+.btn-ambient-toggle.active {
+  background: rgba(236, 72, 153, 0.25);
+  border-color: var(--harmony-primary);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+}
+
+/* Wave visualizer */
+.ambient-visualizer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 12px;
+}
+.ambient-visualizer span {
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-muted);
+  transition: var(--transition-smooth);
+}
+.ambient-visualizer.playing span {
+  background: #f472b6;
+  animation: wavePulse 1.2s infinite ease-in-out;
+}
+.ambient-visualizer.playing span:nth-child(2) { animation-delay: 0.2s; height: 10px; }
+.ambient-visualizer.playing span:nth-child(3) { animation-delay: 0.4s; height: 7px; }
+.ambient-visualizer.playing span:nth-child(4) { animation-delay: 0.1s; height: 12px; }
+.ambient-visualizer.playing span:nth-child(5) { animation-delay: 0.3s; height: 5px; }
+
+/* ==========================================================================
+   3. MODALS SYSTEM
    ========================================================================== */
 .modal-backdrop {
   position: fixed;
@@ -267,9 +414,7 @@
   flex: 1;
 }
 
-/* ==========================================================================
-   3. MEMORY VAULT STYLING
-   ========================================================================== */
+/* Memory Vault Inside Modal */
 .memory-form-card {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-subtle);
@@ -443,146 +588,4 @@
   color: var(--text-muted);
   font-size: 0.82rem;
   font-style: italic;
-}
-
-/* ==========================================================================
-   4. VISION AI & OCR LAB STYLING
-   ========================================================================== */
-.vision-drop-area {
-  border: 2px dashed rgba(255, 255, 255, 0.18);
-  border-radius: var(--radius-lg);
-  padding: 26px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  background: rgba(0, 0, 0, 0.2);
-  margin-bottom: 16px;
-}
-.vision-drop-area:hover,
-.vision-drop-area.drag-active {
-  border-color: var(--harmony-soft);
-  background: rgba(236, 72, 153, 0.08);
-}
-
-.drop-icon {
-  font-size: 2.2rem;
-  margin-bottom: 8px;
-}
-
-.drop-title {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--text-high);
-  margin-bottom: 4px;
-}
-
-.drop-hint {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.vision-preview-wrap {
-  text-align: center;
-  margin-top: 12px;
-}
-.vision-preview-img {
-  max-height: 180px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-medium);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-.vision-controls-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.btn-run-vision {
-  flex: 1;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
-  border: none;
-  color: white;
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
-  font-size: 0.88rem;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: var(--transition-smooth);
-  box-shadow: 0 0 16px rgba(236, 72, 153, 0.25);
-}
-.btn-run-vision:hover:not(:disabled) {
-  filter: brightness(1.15);
-  transform: translateY(-1px);
-}
-.btn-run-vision:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.vocab-card {
-  background: rgba(18, 25, 39, 0.75);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  margin-bottom: 10px;
-  transition: var(--transition-smooth);
-}
-.vocab-card:hover {
-  border-color: rgba(236, 72, 153, 0.4);
-}
-
-.vocab-top {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.vocab-word {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #ffffff;
-}
-
-.vocab-phonetic {
-  font-size: 0.82rem;
-  color: #38bdf8;
-  font-family: var(--font-mono);
-}
-
-.vocab-pos {
-  font-size: 0.68rem;
-  font-weight: 700;
-  background: rgba(139, 92, 246, 0.2);
-  color: #c084fc;
-  border-radius: 4px;
-  padding: 2px 6px;
-  margin-left: auto;
-}
-
-.vocab-meaning {
-  font-size: 0.88rem;
-  color: #fdf2f8;
-  margin-bottom: 8px;
-}
-
-.vocab-example {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 0.78rem;
-}
-.ex-orig {
-  color: var(--text-medium);
-  font-style: italic;
-  margin-bottom: 2px;
-}
-.ex-trans {
-  color: var(--text-muted);
 }

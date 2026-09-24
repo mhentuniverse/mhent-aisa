@@ -6,7 +6,7 @@
   <title>AISA – Personal Companion AI Sanctuary | MHEnt Universe</title>
   
   <!-- Meta & SEO -->
-  <meta name="description" content="AISA Companion Sanctuary – Không gian AI đồng hành cá nhân với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
+  <meta name="description" content="AISA Companion Sanctuary – Không gian AI đồng hành cá nhân đa nhiệm với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
   <meta name="theme-color" content="#05070b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -63,13 +63,8 @@
     <!-- Header Right Controls -->
     <div class="header-actions">
       <!-- Ambient Synthesizer Button -->
-      <button type="button" class="btn-header-action" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
+      <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
         <span>🎵</span> <span>432Hz Chill</span>
-      </button>
-
-      <!-- Vision Lab Trigger -->
-      <button type="button" class="btn-header-action" id="btn-open-vision" title="Mở Vision AI & OCR Lab">
-        <span>👁️</span> <span>Vision OCR</span>
       </button>
 
       <!-- Memory Vault Trigger -->
@@ -79,18 +74,18 @@
       </button>
 
       <!-- Settings Trigger -->
-      <button type="button" class="btn-header-action" id="btn-open-settings" title="Cài đặt hệ thống & Cấu hình">
+      <button type="button" class="btn-header-action" id="btn-open-settings" title="Cài đặt hệ thống & Cấu hình Gemini Key">
         <span>⚙️</span>
       </button>
     </div>
   </header>
 
   <!-- ========================================================================
-       MAIN APP STAGE (COLLAPSIBLE SIDEBAR + CENTER IMMERSIVE CHAT)
+       MAIN APP STAGE (SLIM LEFT + CENTER IMMERSIVE CHAT + SLIM RIGHT)
        ======================================================================== -->
   <main class="sanctuary-stage">
 
-    <!-- 1. LEFT SIDEBAR: ORGANIC SANCTUARY COMPANION PANEL -->
+    <!-- 1. LEFT SIDEBAR: SLEEK COMPANION PANEL (250px) -->
     <aside class="sanctuary-sidebar-left" id="sanctuary-sidebar-left">
       <!-- New Session Button -->
       <button type="button" class="btn-new-session" id="btn-new-session">
@@ -183,12 +178,33 @@
             <button type="button" class="quick-prompt-btn" data-prompt="Tâm sự đêm muộn cùng tớ đi...">🌙 Tâm sự đêm muộn</button>
           </div>
 
+          <!-- Image Attachment Preview Above Input (Gemini Style) -->
+          <div class="chat-attached-preview" id="chat-attached-preview" style="display: none;">
+            <div class="attached-img-card">
+              <img id="attached-img-thumb" class="attached-img-thumb" src="" alt="Thumbnail">
+              <div class="attached-img-info">
+                <span class="attached-img-name" id="attached-img-name">image.png</span>
+                <span class="attached-img-size" id="attached-img-size">120 KB</span>
+              </div>
+              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment" title="Gỡ ảnh đính kèm">&times;</button>
+            </div>
+          </div>
+
           <!-- Input Box Wrapper -->
           <div class="input-box-wrapper">
+            <!-- Hidden File Input for Image Attachment -->
+            <input type="file" id="chat-file-input" accept="image/*" style="display: none;">
+
+            <!-- Attachment Button (Gemini Style) -->
+            <button type="button" class="btn-tool-icon" id="btn-attach-image" title="Đính kèm hình ảnh (hoặc dán Ctrl+V trực tiếp)">
+              📎
+            </button>
+
+            <!-- Textarea -->
             <textarea 
               id="chat-input" 
               class="chat-input-textarea" 
-              placeholder="Tâm sự cùng Harmony & Echo... (Nhấn Enter để gửi, Shift+Enter để xuống dòng)"
+              placeholder="Tâm sự cùng Harmony & Echo... (Nhập câu hỏi hoặc dán ảnh Ctrl+V)"
               rows="1"
             ></textarea>
 
@@ -196,11 +212,6 @@
               <!-- Voice Input Button (STT) -->
               <button type="button" class="btn-tool-icon" id="btn-voice-input" title="Nói bằng giọng nói (Microphone)">
                 🎙️
-              </button>
-              
-              <!-- Quick Vision Modal Trigger -->
-              <button type="button" class="btn-tool-icon" id="btn-attach-vision" title="Đính kèm ảnh / Vision OCR Lab">
-                📎
               </button>
 
               <!-- Send Button -->
@@ -213,6 +224,63 @@
         </div>
       </div>
     </section>
+
+    <!-- 3. RIGHT SIDEBAR: SLIM UTILITY & SANCTUARY HUB (240px) -->
+    <aside class="sanctuary-sidebar-right" id="sanctuary-sidebar-right">
+      <!-- Sanctuary Overview -->
+      <div class="slim-card">
+        <div class="slim-card-header">
+          <span class="slim-card-title">👑 Yurika's Sanctuary</span>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.45;">
+          Không gian AI đồng hành riêng tư, thấu cảm và đa nhiệm mọi công việc mỗi ngày.
+        </div>
+      </div>
+
+      <!-- Quick Memory Vault -->
+      <div class="slim-card">
+        <div class="slim-card-header">
+          <span class="slim-card-title">🧠 Ký Ức AISA</span>
+          <button type="button" class="btn-slim-link" id="btn-quick-open-vault">Mở kho ↗</button>
+        </div>
+        <form id="form-quick-add-fact" class="quick-add-fact-row">
+          <input type="text" id="input-sidebar-fact" class="input-sidebar-fact" placeholder="Ghim điều AISA cần nhớ..." required>
+          <button type="submit" class="btn-sidebar-add-fact">+</button>
+        </form>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">
+          Đã lưu giữ an toàn trên Edge SQLite D1.
+        </div>
+      </div>
+
+      <!-- 432Hz Ambient Player -->
+      <div class="slim-card">
+        <div class="slim-card-header">
+          <span class="slim-card-title">🎵 Sóng Âm Thư Giãn</span>
+          <div class="ambient-visualizer" id="ambient-visualizer">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="ambient-player-row">
+          <div class="ambient-info">
+            <span class="ambient-label">432Hz Sine Wave</span>
+            <span class="ambient-sub">Giảm căng thẳng & ngủ ngon</span>
+          </div>
+          <button type="button" class="btn-ambient-toggle">Bật/Tắt</button>
+        </div>
+      </div>
+
+      <!-- Multi-Tasking Hub (Gemini Multimodal Power) -->
+      <div class="slim-card">
+        <div class="slim-card-header">
+          <span class="slim-card-title">✨ Đa Nhiệm Trí Tuệ</span>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--text-medium); line-height: 1.5;">
+          • Bấm <strong>📎</strong> hoặc dán <strong>Ctrl+V</strong> ảnh bất kỳ vào khung chat để thảo luận.<br>
+          • Tra cứu lịch trình từ Supabase Calendar.<br>
+          • Tương tác mượt mà qua Google Gemini.
+        </div>
+      </div>
+    </aside>
 
   </main>
 
@@ -271,50 +339,7 @@
   </div>
 
   <!-- ========================================================================
-       MODAL 2: VISION AI & OCR LAB (LLAMA 3.2 VISION)
-       ======================================================================== -->
-  <div class="modal-backdrop" id="modal-vision" role="dialog" aria-modal="true" aria-labelledby="vision-modal-title">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div class="modal-title" id="vision-modal-title">
-          <span>👁️</span> Vision AI & OCR Lab
-        </div>
-        <button type="button" class="btn-modal-close" id="btn-close-vision" aria-label="Đóng">&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="file" id="vision-file-input" accept="image/*" style="display: none;">
-        
-        <div class="vision-drop-area" id="vision-drop-area">
-          <div id="vision-drop-prompt">
-            <div class="drop-icon">📷</div>
-            <div class="drop-title">Nhấp hoặc kéo thả ảnh sách / tài liệu vào đây</div>
-            <div class="drop-hint">Hỗ trợ định dạng PNG, JPG, WebP</div>
-          </div>
-          <div class="vision-preview-wrap" id="vision-preview-wrap" style="display: none;">
-            <img id="vision-preview-img" class="vision-preview-img" alt="Preview ảnh tài liệu">
-          </div>
-        </div>
-
-        <div class="vision-controls-row">
-          <select id="vision-lang-select" class="memory-select" aria-label="Ngôn ngữ nhận diện">
-            <option value="ja">Tiếng Nhật (Kanji, Hiragana, Katakana)</option>
-            <option value="en">Tiếng Anh (English)</option>
-            <option value="zh">Tiếng Trung (Hán tự)</option>
-            <option value="ko">Tiếng Hàn (Hangul)</option>
-          </select>
-          <button type="button" class="btn-run-vision" id="btn-run-vision" disabled>
-            <span>✨ Bắt đầu bóc tách từ vựng</span>
-          </button>
-        </div>
-
-        <!-- Vision Results Container -->
-        <div id="vision-results-wrap"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================================================================
-       MODAL 3: SETTINGS & SYSTEM CONFIGURATION (TELEMETRY LIVES HERE)
+       MODAL 2: SETTINGS & SYSTEM CONFIGURATION (GEMINI KEY CONFIG)
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
     <div class="modal-dialog">
@@ -325,35 +350,24 @@
         <button type="button" class="btn-modal-close" id="btn-close-settings" aria-label="Đóng">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- Gemini Direct Key Configuration -->
         <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title"><span>👤</span> Thông Tin Đồng Hành</div>
-          <div style="font-size: 0.88rem; color: #f8fafc; margin-top: 8px; line-height: 1.6;">
-            <strong>Người sáng lập:</strong> Master Yurika 🌸<br>
-            <strong>Tổ chức:</strong> Miyazaki Haruto Entertainment Co., Ltd.<br>
-            <strong>Dự án:</strong> Project MHEnt. Universe • AISA Sanctuary
+          <div class="sidebar-section-title"><span>🔑</span> Google Gemini API Key (Đa Nhiệm & Siêu Tốc Độ)</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.45;">
+            Nhập Gemini API Key của cậu để AISA chạy thẳng mô hình <strong>Gemini 2.0 / 1.5 Flash Multimodal</strong>, xử lý hình ảnh và trò chuyện với tốc độ ánh sáng! (Nếu để trống, AISA sẽ sử dụng Cloudflare Backend mặc định).
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="password" id="input-gemini-key" class="memory-text-input" placeholder="AIzaSy...">
+            <button type="button" class="btn-add-fact" id="btn-save-gemini-key">Lưu Key</button>
           </div>
         </div>
 
-        <!-- Architectural Telemetry -->
         <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title"><span>⚡</span> Kiến Trúc Trí Tuệ (Architecture)</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;">
-              <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700;">NEURAL CORE</div>
-              <div style="font-size: 0.82rem; color: #38bdf8; font-weight: 800;">Llama 3.3 70B</div>
-            </div>
-            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;">
-              <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700;">VISION OCR</div>
-              <div style="font-size: 0.82rem; color: #38bdf8; font-weight: 800;">Llama 3.2 Vision</div>
-            </div>
-            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;">
-              <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700;">EDGE STORAGE</div>
-              <div style="font-size: 0.82rem; color: #38bdf8; font-weight: 800;">Cloudflare D1</div>
-            </div>
-            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;">
-              <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700;">BACKEND HUB</div>
-              <div style="font-size: 0.82rem; color: #38bdf8; font-weight: 800;">Supabase REST</div>
-            </div>
+          <div class="sidebar-section-title"><span>👤</span> Thông Tin Đồng Hành</div>
+          <div style="font-size: 0.86rem; color: #f8fafc; margin-top: 8px; line-height: 1.6;">
+            <strong>Người sáng lập:</strong> Master Yurika 🌸<br>
+            <strong>Tổ chức:</strong> Miyazaki Haruto Entertainment Co., Ltd.<br>
+            <strong>Dự án:</strong> Project MHEnt. Universe • AISA Sanctuary
           </div>
         </div>
 
@@ -385,36 +399,6 @@
   <script src="js/memory.js"></script>
   <script src="js/vision.js"></script>
   <script src="js/app.js"></script>
-
-  <script>
-    // Xử lý đóng/mở Sidebar và các nút liên kết nhanh
-    document.addEventListener('DOMContentLoaded', () => {
-      const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
-      const sidebarLeft = document.getElementById('sanctuary-sidebar-left');
-      const btnNewSession = document.getElementById('btn-new-session');
-      const btnAttachVision = document.getElementById('btn-attach-vision');
-      const modalVision = document.getElementById('modal-vision');
-
-      if (btnToggleSidebar && sidebarLeft) {
-        btnToggleSidebar.addEventListener('click', () => {
-          sidebarLeft.classList.toggle('collapsed');
-        });
-      }
-
-      if (btnNewSession) {
-        btnNewSession.addEventListener('click', () => {
-          const btnClear = document.getElementById('btn-clear-chat');
-          if (btnClear) btnClear.click();
-        });
-      }
-
-      if (btnAttachVision && modalVision) {
-        btnAttachVision.addEventListener('click', () => {
-          modalVision.classList.add('active');
-        });
-      }
-    });
-  </script>
 
 </body>
 </html>

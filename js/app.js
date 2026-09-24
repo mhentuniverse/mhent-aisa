@@ -7,7 +7,9 @@ window.AisaApp = {
     mode: 'duo',       // 'duo' | 'harmony' | 'echo'
     scope: 'personal', // 'personal' | 'workspace' | 'study' | 'portal'
     messages: [],
-    isGenerating: false
+    isGenerating: false,
+    pendingImage: null,
+    pendingImageName: ''
   },
 
   init() {
@@ -64,7 +66,7 @@ window.AisaApp = {
         speaker: 'HARMONY',
         avatar: '🌸',
         time: this.getCurrentTimeString(),
-        text: `Chào cậu iu dấu! 🌸 Em là Harmony nè. ${timeNote}\nĐây là **Sanctuary** riêng tư của chúng mình – nơi em và Echo luôn kề cận để lắng nghe mọi tâm sự, hỗ trợ công việc và đồng hành cùng cậu mỗi ngày! ✨`
+        text: `Chào cậu iu dấu! 🌸 Em là Harmony nè. ${timeNote}\nĐây là **Sanctuary** riêng tư của chúng mình – nơi em và Echo luôn kề cận để lắng nghe mọi tâm sự, hỗ trợ công việc và đồng hành cùng cậu mỗi ngày! Cậu có thể trò chuyện, gửi ảnh tâm sự hay hỏi bất cứ điều gì nha! ✨`
       },
       {
         id: 'msg-welcome-e',
@@ -72,7 +74,7 @@ window.AisaApp = {
         speaker: 'ECHO',
         avatar: '😈',
         time: this.getCurrentTimeString(),
-        text: `Hé lô đằng ấy! Còn tớ là Echo đây 😈. Bước vào đây rồi thì đừng hòng giấu giếm tớ điều gì nha! Hôm nay có chuyện gì vui, hay lại bị deadline dí mà mò vào đây tìm hai đứa tớ thế hả? Khai mau đi nào!`
+        text: `Hé lô đằng ấy! Còn tớ là Echo đây 😈. Bước vào đây rồi thì đừng hòng giấu giếm tớ điều gì nha! Hôm nay có chuyện gì vui, có ảnh meme hay ho nào, hoặc lại bị deadline dí mà mò vào đây tìm hai đứa tớ thế hả? Khai mau đi nào!`
       }
     ];
     this.saveState();
@@ -116,10 +118,40 @@ window.AisaApp = {
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 140) + 'px';
       });
+
+      // Hỗ trợ dán ảnh trực tiếp từ Clipboard (Ctrl + V) như Gemini
+      input.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+            const blob = items[i].getAsFile();
+            this.attachImageFile(blob);
+            break;
+          }
+        }
+      });
     }
 
     if (sendBtn) {
       sendBtn.addEventListener('click', () => this.handleSendMessage());
+    }
+
+    // Đính kèm hình ảnh (File Picker)
+    const btnAttach = document.getElementById('btn-attach-image');
+    const fileInput = document.getElementById('chat-file-input');
+    if (btnAttach && fileInput) {
+      btnAttach.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          this.attachImageFile(e.target.files[0]);
+        }
+      });
+    }
+
+    // Nút gỡ ảnh đính kèm
+    const btnRemoveAttach = document.getElementById('btn-remove-attachment');
+    if (btnRemoveAttach) {
+      btnRemoveAttach.addEventListener('click', () => this.clearAttachedImage());
     }
 
     // Quick Chips
@@ -138,20 +170,30 @@ window.AisaApp = {
       });
     }
 
-    // Ambience button
-    const btnAmbient = document.getElementById('btn-toggle-ambient');
-    if (btnAmbient) {
-      btnAmbient.addEventListener('click', () => {
+    // Ambience buttons (hỗ trợ cả header và sidebar)
+    document.querySelectorAll('.btn-ambient-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
         if (window.AisaVoice) {
           const isPlaying = window.AisaVoice.toggleAmbientAudio();
-          btnAmbient.classList.toggle('active', isPlaying);
-          btnAmbient.title = isPlaying ? "Tắt âm thanh môi trường thư giãn" : "Bật âm thanh môi trường thư giãn (432Hz)";
+          document.querySelectorAll('.btn-ambient-toggle').forEach(b => b.classList.toggle('active', isPlaying));
+          const waveVis = document.getElementById('ambient-visualizer');
+          if (waveVis) waveVis.classList.toggle('playing', isPlaying);
         }
+      });
+    });
+
+    // Sidebar Toggles
+    const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+    const sidebarLeft = document.getElementById('sanctuary-sidebar-left');
+    if (btnToggleSidebar && sidebarLeft) {
+      btnToggleSidebar.addEventListener('click', () => {
+        sidebarLeft.classList.toggle('collapsed');
       });
     }
 
     // Modal controls
     this.bindModal('btn-open-memory', 'modal-memory', 'btn-close-memory');
+    this.bindModal('btn-quick-open-vault', 'modal-memory', 'btn-close-memory');
     this.bindModal('btn-open-vision', 'modal-vision', 'btn-close-vision');
     this.bindModal('btn-open-settings', 'modal-settings', 'btn-close-settings');
 
@@ -169,16 +211,81 @@ window.AisaApp = {
       });
     }
 
-    // Clear Chat
-    const btnClear = document.getElementById('btn-clear-chat');
-    if (btnClear) {
-      btnClear.addEventListener('click', () => {
-        if (confirm('Cậu có chắc muốn dọn sạch lịch sử phiên trò chuyện này không nè? (Ký ức dài hạn trên Edge D1 vẫn được giữ an toàn!)')) {
-          this.state.messages = [];
-          this.initWelcomeSession();
+    // Quick Add Fact from Right Sidebar
+    const quickAddForm = document.getElementById('form-quick-add-fact');
+    if (quickAddForm) {
+      quickAddForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('input-sidebar-fact');
+        if (input && input.value.trim() && window.AisaMemory) {
+          window.AisaMemory.addFact(input.value.trim(), 'identity');
+          input.value = '';
         }
       });
     }
+
+    // Gemini API Key in Settings
+    const inputGeminiKey = document.getElementById('input-gemini-key');
+    const btnSaveGeminiKey = document.getElementById('btn-save-gemini-key');
+    if (inputGeminiKey) {
+      inputGeminiKey.value = localStorage.getItem(window.AISA_CONFIG.STORAGE.GEMINI_KEY) || '';
+    }
+    if (btnSaveGeminiKey && inputGeminiKey) {
+      btnSaveGeminiKey.addEventListener('click', () => {
+        const key = inputGeminiKey.value.trim();
+        if (key) {
+          localStorage.setItem(window.AISA_CONFIG.STORAGE.GEMINI_KEY, key);
+          alert('✨ Đã lưu Google Gemini API Key! Giờ đây AISA sẽ chạy siêu tốc và xử lý đa nhiệm hình ảnh/công việc cực nhạy!');
+        } else {
+          localStorage.removeItem(window.AISA_CONFIG.STORAGE.GEMINI_KEY);
+          alert('Đã xóa Gemini API Key, AISA sẽ sử dụng Cloudflare Backend mặc định.');
+        }
+      });
+    }
+
+    // Clear Chat
+    const btnClear = document.getElementById('btn-clear-chat');
+    const btnNewSession = document.getElementById('btn-new-session');
+    const clearAction = () => {
+      if (confirm('Cậu có chắc muốn dọn sạch lịch sử phiên trò chuyện này không nè? (Ký ức dài hạn trên Edge D1 vẫn được giữ an toàn!)')) {
+        this.state.messages = [];
+        this.initWelcomeSession();
+      }
+    };
+    if (btnClear) btnClear.addEventListener('click', clearAction);
+    if (btnNewSession) btnNewSession.addEventListener('click', clearAction);
+  },
+
+  attachImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      alert('Vui lòng chọn hoặc dán tệp hình ảnh hợp lệ (PNG, JPG, WebP).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.state.pendingImage = e.target.result;
+      this.state.pendingImageName = file.name || 'image.png';
+
+      const previewBox = document.getElementById('chat-attached-preview');
+      const thumb = document.getElementById('attached-img-thumb');
+      const nameEl = document.getElementById('attached-img-name');
+      const sizeEl = document.getElementById('attached-img-size');
+
+      if (thumb) thumb.src = e.target.result;
+      if (nameEl) nameEl.textContent = file.name || 'Hình ảnh đính kèm';
+      if (sizeEl) sizeEl.textContent = Math.round(file.size / 1024) + ' KB';
+      if (previewBox) previewBox.style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+  },
+
+  clearAttachedImage() {
+    this.state.pendingImage = null;
+    this.state.pendingImageName = '';
+    const previewBox = document.getElementById('chat-attached-preview');
+    if (previewBox) previewBox.style.display = 'none';
+    const fileInput = document.getElementById('chat-file-input');
+    if (fileInput) fileInput.value = '';
   },
 
   bindModal(openBtnId, modalId, closeBtnId) {
@@ -264,48 +371,57 @@ window.AisaApp = {
     const container = document.getElementById('chat-messages-wrap');
     if (!container) return;
 
-    container.innerHTML = this.state.messages.map(m => {
-      const isUser = m.role === 'user';
-      if (isUser) {
-        return `
-          <div class="message-row user-row" id="${m.id}">
-            <div class="message-bubble user-bubble">
-              <div class="bubble-meta">
-                <span class="sender-name">👑 ${window.AISA_CONFIG.USER.name}</span>
-                <span class="message-time">${m.time}</span>
+    container.innerHTML = `
+      <div class="messages-inner-container">
+        ${this.state.messages.map(m => {
+          const isUser = m.role === 'user';
+          if (isUser) {
+            return `
+              <div class="message-row user-row" id="${m.id}">
+                <div class="message-bubble user-bubble">
+                  <div class="bubble-meta">
+                    <span class="sender-name">👑 ${window.AISA_CONFIG.USER.name}</span>
+                    <span class="message-time">${m.time}</span>
+                  </div>
+                  ${m.image ? `
+                    <div class="bubble-attached-img-wrap">
+                      <img src="${m.image}" class="bubble-attached-img" onclick="window.open('${m.image}', '_blank')" alt="Ảnh đính kèm" title="Nhấp để xem ảnh đầy đủ">
+                    </div>
+                  ` : ''}
+                  <div class="bubble-text">${window.AisaMarkdown.format(m.text || '')}</div>
+                </div>
               </div>
-              <div class="bubble-text">${window.AisaMarkdown.format(m.text)}</div>
-            </div>
-          </div>
-        `;
-      }
+            `;
+          }
 
-      const isHarmony = m.speaker === 'HARMONY';
-      const speakerBadge = isHarmony ? '🌸 Harmony' : '😈 Echo';
-      const bubbleClass = isHarmony ? 'harmony-bubble' : 'echo-bubble';
-      const personaAvatar = isHarmony ? '🌸' : '😈';
+          const isHarmony = m.speaker === 'HARMONY';
+          const speakerBadge = isHarmony ? '🌸 Harmony' : '😈 Echo';
+          const bubbleClass = isHarmony ? 'harmony-bubble' : 'echo-bubble';
+          const personaAvatar = isHarmony ? '🌸' : '😈';
 
-      return `
-        <div class="message-row assistant-row ${isHarmony ? 'harmony-row' : 'echo-row'}" id="${m.id}">
-          <div class="assistant-avatar ${isHarmony ? 'avt-harmony' : 'avt-echo'}">${personaAvatar}</div>
-          <div class="message-bubble ${bubbleClass}">
-            <div class="bubble-meta">
-              <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadge}</span>
-              <span class="message-time">${m.time}</span>
-              <div class="bubble-actions">
-                <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(m.text)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
-                  🔊
-                </button>
-                <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(m.text)}')" title="Sao chép">
-                  📋
-                </button>
+          return `
+            <div class="message-row assistant-row ${isHarmony ? 'harmony-row' : 'echo-row'}" id="${m.id}">
+              <div class="assistant-avatar ${isHarmony ? 'avt-harmony' : 'avt-echo'}">${personaAvatar}</div>
+              <div class="message-bubble ${bubbleClass}">
+                <div class="bubble-meta">
+                  <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadge}</span>
+                  <span class="message-time">${m.time}</span>
+                  <div class="bubble-actions">
+                    <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(m.text)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
+                      🔊
+                    </button>
+                    <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(m.text)}')" title="Sao chép">
+                      📋
+                    </button>
+                  </div>
+                </div>
+                <div class="bubble-text">${window.AisaMarkdown.format(m.text)}</div>
               </div>
             </div>
-            <div class="bubble-text">${window.AisaMarkdown.format(m.text)}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
+          `;
+        }).join('')}
+      </div>
+    `;
 
     container.scrollTop = container.scrollHeight;
   },
@@ -327,18 +443,27 @@ window.AisaApp = {
     if (this.state.isGenerating) return;
 
     const input = document.getElementById('chat-input');
-    if (!input || !input.value.trim()) return;
+    const userText = input ? input.value.trim() : '';
+    const imageToSend = this.state.pendingImage;
 
-    const userText = input.value.trim();
-    input.value = '';
-    input.style.height = 'auto';
+    // Phải có ít nhất nội dung văn bản hoặc hình ảnh
+    if (!userText && !imageToSend) return;
 
-    // 1. Thêm tin nhắn user
+    if (input) {
+      input.value = '';
+      input.style.height = 'auto';
+    }
+
+    // Xóa trạng thái preview ảnh sau khi đã lấy dữ liệu
+    this.clearAttachedImage();
+
+    // 1. Thêm tin nhắn user vào lịch sử
     const userMsg = {
       id: 'msg-' + Date.now(),
       role: 'user',
       time: this.getCurrentTimeString(),
-      text: userText
+      text: userText,
+      image: imageToSend
     };
     this.state.messages.push(userMsg);
     this.saveState();
@@ -352,7 +477,8 @@ window.AisaApp = {
       const replies = await window.AisaEngine.chat(
         userText,
         this.state.mode,
-        this.state.scope
+        this.state.scope,
+        imageToSend
       );
 
       this.hideTypingIndicator();
@@ -399,7 +525,7 @@ window.AisaApp = {
   },
 
   showTypingIndicator() {
-    const container = document.getElementById('chat-messages-wrap');
+    const container = document.querySelector('.messages-inner-container') || document.getElementById('chat-messages-wrap');
     if (!container) return;
 
     const typingEl = document.createElement('div');
@@ -415,7 +541,9 @@ window.AisaApp = {
       </div>
     `;
     container.appendChild(typingEl);
-    container.scrollTop = container.scrollHeight;
+    
+    const wrap = document.getElementById('chat-messages-wrap');
+    if (wrap) wrap.scrollTop = wrap.scrollHeight;
   },
 
   hideTypingIndicator() {

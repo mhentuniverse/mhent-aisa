@@ -5,7 +5,7 @@
 window.AISA_CONFIG = {
   APP_NAME: "AISA Companion",
   SUBTITLE: "Personal Companion AI Sanctuary",
-  VERSION: "2.1.0-Neural",
+  VERSION: "2.2.0-Multimodal",
   
   // Cloudflare Workers AI Endpoint
   API_BASE_URL: "https://api.mhentuniverse.com",
@@ -31,6 +31,7 @@ window.AISA_CONFIG = {
     SETTINGS: "aisa_companion_settings",
     ACTIVE_SCOPE: "aisa_active_scope",
     ACTIVE_MODE: "aisa_active_mode",
-    SAVED_MEMORIES: "aisa_local_memories"
+    SAVED_MEMORIES: "aisa_local_memories",
+    GEMINI_KEY: "mhent_ai_api_key"
   }
 };
