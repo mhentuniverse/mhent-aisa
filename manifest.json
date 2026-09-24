@@ -1,0 +1,21 @@
+{
+  "name": "AISA Companion - MHEnt Universe",
+  "short_name": "AISA",
+  "description": "Artificial Intelligence Smart Assistant - Personal Companion AI (Harmony 🌸 & Echo 😈)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "icons": [
+    {
+      "src": "/assets/icon-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icon-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

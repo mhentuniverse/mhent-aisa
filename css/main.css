@@ -1,0 +1,325 @@
+/**
+ * AISA COMPANION - CORE DESIGN SYSTEM & SANCTUARY THEME
+ * Miyazaki Haruto Entertainment Co., Ltd. - Project MHEnt. Universe
+ */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Colors */
+  --bg-void: #05070b;
+  --bg-deep: #090d15;
+  --bg-surface: #0f1522;
+  --bg-surface-elevated: #161e2e;
+  --bg-glass: rgba(15, 21, 34, 0.75);
+  --bg-glass-card: rgba(22, 30, 46, 0.65);
+  --bg-glass-input: rgba(9, 13, 21, 0.85);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.15);
+  --border-focus: rgba(236, 72, 153, 0.5);
+
+  /* Dual Persona Themes */
+  --harmony-primary: #ec4899;
+  --harmony-soft: #f472b6;
+  --harmony-glow: rgba(236, 72, 153, 0.35);
+  --harmony-bg: rgba(236, 72, 153, 0.12);
+  --harmony-border: rgba(236, 72, 153, 0.3);
+
+  --echo-primary: #8b5cf6;
+  --echo-soft: #a855f7;
+  --echo-glow: rgba(139, 92, 246, 0.35);
+  --echo-bg: rgba(139, 92, 246, 0.12);
+  --echo-border: rgba(139, 92, 246, 0.3);
+
+  --cyan-primary: #06b6d4;
+  --cyan-soft: #38bdf8;
+  --cyan-glow: rgba(6, 182, 212, 0.35);
+
+  --text-high: #f8fafc;
+  --text-medium: #cbd5e1;
+  --text-muted: #64748b;
+
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  --shadow-glow: 0 0 24px rgba(236, 72, 153, 0.15);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset & Global */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-void);
+  color: var(--text-high);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(139, 92, 246, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Header Sanctuary */
+.sanctuary-header {
+  height: 66px;
+  padding: 0 24px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.brand-logo-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  box-shadow: 0 0 16px var(--harmony-glow);
+  transition: var(--transition-smooth);
+}
+.brand-logo-img:hover {
+  transform: scale(1.06);
+}
+
+.brand-info h1 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #ffffff 30%, #f472b6 70%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-info p {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Scope Selector Tabs */
+.header-scope-tabs {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 3px;
+}
+
+.scope-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.scope-tab-btn:hover {
+  color: var(--text-high);
+}
+.scope-tab-btn.active {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(139, 92, 246, 0.25));
+  color: #ffffff;
+  border: 1px solid rgba(244, 114, 182, 0.4);
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.2);
+}
+
+/* Header Right Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.neural-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-full);
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseGreen 2s infinite ease-in-out;
+}
+
+@keyframes pulseGreen {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.btn-header-action {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-medium);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-smooth);
+}
+.btn-header-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-high);
+  border-color: var(--border-medium);
+}
+.btn-header-action.active {
+  background: rgba(236, 72, 153, 0.2);
+  border-color: var(--harmony-primary);
+  color: #ffffff;
+}
+
+.badge-counter {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  font-weight: 800;
+}
+
+/* App Main Stage Grid */
+.sanctuary-stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 310px 1fr 340px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar Left: Persona Cards & Status */
+.sanctuary-sidebar-left {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-subtle);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* Center: Chat Stream */
+.sanctuary-chat-center {
+  display: flex;
+  flex-direction: column;
+  background: rgba(7, 10, 16, 0.5);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar Right: Telemetry & Memory Vault Preview */
+.sanctuary-sidebar-right {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid var(--border-subtle);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .sanctuary-stage {
+    grid-template-columns: 280px 1fr;
+  }
+  .sanctuary-sidebar-right {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .sanctuary-header {
+    padding: 0 14px;
+    height: 58px;
+  }
+  .header-scope-tabs {
+    display: none;
+  }
+  .neural-status-pill {
+    display: none;
+  }
+  .sanctuary-stage {
+    grid-template-columns: 1fr;
+  }
+  .sanctuary-sidebar-left {
+    display: none;
+  }
+}

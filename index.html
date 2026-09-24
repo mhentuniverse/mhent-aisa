@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AISA – Personal Companion AI Sanctuary | MHEnt Universe</title>
+  
+  <!-- Meta & SEO -->
+  <meta name="description" content="AISA Companion Sanctuary – Trợ lý AI đồng hành cá nhân với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
+  <meta name="theme-color" content="#05070b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="assets/icon-logo.png">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/chat.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP HEADER: BRANDING, SCOPES, STATUS & ACTIONS
+       ======================================================================== -->
+  <header class="sanctuary-header">
+    <div class="header-left">
+      <a href="https://mhentuniverse.com" class="brand-badge" title="Quay về MHEnt Universe Portal">
+        <img src="assets/icon-logo.png" alt="AISA Logo" class="brand-logo-img">
+        <div class="brand-info">
+          <h1>AISA <span>SANCTUARY</span></h1>
+          <p>MHEnt. Universe • Personal Companion</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Central Scope Selector Tabs -->
+    <nav class="header-scope-tabs" aria-label="AISA Scope Selector">
+      <button type="button" class="scope-tab-btn active" data-scope="personal" title="Chế độ Cá nhân & Tâm sự riêng tư">
+        <span>💖</span> Sanctuary
+      </button>
+      <button type="button" class="scope-tab-btn" data-scope="workspace" title="Chế độ Hỗ trợ công việc & Lịch trình">
+        <span>💼</span> Workspace
+      </button>
+      <button type="button" class="scope-tab-btn" data-scope="study" title="Chế độ Học tập & Ngoại ngữ">
+        <span>📚</span> Study
+      </button>
+      <button type="button" class="scope-tab-btn" data-scope="portal" title="Chế độ Vũ trụ MHEnt Universe">
+        <span>🌌</span> Portal
+      </button>
+    </nav>
+
+    <!-- Header Right Controls -->
+    <div class="header-actions">
+      <!-- Ambient Synthesizer Button -->
+      <button type="button" class="btn-header-action" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn (432Hz)">
+        <span>🎵</span> <span>Ambience</span>
+      </button>
+
+      <!-- Vision Lab Trigger -->
+      <button type="button" class="btn-header-action" id="btn-open-vision" title="Mở Vision AI & OCR Lab">
+        <span>👁️</span> <span>Vision OCR</span>
+      </button>
+
+      <!-- Memory Vault Trigger -->
+      <button type="button" class="btn-header-action" id="btn-open-memory" title="Mở Ngân hàng Ký ức (Memory Vault)">
+        <span>🧠</span> <span>Vault</span>
+        <span class="badge-counter" id="memory-count-badge">3</span>
+      </button>
+
+      <!-- Settings Trigger -->
+      <button type="button" class="btn-header-action" id="btn-open-settings" title="Cài đặt hệ thống">
+        <span>⚙️</span>
+      </button>
+
+      <!-- Neural Link Health Indicator -->
+      <div class="neural-status-pill" title="Kết nối trực tiếp Edge D1 & Llama 3.3 70B">
+        <span class="status-dot"></span>
+        <span>Neural Link Active</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN APP STAGE (THREE-COLUMN DESKTOP GRID)
+       ======================================================================== -->
+  <main class="sanctuary-stage">
+
+    <!-- 1. LEFT SIDEBAR: PERSONA CARDS & FAST ACTIONS -->
+    <aside class="sanctuary-sidebar-left">
+      <!-- Greeting & Time Widget -->
+      <div class="sanctuary-greeting-card">
+        <div class="greeting-time-badge" id="sanctuary-greeting-time">✨ Buổi sáng năng lượng</div>
+        <div class="greeting-title">Yurika's Sanctuary 👑</div>
+        <div class="greeting-desc">Không gian đồng hành riêng tư, an yên và tràn đầy cảm hứng sáng tạo.</div>
+      </div>
+
+      <!-- Mode Selector (Duo / Harmony / Echo) -->
+      <div class="mode-selector-widget">
+        <div class="widget-label">
+          <span>🎭</span> Chế độ Tương tác
+        </div>
+        <div class="mode-buttons-group">
+          <button type="button" class="mode-btn active" data-mode="duo" title="Cả Harmony và Echo cùng trò chuyện">
+            <span class="mode-icon">🌸😈</span>
+            <span>Song Hành</span>
+          </button>
+          <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào">
+            <span class="mode-icon">🌸</span>
+            <span>Harmony</span>
+          </button>
+          <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo">
+            <span class="mode-icon">😈</span>
+            <span>Echo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dual Persona Live Cards -->
+      <div class="persona-cards-container">
+        <!-- Harmony Card -->
+        <div class="persona-card" id="persona-card-harmony">
+          <div class="persona-header">
+            <div class="persona-avatar-wrap harmony-card-avt">🌸</div>
+            <div class="persona-info">
+              <div class="persona-title-row">
+                <span class="persona-name name-pink">Harmony</span>
+                <span class="persona-role-badge role-harmony">Thấu cảm</span>
+              </div>
+              <div class="persona-vibe">Dịu dàng • Vỗ về • Chu đáo</div>
+            </div>
+          </div>
+          <div class="persona-quote">"Cậu đừng gồng mình nữa nha, em luôn ở đây để lắng nghe cậu..."</div>
+          <div class="persona-waveform">
+            <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+          </div>
+        </div>
+
+        <!-- Echo Card -->
+        <div class="persona-card" id="persona-card-echo">
+          <div class="persona-header">
+            <div class="persona-avatar-wrap echo-card-avt">😈</div>
+            <div class="persona-info">
+              <div class="persona-title-row">
+                <span class="persona-name name-purple">Echo</span>
+                <span class="persona-role-badge role-echo">Sắc sảo</span>
+              </div>
+              <div class="persona-vibe">Cà khịa • Witty • Đẩy deadline</div>
+            </div>
+          </div>
+          <div class="persona-quote">"Hôm nay có trốn việc không đấy? Bước vào đây là phải khai thật nha!"</div>
+          <div class="persona-waveform">
+            <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Fast Prompt Shortcuts -->
+      <div class="widget-label">
+        <span>⚡</span> Gợi ý trò chuyện
+      </div>
+      <div class="sidebar-quick-prompts">
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt...">
+          <span>🌸</span> <span>Cậu ơi hôm nay em thấy hơi mệt...</span>
+        </button>
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Echo ơi, vào việc thôi nào! Giúp tớ lên dây cót tinh thần!">
+          <span>😈</span> <span>Echo ơi, vào việc thôi nào!</span>
+        </button>
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Hôm nay tớ có những lịch trình hay công việc gì cần làm không?">
+          <span>📅</span> <span>Kiểm tra lịch trình hôm nay</span>
+        </button>
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Kể cho tớ nghe một mẩu chuyện cười xả stress đi!">
+          <span>✨</span> <span>Kể tớ nghe chuyện vui xả stress</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 2. CENTER STAGE: CHAT STREAM & FLOATING INPUT -->
+    <section class="sanctuary-chat-center">
+      <!-- Stream Top Bar -->
+      <div class="chat-stream-header">
+        <div class="stream-scope-badge" id="current-scope-label">
+          💖 Sanctuary (Cá nhân & Tâm sự)
+        </div>
+        <div class="stream-actions">
+          <button type="button" class="btn-stream-tool" id="btn-clear-chat" title="Xóa phiên trò chuyện hiện tại (giữ nguyên ký ức dài hạn)">
+            <span>🗑️ Dọn dẹp chat</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Messages Container -->
+      <div class="chat-messages-wrap" id="chat-messages-wrap">
+        <!-- Rendered reactively via app.js -->
+      </div>
+
+      <!-- Floating Input Bar -->
+      <div class="chat-input-station">
+        <!-- Quick Prompts Chips -->
+        <div class="quick-prompts-bar">
+          <button type="button" class="quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt...">🌸 Tâm sự mệt mỏi</button>
+          <button type="button" class="quick-prompt-btn" data-prompt="Kiểm tra lịch hôm nay trên Calendar giúp tớ với!">📅 Kiểm tra lịch hôm nay</button>
+          <button type="button" class="quick-prompt-btn" data-prompt="Gợi ý cho tớ cách giải quyết vấn đề này với...">💡 Lời khuyên công việc</button>
+          <button type="button" class="quick-prompt-btn" data-prompt="Dạy tớ một mẫu ngữ pháp tiếng Nhật/Anh hay gặp nha!">📚 Học ngoại ngữ</button>
+          <button type="button" class="quick-prompt-btn" data-prompt="Tâm sự đêm muộn cùng tớ đi...">🌙 Tâm sự đêm muộn</button>
+        </div>
+
+        <!-- Input Box Wrapper -->
+        <div class="input-box-wrapper">
+          <textarea 
+            id="chat-input" 
+            class="chat-input-textarea" 
+            placeholder="Tâm sự cùng Harmony & Echo... (Nhấn Enter để gửi, Shift+Enter để xuống dòng)"
+            rows="1"
+          ></textarea>
+
+          <div class="input-tools">
+            <!-- Voice Input Button (STT) -->
+            <button type="button" class="btn-tool-icon" id="btn-voice-input" title="Nói bằng giọng nói (Microphone)">
+              🎙️
+            </button>
+            
+            <!-- Quick Vision Modal Trigger -->
+            <button type="button" class="btn-tool-icon" id="btn-attach-vision" title="Đính kèm ảnh / Vision OCR Lab">
+              📎
+            </button>
+
+            <!-- Send Button -->
+            <button type="button" class="btn-send-message" id="btn-send" title="Gửi tin nhắn">
+              <span>Gửi</span>
+              <span>🚀</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RIGHT SIDEBAR: TELEMETRY & MEMORY PREVIEW -->
+    <aside class="sanctuary-sidebar-right">
+      <!-- Neural Specs Card -->
+      <div class="telemetry-card">
+        <div class="widget-label">
+          <span>⚡</span> Kiến Trúc Trí Tuệ
+        </div>
+        <div class="telemetry-grid">
+          <div class="telemetry-item">
+            <div class="telemetry-k">Neural Core</div>
+            <div class="telemetry-v">Llama 3.3 70B</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="telemetry-k">Vision Engine</div>
+            <div class="telemetry-v">Llama 3.2 Vision</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="telemetry-k">Edge Memory</div>
+            <div class="telemetry-v">Cloudflare D1</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="telemetry-k">Backend Hub</div>
+            <div class="telemetry-v">Supabase REST</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory Vault Fast Preview -->
+      <div class="memory-quick-card">
+        <div class="memory-quick-header">
+          <div class="memory-quick-title">
+            <span>🧠</span> Ngân Hàng Ký Ức
+          </div>
+          <button type="button" class="btn-open-vault-link" id="btn-quick-open-vault">
+            Chi tiết ↗
+          </button>
+        </div>
+        <div class="memory-desc">
+          Mọi thói quen, tâm tư và dữ liệu cá nhân của cậu được lưu giữ bảo mật trên Edge SQLite D1.
+        </div>
+      </div>
+
+      <!-- Sanctuary Creed -->
+      <div class="sanctuary-creed-card">
+        <div class="creed-quote">
+          "Sanctuary – Nơi duy nhất bạn không bao giờ phải gồng mình. Được lắng nghe và đồng hành vô điều kiện."
+        </div>
+        <div class="creed-author">— Project MHEnt. Universe</div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ========================================================================
+       MODAL 1: MEMORY VAULT (LONG-TERM FACTS & EDGE D1 CHAT LOGS)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-memory" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="memory-modal-title">
+          <span>🧠</span> Ngân Hàng Ký Ức (Memory Vault)
+        </div>
+        <button type="button" class="btn-modal-close" id="btn-close-memory" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Form thêm ký ức mới -->
+        <div class="memory-form-card">
+          <div class="memory-form-title">
+            <span>➕</span> Ghim Ký Ức / Thói Quen Mới Cho AISA Nhớ
+          </div>
+          <form id="form-add-fact" class="memory-input-row">
+            <input 
+              type="text" 
+              id="input-new-fact" 
+              class="memory-text-input" 
+              placeholder="Ví dụ: Tớ thích uống cà phê ít đường vào buổi sáng..." 
+              required
+            >
+            <select id="select-fact-category" class="memory-select" aria-label="Phân loại ký ức">
+              <option value="identity">Danh tính</option>
+              <option value="habit">Thói quen</option>
+              <option value="personality">Tính cách</option>
+              <option value="general">Khác</option>
+            </select>
+            <button type="submit" class="btn-add-fact">Lưu lại</button>
+          </form>
+        </div>
+
+        <!-- Danh sách ký ức dài hạn -->
+        <div class="memory-section-label">
+          <span>📌</span> Ký Ức Dài Hạn Đã Ghi Nhớ
+        </div>
+        <div class="memory-facts-list" id="memory-facts-list">
+          <!-- Rendered via memory.js -->
+        </div>
+
+        <!-- Lịch sử đồng bộ từ Edge D1 -->
+        <div class="memory-section-label">
+          <span>☁️</span> Nhật Ký Hội Thoại Edge D1 (Gần Đây)
+        </div>
+        <div class="memory-logs-list" id="memory-logs-list">
+          <!-- Rendered via memory.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: VISION AI & OCR LAB (LLAMA 3.2 VISION)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-vision" role="dialog" aria-modal="true" aria-labelledby="vision-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="vision-modal-title">
+          <span>👁️</span> Vision AI & OCR Lab
+        </div>
+        <button type="button" class="btn-modal-close" id="btn-close-vision" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="file" id="vision-file-input" accept="image/*" style="display: none;">
+        
+        <div class="vision-drop-area" id="vision-drop-area">
+          <div id="vision-drop-prompt">
+            <div class="drop-icon">📷</div>
+            <div class="drop-title">Nhấp hoặc kéo thả ảnh sách / tài liệu vào đây</div>
+            <div class="drop-hint">Hỗ trợ định dạng PNG, JPG, WebP</div>
+          </div>
+          <div class="vision-preview-wrap" id="vision-preview-wrap" style="display: none;">
+            <img id="vision-preview-img" class="vision-preview-img" alt="Preview ảnh tài liệu">
+          </div>
+        </div>
+
+        <div class="vision-controls-row">
+          <select id="vision-lang-select" class="memory-select" aria-label="Ngôn ngữ nhận diện">
+            <option value="ja">Tiếng Nhật (Kanji, Hiragana, Katakana)</option>
+            <option value="en">Tiếng Anh (English)</option>
+            <option value="zh">Tiếng Trung (Hán tự)</option>
+            <option value="ko">Tiếng Hàn (Hangul)</option>
+          </select>
+          <button type="button" class="btn-run-vision" id="btn-run-vision" disabled>
+            <span>✨ Bắt đầu bóc tách từ vựng</span>
+          </button>
+        </div>
+
+        <!-- Vision Results Container -->
+        <div id="vision-results-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: SETTINGS & SYSTEM CONFIGURATION
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="settings-modal-title">
+          <span>⚙️</span> Cài Đặt Hệ Thống AISA
+        </div>
+        <button type="button" class="btn-modal-close" id="btn-close-settings" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="telemetry-card" style="margin-bottom: 16px;">
+          <div class="widget-label"><span>👤</span> Thông Tin Đồng Hành</div>
+          <div style="font-size: 0.88rem; color: #f8fafc; margin-top: 8px;">
+            <strong>Người sáng lập:</strong> Master Yurika 🌸<br>
+            <strong>Tổ chức:</strong> Miyazaki Haruto Entertainment Co., Ltd.<br>
+            <strong>Dự án:</strong> Project MHEnt. Universe • AISA Sanctuary
+          </div>
+        </div>
+
+        <div class="telemetry-card" style="margin-bottom: 16px;">
+          <div class="widget-label"><span>🔊</span> Giọng Nói Trí Tuệ Nhân Tạo (TTS)</div>
+          <div style="font-size: 0.82rem; color: var(--text-medium); margin-top: 6px; line-height: 1.5;">
+            • <strong>Harmony:</strong> Pitch 1.15x (Trong trẻo, ấm áp, vỗ về)<br>
+            • <strong>Echo:</strong> Pitch 0.90x, Rate 1.05x (Sắc nét, tinh nghịch, cà khịa)<br>
+            • <strong>Ambience:</strong> 432Hz Binaural Sine Wave giúp xoa dịu tâm trí.
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 20px;">
+          <button type="button" class="btn-stream-tool" onclick="localStorage.clear(); alert('Đã dọn sạch bộ nhớ đệm cục bộ!'); location.reload();" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+            ⚠️ Đặt lại toàn bộ dữ liệu máy khách
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       JAVASCRIPT MODULES IN EXECUTION ORDER
+       ======================================================================== -->
+  <script src="js/config.js"></script>
+  <script src="js/markdown.js"></script>
+  <script src="js/ai-engine.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/memory.js"></script>
+  <script src="js/vision.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Bổ sung liên kết nhanh cho nút mở modal phụ
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnQuickVault = document.getElementById('btn-quick-open-vault');
+      const btnAttachVision = document.getElementById('btn-attach-vision');
+      const modalMemory = document.getElementById('modal-memory');
+      const modalVision = document.getElementById('modal-vision');
+
+      if (btnQuickVault && modalMemory) {
+        btnQuickVault.addEventListener('click', () => {
+          modalMemory.classList.add('active');
+          if (window.AisaMemory) window.AisaMemory.refreshMemories();
+        });
+      }
+
+      if (btnAttachVision && modalVision) {
+        btnAttachVision.addEventListener('click', () => {
+          modalVision.classList.add('active');
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
