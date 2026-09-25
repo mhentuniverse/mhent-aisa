@@ -624,12 +624,94 @@ window.AisaApp = {
       });
     });
 
-    // Sidebar Toggles
+    // Sidebar Toggles & Mobile Drawer
     const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
     const sidebarLeft = document.getElementById('sanctuary-sidebar-left');
-    if (btnToggleSidebar && sidebarLeft) {
-      btnToggleSidebar.addEventListener('click', () => {
+    const mobileOverlay = document.getElementById('mhent-aisa-overlay');
+
+    const toggleMobileLeftDrawer = (force) => {
+      if (!sidebarLeft) return;
+      if (window.innerWidth <= 768) {
+        const next = typeof force === 'boolean' ? force : !sidebarLeft.classList.contains('open-mobile');
+        sidebarLeft.classList.toggle('open-mobile', next);
+        if (mobileOverlay) mobileOverlay.classList.toggle('show', next);
+      } else {
         sidebarLeft.classList.toggle('collapsed');
+      }
+    };
+
+    if (btnToggleSidebar) {
+      btnToggleSidebar.addEventListener('click', () => toggleMobileLeftDrawer());
+    }
+
+    if (mobileOverlay) {
+      mobileOverlay.addEventListener('click', () => {
+        toggleMobileLeftDrawer(false);
+      });
+    }
+
+    // Auto-close drawer on mobile when clicking session or new session
+    if (sidebarLeft) {
+      sidebarLeft.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+          if (e.target.closest('.sidebar-session-item, .btn-new-session, .sidebar-prompt-item')) {
+            setTimeout(() => toggleMobileLeftDrawer(false), 200);
+          }
+        }
+      });
+    }
+
+    // Mobile Bottom Navigation Bar Controls
+    const bottomNavItems = document.querySelectorAll('.aisa-nav-item');
+    const scopePickerModal = document.getElementById('modal-scope-picker');
+    const btnCloseScopePicker = document.getElementById('btn-close-scope-picker');
+
+    bottomNavItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const tab = item.getAttribute('data-tab');
+
+        if (tab === 'chat') {
+          bottomNavItems.forEach(b => b.classList.remove('active'));
+          item.classList.add('active');
+          toggleMobileLeftDrawer(false);
+          const messagesWrap = document.getElementById('chat-messages-wrap');
+          if (messagesWrap) messagesWrap.scrollTo({ top: messagesWrap.scrollHeight, behavior: 'smooth' });
+        } else if (tab === 'harmony') {
+          bottomNavItems.forEach(b => b.classList.remove('active'));
+          item.classList.add('active');
+          this.setMode('harmony');
+          toggleMobileLeftDrawer(false);
+        } else if (tab === 'echo') {
+          bottomNavItems.forEach(b => b.classList.remove('active'));
+          item.classList.add('active');
+          this.setMode('echo');
+          toggleMobileLeftDrawer(false);
+        } else if (tab === 'scope') {
+          if (scopePickerModal) scopePickerModal.classList.add('show');
+        } else if (tab === 'menu') {
+          toggleMobileLeftDrawer();
+        }
+      });
+    });
+
+    // Scope Picker Modal Options
+    if (scopePickerModal) {
+      scopePickerModal.addEventListener('click', (e) => {
+        if (e.target === scopePickerModal) scopePickerModal.classList.remove('show');
+      });
+
+      scopePickerModal.querySelectorAll('.scope-picker-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const scope = opt.getAttribute('data-scope');
+          this.setScope(scope);
+          scopePickerModal.classList.remove('show');
+        });
+      });
+    }
+
+    if (btnCloseScopePicker && scopePickerModal) {
+      btnCloseScopePicker.addEventListener('click', () => {
+        scopePickerModal.classList.remove('show');
       });
     }
 

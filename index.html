@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/chat.css">
   <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/mhent-mobile.css">
 </head>
 <body>
 
@@ -508,6 +509,73 @@
       </div>
     </div>
   </div>
+
+  <!-- ========================================================================
+       MOBILE COMPONENTS: OVERLAY, BOTTOM NAV & SCOPE PICKER
+       ======================================================================== -->
+  <div class="mhent-aisa-overlay" id="mhent-aisa-overlay"></div>
+
+  <!-- Scope Picker Modal for Mobile -->
+  <div class="scope-picker-modal" id="modal-scope-picker">
+    <div class="scope-picker-box">
+      <div class="scope-picker-title">Chọn Không Gian Trò Chuyện 🪐</div>
+      <div class="scope-picker-option" data-scope="personal">
+        <span>💖</span>
+        <div>
+          <div>Sanctuary</div>
+          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Cá nhân & Tâm sự riêng tư</div>
+        </div>
+      </div>
+      <div class="scope-picker-option" data-scope="workspace">
+        <span>💼</span>
+        <div>
+          <div>Workspace</div>
+          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Công việc, Mail, Task & Lịch</div>
+        </div>
+      </div>
+      <div class="scope-picker-option" data-scope="study">
+        <span>📚</span>
+        <div>
+          <div>Study</div>
+          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Học ngoại ngữ CJK & Anh ngữ</div>
+        </div>
+      </div>
+      <div class="scope-picker-option" data-scope="portal">
+        <span>🌌</span>
+        <div>
+          <div>Portal</div>
+          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Vũ trụ MHEnt Universe</div>
+        </div>
+      </div>
+      <button type="button" class="btn-tool-outline" style="margin-top: 6px; padding: 10px; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-muted);" id="btn-close-scope-picker">
+        Đóng
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="aisa-bottom-nav" id="aisa-bottom-nav">
+    <button type="button" class="aisa-nav-item active" data-tab="chat" title="Dòng Trò Chuyện">
+      <span class="nav-icon">💬</span>
+      <span>Chat</span>
+    </button>
+    <button type="button" class="aisa-nav-item" data-tab="harmony" title="Chỉ Harmony">
+      <span class="nav-icon">🌸</span>
+      <span>Harmony</span>
+    </button>
+    <button type="button" class="aisa-nav-item" data-tab="echo" title="Chỉ Echo">
+      <span class="nav-icon">😈</span>
+      <span>Echo</span>
+    </button>
+    <button type="button" class="aisa-nav-item" data-tab="scope" title="Chọn Không Gian">
+      <span class="nav-icon">🪐</span>
+      <span>Không Gian</span>
+    </button>
+    <button type="button" class="aisa-nav-item" data-tab="menu" title="Lịch Sử & Tiện Ích">
+      <span class="nav-icon">☰</span>
+      <span>Menu</span>
+    </button>
+  </nav>
 
   <!-- ========================================================================
        JAVASCRIPT MODULES IN EXECUTION ORDER
