@@ -25,6 +25,30 @@ window.AISA_CONFIG = {
     avatar: "👑"
   },
 
+  // Firebase Configuration (Matching MHEnt Universe & Workspace)
+  FIREBASE: {
+    apiKey: "AIzaSyDKDAAnmeqWFRqUZWTVa--m5-cORyHCoUk",
+    authDomain: "mhentuniverse.firebaseapp.com",
+    projectId: "mhentuniverse",
+    storageBucket: "mhentuniverse.firebasestorage.app",
+    messagingSenderId: "377044322952",
+    appId: "1:377044322952:web:d657d1b0806d37d9246d3d"
+  },
+
+  // Gatekeeper Security & Access Control
+  AUTH: {
+    ORG_DOMAIN: "@mhentuniverse.internal",
+    // Allowed accounts that can enter AISA Sanctuary:
+    ALLOWED_ROLES: ["master", "admin"],
+    // Default allowed email prefixes / patterns:
+    ALLOWED_EMAILS: [
+      "yurika@mhentuniverse.internal",
+      "master@mhentuniverse.internal",
+      "admin@mhentuniverse.com",
+      "yurika"
+    ]
+  },
+
   // Storage Keys
   STORAGE: {
     HISTORY: "aisa_companion_history_v2",
@@ -37,3 +61,6 @@ window.AISA_CONFIG = {
     GEMINI_KEY: "mhent_ai_api_key"
   }
 };
+
+// Aliases for compatibility
+window.firebaseConfig = window.AISA_CONFIG.FIREBASE;

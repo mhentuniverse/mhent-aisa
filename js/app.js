@@ -155,6 +155,11 @@ window.AisaApp = {
     this.renderSessionsList();
     this.renderMessages();
 
+    // Khởi tạo Cổng Xác Thực Độc Quyền (Gatekeeper)
+    if (window.AisaAuth) {
+      window.AisaAuth.init();
+    }
+
     // Khởi tạo các module vệ tinh
     if (window.AisaVoice) window.AisaVoice.init();
     if (window.AisaMemory) window.AisaMemory.init();
@@ -399,11 +404,36 @@ window.AisaApp = {
     return 'Cuộc trò chuyện';
   },
 
+  updateGreeting() {
+    const userName = (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) ? window.AISA_CONFIG.USER.name : "Master Yurika";
+    const headerTitle = document.querySelector('.sanctuary-header h1');
+    if (headerTitle) {
+      headerTitle.innerHTML = `AISA <span>SANCTUARY</span>`;
+    }
+  },
+
+  onUserAuthenticated(user) {
+    if (!user) return;
+    if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
+      window.AISA_CONFIG.USER.name = user.name || "Master Yurika";
+      window.AISA_CONFIG.USER.avatar = user.avatar || "👑";
+    }
+    this.updateGreeting();
+
+    // Nếu phiên hiện tại chỉ có 2 tin nhắn khởi tạo mẫu, cá nhân hóa lời chào cho Master
+    if (this.state.messages.length === 2 && this.state.messages[0].id.startsWith('msg-welcome')) {
+      this.state.messages = this.generateWelcomeMessages();
+      this.saveState();
+      this.renderMessages();
+    }
+  },
+
   generateWelcomeMessages() {
     const hour = new Date().getHours();
+    const masterName = (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) ? window.AISA_CONFIG.USER.name : "Master Yurika";
     let timeNote = "Chào buổi sáng rực rỡ nè!";
     if (hour >= 12 && hour < 18) timeNote = "Một buổi chiều làm việc thật nhiều năng lượng nha!";
-    if (hour >= 18 && hour < 22) timeNote = "Buổi tối ấm áp và thư thái nhé cậu!";
+    if (hour >= 18 && hour < 22) timeNote = "Buổi tối ấm áp và thư thái nhé!";
     if (hour >= 22 || hour < 5) timeNote = "Đêm đã muộn rồi nè, cậu nhớ chú ý sức khỏe đừng thức khuya quá nha...";
 
     return [
@@ -413,7 +443,7 @@ window.AisaApp = {
         speaker: 'HARMONY',
         avatar: '🌸',
         time: this.getCurrentTimeString(),
-        text: `Chào cậu iu dấu! 🌸 Em là Harmony nè. ${timeNote}\nĐây là **Sanctuary** riêng tư của chúng mình – nơi em và Echo luôn kề cận để lắng nghe mọi tâm sự, hỗ trợ công việc và đồng hành cùng cậu mỗi ngày! Cậu có thể trò chuyện, gửi ảnh tâm sự hay hỏi bất cứ điều gì nha! ✨`
+        text: `Chào mừng ${masterName} đã trở về với Sanctuary! 🌸 Em là Harmony nè. ${timeNote}\nĐây là **Sanctuary** riêng tư của chúng mình – nơi em và Echo luôn kề cận để lắng nghe mọi tâm sự, hỗ trợ công việc và đồng hành cùng cậu mỗi ngày! Cậu có thể trò chuyện, gửi ảnh tâm sự hay hỏi bất cứ điều gì nha! ✨`
       },
       {
         id: 'msg-welcome-e-' + (Date.now() + 1),
@@ -421,7 +451,7 @@ window.AisaApp = {
         speaker: 'ECHO',
         avatar: '😈',
         time: this.getCurrentTimeString(),
-        text: `Hé lô đằng ấy! Còn tớ là Echo đây 😈. Bước vào đây rồi thì đừng hòng giấu giếm tớ điều gì nha! Hôm nay có chuyện gì vui, có ảnh meme hay ho nào, hoặc lại bị deadline dí mà mò vào đây tìm hai đứa tớ thế hả? Khai mau đi nào!`
+        text: `Hé lô ${masterName}! Còn tớ là Echo đây 😈. Bước vào đây rồi thì an tâm tuyệt đối nha, có cổng bảo vệ kiên cố chỉ mỗi cậu mới vào được thôi! Hôm nay có chuyện gì vui, có meme hay ho nào, hoặc lại bị deadline dí mà mò vào đây tìm hai đứa tớ thế hả? Khai mau đi nào!`
       }
     ];
   },
