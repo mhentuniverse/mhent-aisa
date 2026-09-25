@@ -121,7 +121,7 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
+        systemInstruction: { parts: [{ text: systemPrompt + '\nTUYỆT ĐỐI KHÔNG thêm bất kỳ hành động hay chú thích trong ngoặc như (nhảy vào), (chêm vào), (cười), (comment)... Trả lời trực tiếp bằng lời thoại tự nhiên.' }] },
         contents: [{ role: 'user', parts: parts }],
         generationConfig: { maxOutputTokens: 600, temperature: 0.75 }
       })
@@ -132,7 +132,7 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
+          systemInstruction: { parts: [{ text: systemPrompt + '\nTUYỆT ĐỐI KHÔNG thêm bất kỳ hành động hay chú thích trong ngoặc như (nhảy vào), (chêm vào), (cười), (comment)... Trả lời trực tiếp bằng lời thoại tự nhiên.' }] },
           contents: [{ role: 'user', parts: parts }],
           generationConfig: { maxOutputTokens: 600, temperature: 0.75 }
         })
@@ -146,27 +146,44 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
     return this.parsePersonaText(rawOutput, mode);
   },
 
+  cleanReply(text) {
+    if (!text || typeof text !== 'string') return '';
+    let cleaned = text.trim();
+    let prev = '';
+    while (cleaned !== prev) {
+      prev = cleaned;
+      cleaned = cleaned.replace(/^(?:\*{1,2}|\[)?(?:ECHO|HARMONY|Echo|Harmony)(?:\*{1,2}|\])?[:\s\-–—]+\s*/i, '');
+      cleaned = cleaned.replace(/^(?:[\(\[\*][^\(\)\[\]\*]{1,35}[\)\]\*][:.\s\-–—]*)\s*/i, '');
+      cleaned = cleaned.replace(/^(?:(?:ECHO|HARMONY|Echo|Harmony)\s*[\(\[\*][^\(\)\[\]\*]{1,35}[\)\]\*][:.\s\-–—]*)\s*/i, '');
+    }
+    cleaned = cleaned.replace(/^(?:ECHO|HARMONY|Echo|Harmony)\s*:\s*/i, '');
+    cleaned = cleaned.replace(/^[\(\[\*](?:nhảy vào|chêm vào|xen vào|ngắt lời|cắt ngang|nói leo|trêu|cà khịa|cười[^()\[\]*]*|bĩu môi|nhún vai|thở dài|khoanh tay|chống cằm|nghiêng đầu|ngáp|chớp mắt|vỗ tay|liếc nhìn|lườm|gãi đầu|comment|action|stage direction|nói thêm|bình luận|phản hồi|đối đáp|banter|sarcasm|mỉm cười[^()\[\]*]*|dịu dàng|lo lắng|ngại ngùng)[\)\]\*][:.\s\-–—]*\s*/i, '');
+    return cleaned.trim();
+  },
+
   parsePersonaText(rawText, mode) {
     const replies = [];
     const harmonyMatch = rawText.match(/HARMONY:\s*([\s\S]*?)(?=ECHO:|$)/i);
     const echoMatch = rawText.match(/ECHO:\s*([\s\S]*?)$/i);
 
     if (mode === 'harmony' || mode === 'duo') {
-      const hText = harmonyMatch ? harmonyMatch[1].trim() : (mode === 'harmony' ? rawText.trim() : '');
+      let hText = harmonyMatch ? harmonyMatch[1].trim() : (mode === 'harmony' ? rawText.trim() : '');
+      hText = this.cleanReply(hText);
       if (hText) {
         replies.push({ speaker: 'HARMONY', avatar: '🌸', text: hText });
       }
     }
 
     if (mode === 'echo' || mode === 'duo') {
-      const eText = echoMatch ? echoMatch[1].trim() : (mode === 'echo' ? rawText.trim() : '');
+      let eText = echoMatch ? echoMatch[1].trim() : (mode === 'echo' ? rawText.trim() : '');
+      eText = this.cleanReply(eText);
       if (eText) {
         replies.push({ speaker: 'ECHO', avatar: '😈', text: eText });
       }
     }
 
     if (replies.length === 0 && rawText.trim()) {
-      replies.push({ speaker: 'HARMONY', avatar: '🌸', text: rawText.trim() });
+      replies.push({ speaker: 'HARMONY', avatar: '🌸', text: this.cleanReply(rawText.trim()) });
     }
 
     return replies;

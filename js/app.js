@@ -23,16 +23,29 @@ window.AisaApp = {
     if (window.AisaMemory) window.AisaMemory.init();
     if (window.AisaVision) window.AisaVision.init();
 
-    // Lời chào mở đầu nếu chưa có lịch sử
+    // Lời chào mở đầu nếu chưa có lịch sử, đồng thời kiểm tra phục hồi từ Edge D1 SQLite
     if (this.state.messages.length === 0) {
       this.initWelcomeSession();
+      this.restoreHistoryFromCloud();
     }
   },
 
   loadState() {
     try {
       const savedHistory = localStorage.getItem(window.AISA_CONFIG.STORAGE.HISTORY);
-      if (savedHistory) this.state.messages = JSON.parse(savedHistory);
+      if (savedHistory) {
+        const parsed = JSON.parse(savedHistory);
+        if (Array.isArray(parsed)) {
+          // Tự động làm sạch các tin nhắn cũ bị dính ECHO: hoặc (nhảy vào) đã lưu trước đây
+          this.state.messages = parsed.map(m => {
+            if (m.role === 'assistant' && m.text) {
+              const clean = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
+              return { ...m, text: clean };
+            }
+            return m;
+          });
+        }
+      }
 
       const savedMode = localStorage.getItem(window.AISA_CONFIG.STORAGE.ACTIVE_MODE);
       if (savedMode) this.state.mode = savedMode;
@@ -41,6 +54,47 @@ window.AisaApp = {
       if (savedScope) this.state.scope = savedScope;
     } catch (e) {
       console.warn('Could not load saved state:', e);
+    }
+  },
+
+  async restoreHistoryFromCloud() {
+    if (sessionStorage.getItem('aisa_session_cleared') === 'true') return;
+    try {
+      if (window.AisaEngine && window.AisaEngine.fetchHistory) {
+        const history = await window.AisaEngine.fetchHistory(this.state.scope || 'personal');
+        if (history && history.length > 0) {
+          const restored = [];
+          history.forEach((h, idx) => {
+            if (h.role === 'user') {
+              restored.push({
+                id: 'msg-restored-' + idx,
+                role: 'user',
+                time: 'Đã lưu',
+                text: h.content
+              });
+            } else {
+              const isHarmony = (h.content || '').startsWith('HARMONY:');
+              const clean = window.AisaEngine.cleanReply(h.content || '');
+              restored.push({
+                id: 'msg-restored-' + idx,
+                role: 'assistant',
+                speaker: isHarmony ? 'HARMONY' : 'ECHO',
+                avatar: isHarmony ? '🌸' : '😈',
+                time: 'Đã lưu',
+                text: clean
+              });
+            }
+          });
+
+          if (restored.length > 0) {
+            this.state.messages = restored;
+            this.saveState();
+            this.renderMessages();
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Restore History Notice]:', e);
     }
   },
 
@@ -248,6 +302,7 @@ window.AisaApp = {
     const btnNewSession = document.getElementById('btn-new-session');
     const clearAction = () => {
       if (confirm('Cậu có chắc muốn dọn sạch lịch sử phiên trò chuyện này không nè? (Ký ức dài hạn trên Edge D1 vẫn được giữ an toàn!)')) {
+        sessionStorage.setItem('aisa_session_cleared', 'true');
         this.state.messages = [];
         this.initWelcomeSession();
       }
@@ -398,6 +453,7 @@ window.AisaApp = {
           const speakerBadge = isHarmony ? '🌸 Harmony' : '😈 Echo';
           const bubbleClass = isHarmony ? 'harmony-bubble' : 'echo-bubble';
           const personaAvatar = isHarmony ? '🌸' : '😈';
+          const cleanText = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
 
           return `
             <div class="message-row assistant-row ${isHarmony ? 'harmony-row' : 'echo-row'}" id="${m.id}">
@@ -407,15 +463,15 @@ window.AisaApp = {
                   <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadge}</span>
                   <span class="message-time">${m.time}</span>
                   <div class="bubble-actions">
-                    <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(m.text)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
+                    <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
                       🔊
                     </button>
-                    <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(m.text)}')" title="Sao chép">
+                    <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(cleanText)}')" title="Sao chép">
                       📋
                     </button>
                   </div>
                 </div>
-                <div class="bubble-text">${window.AisaMarkdown.format(m.text)}</div>
+                <div class="bubble-text">${window.AisaMarkdown.format(cleanText)}</div>
               </div>
             </div>
           `;
@@ -485,13 +541,14 @@ window.AisaApp = {
 
       if (replies && replies.length > 0) {
         replies.forEach((rep, idx) => {
+          const clean = window.AisaEngine ? window.AisaEngine.cleanReply(rep.text) : rep.text;
           this.state.messages.push({
             id: 'msg-rep-' + (Date.now() + idx),
             role: 'assistant',
             speaker: rep.speaker,
             avatar: rep.avatar || (rep.speaker === 'HARMONY' ? '🌸' : '😈'),
             time: this.getCurrentTimeString(),
-            text: rep.text
+            text: clean
           });
         });
       } else {
