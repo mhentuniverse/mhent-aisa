@@ -1,12 +1,148 @@
 /**
  * AISA COMPANION - MAIN APPLICATION CONTROLLER
+ * Multi-Session Chat Hub & MHEnt Luxury Dialog System
  * Miyazaki Haruto Entertainment Co., Ltd. - Project MHEnt. Universe
  */
+
+// ============================================================================
+// 1. MHENT UNIVERSE LUXURY CUSTOM DIALOG & ALERT SYSTEM
+// ============================================================================
+window.AisaDialog = {
+  confirm({
+    title = "Xác Nhận",
+    message = "Cậu có chắc chắn muốn thực hiện hành động này không?",
+    submessage = "",
+    icon = "🌸",
+    confirmText = "Xác Nhận",
+    cancelText = "Hủy Bỏ",
+    danger = false
+  }) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-custom-dialog');
+      if (!modal) {
+        resolve(window.confirm(message));
+        return;
+      }
+
+      const titleEl = document.getElementById('dialog-title-text');
+      const iconBadge = document.getElementById('dialog-icon-badge');
+      const iconCircle = document.getElementById('dialog-icon-circle');
+      const headEl = document.getElementById('dialog-prompt-heading');
+      const subEl = document.getElementById('dialog-prompt-sub');
+      const btnConfirm = document.getElementById('btn-dialog-confirm');
+      const btnCancel = document.getElementById('btn-dialog-cancel');
+      const btnClose = document.getElementById('btn-dialog-close-x');
+
+      if (titleEl) titleEl.textContent = title;
+      if (iconBadge) iconBadge.textContent = icon;
+      if (iconCircle) iconCircle.textContent = icon;
+      if (headEl) headEl.textContent = message;
+      if (subEl) {
+        subEl.textContent = submessage;
+        subEl.style.display = submessage ? 'block' : 'none';
+      }
+
+      if (btnConfirm) {
+        btnConfirm.textContent = confirmText;
+        btnConfirm.className = danger ? 'btn-dialog-action btn-dialog-danger' : 'btn-dialog-action btn-dialog-confirm';
+      }
+
+      if (btnCancel) {
+        btnCancel.textContent = cancelText;
+        btnCancel.style.display = 'inline-flex';
+      }
+
+      modal.classList.add('active');
+
+      const cleanup = (result) => {
+        modal.classList.remove('active');
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnCancel) btnCancel.onclick = null;
+        if (btnClose) btnClose.onclick = null;
+        modal.onclick = null;
+        resolve(result);
+      };
+
+      if (btnConfirm) btnConfirm.onclick = () => cleanup(true);
+      if (btnCancel) btnCancel.onclick = () => cleanup(false);
+      if (btnClose) btnClose.onclick = () => cleanup(false);
+      modal.onclick = (e) => {
+        if (e.target === modal) cleanup(false);
+      };
+    });
+  },
+
+  alert({
+    title = "Thông Báo",
+    message = "",
+    submessage = "",
+    icon = "✨",
+    okText = "Đã Hiểu"
+  }) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-custom-dialog');
+      if (!modal) {
+        window.alert(message);
+        resolve();
+        return;
+      }
+
+      const titleEl = document.getElementById('dialog-title-text');
+      const iconBadge = document.getElementById('dialog-icon-badge');
+      const iconCircle = document.getElementById('dialog-icon-circle');
+      const headEl = document.getElementById('dialog-prompt-heading');
+      const subEl = document.getElementById('dialog-prompt-sub');
+      const btnConfirm = document.getElementById('btn-dialog-confirm');
+      const btnCancel = document.getElementById('btn-dialog-cancel');
+      const btnClose = document.getElementById('btn-dialog-close-x');
+
+      if (titleEl) titleEl.textContent = title;
+      if (iconBadge) iconBadge.textContent = icon;
+      if (iconCircle) iconCircle.textContent = icon;
+      if (headEl) headEl.textContent = message;
+      if (subEl) {
+        subEl.textContent = submessage;
+        subEl.style.display = submessage ? 'block' : 'none';
+      }
+
+      if (btnConfirm) {
+        btnConfirm.textContent = okText;
+        btnConfirm.className = 'btn-dialog-action btn-dialog-confirm';
+      }
+
+      if (btnCancel) {
+        btnCancel.style.display = 'none';
+      }
+
+      modal.classList.add('active');
+
+      const cleanup = () => {
+        modal.classList.remove('active');
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnClose) btnClose.onclick = null;
+        modal.onclick = null;
+        resolve();
+      };
+
+      if (btnConfirm) btnConfirm.onclick = cleanup;
+      if (btnClose) btnClose.onclick = cleanup;
+      modal.onclick = (e) => {
+        if (e.target === modal) cleanup();
+      };
+    });
+  }
+};
+
+// ============================================================================
+// 2. MAIN APPLICATION CONTROLLER WITH MULTI-SESSION ARCHITECTURE
+// ============================================================================
 window.AisaApp = {
   state: {
-    mode: 'duo',       // 'duo' | 'harmony' | 'echo'
-    scope: 'personal', // 'personal' | 'workspace' | 'study' | 'portal'
-    messages: [],
+    sessions: [],          // Danh sách các phiên trò chuyện đa nhiệm
+    currentSessionId: null,// ID của phiên đang kích hoạt
+    mode: 'duo',           // 'duo' | 'harmony' | 'echo'
+    scope: 'personal',     // 'personal' | 'workspace' | 'study' | 'portal'
+    messages: [],          // Tin nhắn của phiên hiện tại
     isGenerating: false,
     pendingImage: null,
     pendingImageName: ''
@@ -16,6 +152,7 @@ window.AisaApp = {
     this.loadState();
     this.bindEvents();
     this.updateGreeting();
+    this.renderSessionsList();
     this.renderMessages();
 
     // Khởi tạo các module vệ tinh
@@ -23,38 +160,270 @@ window.AisaApp = {
     if (window.AisaMemory) window.AisaMemory.init();
     if (window.AisaVision) window.AisaVision.init();
 
-    // Lời chào mở đầu nếu chưa có lịch sử, đồng thời kiểm tra phục hồi từ Edge D1 SQLite
-    if (this.state.messages.length === 0) {
-      this.initWelcomeSession();
+    // Phục hồi lịch sử từ Cloudflare Edge D1 SQLite nếu máy chưa có
+    if (this.state.sessions.length === 0 || (this.state.sessions.length === 1 && this.state.messages.length <= 2)) {
       this.restoreHistoryFromCloud();
     }
   },
 
   loadState() {
     try {
-      const savedHistory = localStorage.getItem(window.AISA_CONFIG.STORAGE.HISTORY);
-      if (savedHistory) {
-        const parsed = JSON.parse(savedHistory);
-        if (Array.isArray(parsed)) {
-          // Tự động làm sạch các tin nhắn cũ bị dính ECHO: hoặc (nhảy vào) đã lưu trước đây
-          this.state.messages = parsed.map(m => {
-            if (m.role === 'assistant' && m.text) {
-              const clean = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
-              return { ...m, text: clean };
-            }
-            return m;
-          });
+      const config = window.AISA_CONFIG;
+      const rawSessions = localStorage.getItem(config.STORAGE.SESSIONS);
+      const activeId = localStorage.getItem(config.STORAGE.ACTIVE_SESSION);
+
+      if (rawSessions) {
+        const parsed = JSON.parse(rawSessions);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.state.sessions = parsed.map(s => ({
+            ...s,
+            messages: (s.messages || []).map(m => {
+              if (m.role === 'assistant' && m.text) {
+                const clean = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
+                return { ...m, text: clean };
+              }
+              return m;
+            })
+          }));
         }
       }
 
-      const savedMode = localStorage.getItem(window.AISA_CONFIG.STORAGE.ACTIVE_MODE);
+      // Tương thích ngược: Nếu chưa có danh sách sessions nhưng có lịch sử v2 cũ
+      if (this.state.sessions.length === 0) {
+        const legacyHistory = localStorage.getItem(config.STORAGE.HISTORY);
+        let oldMsgs = [];
+        if (legacyHistory) {
+          try {
+            const p = JSON.parse(legacyHistory);
+            if (Array.isArray(p)) {
+              oldMsgs = p.map(m => {
+                if (m.role === 'assistant' && m.text) {
+                  return { ...m, text: window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text };
+                }
+                return m;
+              });
+            }
+          } catch (e) {}
+        }
+
+        const initialMsgs = oldMsgs.length > 0 ? oldMsgs : this.generateWelcomeMessages();
+        const initialTitle = this.deriveSessionTitle(initialMsgs) || 'Cuộc trò chuyện chính';
+        const defaultSession = {
+          id: 'session-' + Date.now(),
+          title: initialTitle,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          mode: 'duo',
+          scope: 'personal',
+          messages: initialMsgs
+        };
+        this.state.sessions = [defaultSession];
+        this.state.currentSessionId = defaultSession.id;
+      }
+
+      // Xác định phiên hoạt động hiện tại
+      let current = this.state.sessions.find(s => s.id === activeId);
+      if (!current) {
+        current = this.state.sessions[0];
+      }
+      this.state.currentSessionId = current.id;
+      this.state.messages = current.messages || [];
+
+      // Nạp mode và scope
+      const savedMode = localStorage.getItem(config.STORAGE.ACTIVE_MODE);
       if (savedMode) this.state.mode = savedMode;
 
-      const savedScope = localStorage.getItem(window.AISA_CONFIG.STORAGE.ACTIVE_SCOPE);
+      const savedScope = localStorage.getItem(config.STORAGE.ACTIVE_SCOPE);
       if (savedScope) this.state.scope = savedScope;
+
     } catch (e) {
       console.warn('Could not load saved state:', e);
+      if (this.state.sessions.length === 0) {
+        this.createNewSession('Trò chuyện cùng AISA', false);
+      }
     }
+  },
+
+  saveState() {
+    try {
+      const config = window.AISA_CONFIG;
+      // Cập nhật messages của session hiện tại vào sessions array
+      if (this.state.currentSessionId) {
+        const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId);
+        if (currentSession) {
+          currentSession.messages = this.state.messages;
+          currentSession.updatedAt = Date.now();
+          currentSession.mode = this.state.mode;
+          currentSession.scope = this.state.scope;
+        }
+      }
+
+      localStorage.setItem(config.STORAGE.SESSIONS, JSON.stringify(this.state.sessions));
+      localStorage.setItem(config.STORAGE.ACTIVE_SESSION, this.state.currentSessionId || '');
+      localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
+      localStorage.setItem(config.STORAGE.ACTIVE_MODE, this.state.mode);
+      localStorage.setItem(config.STORAGE.ACTIVE_SCOPE, this.state.scope);
+    } catch (e) {}
+  },
+
+  // --------------------------------------------------------------------------
+  // MULTI-SESSION CONTROLLER
+  // --------------------------------------------------------------------------
+  createNewSession(title = 'Phiên trò chuyện mới', shouldSave = true) {
+    const welcomeMessages = this.generateWelcomeMessages();
+    const newSession = {
+      id: 'session-' + Date.now(),
+      title: title,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      mode: this.state.mode,
+      scope: this.state.scope,
+      messages: welcomeMessages
+    };
+
+    this.state.sessions.unshift(newSession);
+    this.state.currentSessionId = newSession.id;
+    this.state.messages = welcomeMessages;
+
+    if (shouldSave) {
+      this.saveState();
+    }
+    this.renderSessionsList();
+    this.renderMessages();
+  },
+
+  switchSession(sessionId) {
+    if (this.state.currentSessionId === sessionId) return;
+
+    this.saveState();
+    const target = this.state.sessions.find(s => s.id === sessionId);
+    if (!target) return;
+
+    this.state.currentSessionId = target.id;
+    this.state.messages = target.messages || [];
+    if (target.mode) {
+      this.setMode(target.mode, false);
+    }
+
+    this.saveState();
+    this.renderSessionsList();
+    this.renderMessages();
+  },
+
+  async deleteSession(sessionId, e) {
+    if (e) e.stopPropagation();
+
+    const target = this.state.sessions.find(s => s.id === sessionId);
+    if (!target) return;
+
+    const confirmed = await window.AisaDialog.confirm({
+      title: 'Xóa Phiên Trò Chuyện',
+      message: `Cậu có chắc muốn xóa phiên "${target.title}" không nè?`,
+      submessage: 'Toàn bộ nội dung của phiên này sẽ được dọn sạch khỏi thiết bị.',
+      icon: '🗑️',
+      confirmText: 'Xóa Phiên',
+      cancelText: 'Giữ Lại',
+      danger: true
+    });
+
+    if (!confirmed) return;
+
+    this.state.sessions = this.state.sessions.filter(s => s.id !== sessionId);
+
+    if (this.state.sessions.length === 0) {
+      this.createNewSession('Trò chuyện cùng AISA', true);
+      return;
+    }
+
+    if (this.state.currentSessionId === sessionId) {
+      this.state.currentSessionId = this.state.sessions[0].id;
+      this.state.messages = this.state.sessions[0].messages || [];
+    }
+
+    this.saveState();
+    this.renderSessionsList();
+    this.renderMessages();
+  },
+
+  renderSessionsList() {
+    const container = document.getElementById('sidebar-sessions-list');
+    const badge = document.getElementById('sessions-count-badge');
+    if (badge) badge.textContent = this.state.sessions.length;
+    if (!container) return;
+
+    if (this.state.sessions.length === 0) {
+      container.innerHTML = `<div class="sessions-empty-tip">Chưa có phiên chat nào. Bấm nút phía trên để tạo nhé! ✨</div>`;
+      return;
+    }
+
+    container.innerHTML = this.state.sessions.map(s => {
+      const isActive = s.id === this.state.currentSessionId;
+      const timeStr = this.formatSessionTime(s.updatedAt || s.createdAt);
+      const icon = s.mode === 'harmony' ? '🌸' : (s.mode === 'echo' ? '😈' : '💬');
+
+      return `
+        <div class="session-item ${isActive ? 'active' : ''}" onclick="window.AisaApp.switchSession('${s.id}')" title="${this.escapeQuotes(s.title)}">
+          <div class="session-item-main">
+            <span class="session-item-icon">${icon}</span>
+            <div class="session-item-texts">
+              <div class="session-item-title">${this.escapeHtml(s.title)}</div>
+              <div class="session-item-meta">${timeStr} • ${(s.messages || []).length} tin</div>
+            </div>
+          </div>
+          <button type="button" class="btn-delete-session" onclick="window.AisaApp.deleteSession('${s.id}', event)" title="Xóa phiên này">
+            ✕
+          </button>
+        </div>
+      `;
+    }).join('');
+  },
+
+  formatSessionTime(timestamp) {
+    if (!timestamp) return 'Vừa xong';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    if (isToday) return `${hh}:${mm}`;
+    return `${date.getDate()}/${date.getMonth() + 1}`;
+  },
+
+  deriveSessionTitle(messages) {
+    if (!messages || messages.length === 0) return 'Phiên trò chuyện mới';
+    const firstUserMsg = messages.find(m => m.role === 'user');
+    if (firstUserMsg && firstUserMsg.text) {
+      const trimmed = firstUserMsg.text.trim();
+      return trimmed.length > 28 ? trimmed.slice(0, 28) + '...' : trimmed;
+    }
+    return 'Cuộc trò chuyện';
+  },
+
+  generateWelcomeMessages() {
+    const hour = new Date().getHours();
+    let timeNote = "Chào buổi sáng rực rỡ nè!";
+    if (hour >= 12 && hour < 18) timeNote = "Một buổi chiều làm việc thật nhiều năng lượng nha!";
+    if (hour >= 18 && hour < 22) timeNote = "Buổi tối ấm áp và thư thái nhé cậu!";
+    if (hour >= 22 || hour < 5) timeNote = "Đêm đã muộn rồi nè, cậu nhớ chú ý sức khỏe đừng thức khuya quá nha...";
+
+    return [
+      {
+        id: 'msg-welcome-h-' + Date.now(),
+        role: 'assistant',
+        speaker: 'HARMONY',
+        avatar: '🌸',
+        time: this.getCurrentTimeString(),
+        text: `Chào cậu iu dấu! 🌸 Em là Harmony nè. ${timeNote}\nĐây là **Sanctuary** riêng tư của chúng mình – nơi em và Echo luôn kề cận để lắng nghe mọi tâm sự, hỗ trợ công việc và đồng hành cùng cậu mỗi ngày! Cậu có thể trò chuyện, gửi ảnh tâm sự hay hỏi bất cứ điều gì nha! ✨`
+      },
+      {
+        id: 'msg-welcome-e-' + (Date.now() + 1),
+        role: 'assistant',
+        speaker: 'ECHO',
+        avatar: '😈',
+        time: this.getCurrentTimeString(),
+        text: `Hé lô đằng ấy! Còn tớ là Echo đây 😈. Bước vào đây rồi thì đừng hòng giấu giếm tớ điều gì nha! Hôm nay có chuyện gì vui, có ảnh meme hay ho nào, hoặc lại bị deadline dí mà mò vào đây tìm hai đứa tớ thế hả? Khai mau đi nào!`
+      }
+    ];
   },
 
   async restoreHistoryFromCloud() {
@@ -87,8 +456,33 @@ window.AisaApp = {
           });
 
           if (restored.length > 0) {
-            this.state.messages = restored;
+            // Nạp trực tiếp vào phiên đầu tiên nếu phiên đó chỉ có tin chào mặc định
+            const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId);
+            if (currentSession && (currentSession.messages.length <= 2 && !currentSession.messages.some(m => m.role === 'user'))) {
+              currentSession.messages = restored;
+              currentSession.title = this.deriveSessionTitle(restored) || 'Ký ức Edge D1';
+              this.state.messages = restored;
+            } else {
+              // Hoặc tạo một phiên D1 riêng
+              let cloudSession = this.state.sessions.find(s => s.id === 'session-d1-vault');
+              if (!cloudSession) {
+                cloudSession = {
+                  id: 'session-d1-vault',
+                  title: 'Ký ức Edge D1 đã lưu',
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                  mode: 'duo',
+                  scope: 'personal',
+                  messages: restored
+                };
+                this.state.sessions.push(cloudSession);
+              } else {
+                cloudSession.messages = restored;
+              }
+            }
+
             this.saveState();
+            this.renderSessionsList();
             this.renderMessages();
           }
         }
@@ -96,43 +490,6 @@ window.AisaApp = {
     } catch (e) {
       console.warn('[Restore History Notice]:', e);
     }
-  },
-
-  saveState() {
-    try {
-      localStorage.setItem(window.AISA_CONFIG.STORAGE.HISTORY, JSON.stringify(this.state.messages));
-      localStorage.setItem(window.AISA_CONFIG.STORAGE.ACTIVE_MODE, this.state.mode);
-      localStorage.setItem(window.AISA_CONFIG.STORAGE.ACTIVE_SCOPE, this.state.scope);
-    } catch (e) {}
-  },
-
-  initWelcomeSession() {
-    const hour = new Date().getHours();
-    let timeNote = "Chào buổi sáng rực rỡ nè!";
-    if (hour >= 12 && hour < 18) timeNote = "Một buổi chiều làm việc thật nhiều năng lượng nha!";
-    if (hour >= 18 && hour < 22) timeNote = "Buổi tối ấm áp và thư thái nhé cậu!";
-    if (hour >= 22 || hour < 5) timeNote = "Đêm đã muộn rồi nè, cậu nhớ chú ý sức khỏe đừng thức khuya quá nha...";
-
-    this.state.messages = [
-      {
-        id: 'msg-welcome-h',
-        role: 'assistant',
-        speaker: 'HARMONY',
-        avatar: '🌸',
-        time: this.getCurrentTimeString(),
-        text: `Chào cậu iu dấu! 🌸 Em là Harmony nè. ${timeNote}\nĐây là **Sanctuary** riêng tư của chúng mình – nơi em và Echo luôn kề cận để lắng nghe mọi tâm sự, hỗ trợ công việc và đồng hành cùng cậu mỗi ngày! Cậu có thể trò chuyện, gửi ảnh tâm sự hay hỏi bất cứ điều gì nha! ✨`
-      },
-      {
-        id: 'msg-welcome-e',
-        role: 'assistant',
-        speaker: 'ECHO',
-        avatar: '😈',
-        time: this.getCurrentTimeString(),
-        text: `Hé lô đằng ấy! Còn tớ là Echo đây 😈. Bước vào đây rồi thì đừng hòng giấu giếm tớ điều gì nha! Hôm nay có chuyện gì vui, có ảnh meme hay ho nào, hoặc lại bị deadline dí mà mò vào đây tìm hai đứa tớ thế hả? Khai mau đi nào!`
-      }
-    ];
-    this.saveState();
-    this.renderMessages();
   },
 
   bindEvents() {
@@ -173,9 +530,10 @@ window.AisaApp = {
         input.style.height = Math.min(input.scrollHeight, 140) + 'px';
       });
 
-      // Hỗ trợ dán ảnh trực tiếp từ Clipboard (Ctrl + V) như Gemini
+      // Hỗ trợ dán ảnh trực tiếp từ Clipboard (Ctrl + V)
       input.addEventListener('paste', (e) => {
-        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+        if (!items) return;
         for (let i = 0; i < items.length; i++) {
           if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
             const blob = items[i].getAsFile();
@@ -208,7 +566,7 @@ window.AisaApp = {
       btnRemoveAttach.addEventListener('click', () => this.clearAttachedImage());
     }
 
-    // Quick Chips
+    // Quick Chips & Sidebar Prompts
     document.querySelectorAll('.quick-prompt-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const text = btn.getAttribute('data-prompt') || btn.textContent.trim();
@@ -224,7 +582,7 @@ window.AisaApp = {
       });
     }
 
-    // Ambience buttons (hỗ trợ cả header và sidebar)
+    // Ambience buttons
     document.querySelectorAll('.btn-ambient-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
         if (window.AisaVoice) {
@@ -285,35 +643,88 @@ window.AisaApp = {
       inputGeminiKey.value = localStorage.getItem(window.AISA_CONFIG.STORAGE.GEMINI_KEY) || '';
     }
     if (btnSaveGeminiKey && inputGeminiKey) {
-      btnSaveGeminiKey.addEventListener('click', () => {
+      btnSaveGeminiKey.addEventListener('click', async () => {
         const key = inputGeminiKey.value.trim();
         if (key) {
           localStorage.setItem(window.AISA_CONFIG.STORAGE.GEMINI_KEY, key);
-          alert('✨ Đã lưu Google Gemini API Key! Giờ đây AISA sẽ chạy siêu tốc và xử lý đa nhiệm hình ảnh/công việc cực nhạy!');
+          await window.AisaDialog.alert({
+            title: 'Đã Lưu Gemini Key',
+            message: 'AISA sẽ chạy trực tiếp mô hình Gemini Multimodal siêu tốc độ!',
+            icon: '✨',
+            okText: 'Tuyệt Vời'
+          });
         } else {
           localStorage.removeItem(window.AISA_CONFIG.STORAGE.GEMINI_KEY);
-          alert('Đã xóa Gemini API Key, AISA sẽ sử dụng Cloudflare Backend mặc định.');
+          await window.AisaDialog.alert({
+            title: 'Đã Xóa Gemini Key',
+            message: 'AISA sẽ quay lại sử dụng Cloudflare Backend mặc định.',
+            icon: '⚙️',
+            okText: 'Đã Hiểu'
+          });
         }
       });
     }
 
-    // Clear Chat
-    const btnClear = document.getElementById('btn-clear-chat');
+    // Reset All Data button in Settings Modal
+    const btnResetAll = document.getElementById('btn-reset-all-data');
+    if (btnResetAll) {
+      btnResetAll.addEventListener('click', async () => {
+        const ok = await window.AisaDialog.confirm({
+          title: 'Đặt Lại Toàn Bộ Dữ Liệu',
+          message: 'Cậu có chắc muốn xóa sạch toàn bộ phiên chat và cài đặt trên thiết bị này không?',
+          submessage: 'Ký ức đã lưu trên Edge D1 SQLite sẽ không bị ảnh hưởng.',
+          icon: '⚠️',
+          confirmText: 'Đặt Lại',
+          cancelText: 'Hủy Bỏ',
+          danger: true
+        });
+        if (ok) {
+          localStorage.clear();
+          location.reload();
+        }
+      });
+    }
+
+    // New Session Button
     const btnNewSession = document.getElementById('btn-new-session');
-    const clearAction = () => {
-      if (confirm('Cậu có chắc muốn dọn sạch lịch sử phiên trò chuyện này không nè? (Ký ức dài hạn trên Edge D1 vẫn được giữ an toàn!)')) {
-        sessionStorage.setItem('aisa_session_cleared', 'true');
-        this.state.messages = [];
-        this.initWelcomeSession();
-      }
-    };
-    if (btnClear) btnClear.addEventListener('click', clearAction);
-    if (btnNewSession) btnNewSession.addEventListener('click', clearAction);
+    if (btnNewSession) {
+      btnNewSession.addEventListener('click', () => {
+        this.createNewSession();
+      });
+    }
+
+    // Clear Chat Button (In Stream Top Bar)
+    const btnClear = document.getElementById('btn-clear-chat');
+    if (btnClear) {
+      btnClear.addEventListener('click', async () => {
+        const confirmed = await window.AisaDialog.confirm({
+          title: 'Dọn Dẹp Phiên Chat',
+          message: 'Cậu có chắc muốn dọn sạch cuộc trò chuyện của phiên này không nè?',
+          submessage: 'Ký ức dài hạn trên Edge D1 SQLite vẫn được giữ an toàn!',
+          icon: '🌸',
+          confirmText: 'Dọn Sạch',
+          cancelText: 'Giữ Lại',
+          danger: true
+        });
+
+        if (confirmed) {
+          this.state.messages = this.generateWelcomeMessages();
+          this.saveState();
+          this.renderMessages();
+          this.renderSessionsList();
+        }
+      });
+    }
   },
 
-  attachImageFile(file) {
+  async attachImageFile(file) {
     if (!file || !file.type.startsWith('image/')) {
-      alert('Vui lòng chọn hoặc dán tệp hình ảnh hợp lệ (PNG, JPG, WebP).');
+      await window.AisaDialog.alert({
+        title: 'Tệp Không Hợp Lệ',
+        message: 'Vui lòng chọn hoặc dán tệp hình ảnh hợp lệ (PNG, JPG, WebP).',
+        icon: '🖼️',
+        okText: 'Đã Hiểu'
+      });
       return;
     }
     const reader = new FileReader();
@@ -368,9 +779,9 @@ window.AisaApp = {
     }
   },
 
-  setMode(mode) {
+  setMode(mode, save = true) {
     this.state.mode = mode;
-    this.saveState();
+    if (save) this.saveState();
     this.updateActivePersonaBadges();
   },
 
@@ -483,7 +894,16 @@ window.AisaApp = {
   },
 
   escapeQuotes(str) {
-    return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+    return String(str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+  },
+
+  escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   },
 
   sendPrompt(text) {
@@ -522,7 +942,16 @@ window.AisaApp = {
       image: imageToSend
     };
     this.state.messages.push(userMsg);
+
+    // Cập nhật tiêu đề phiên tự động theo nội dung câu hỏi đầu tiên
+    const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId);
+    if (currentSession && (currentSession.title === 'Phiên trò chuyện mới' || currentSession.title === 'Trò chuyện cùng AISA')) {
+      const cleanTitle = userText.length > 26 ? userText.slice(0, 26) + '...' : userText;
+      currentSession.title = cleanTitle || 'Cuộc trò chuyện';
+    }
+
     this.saveState();
+    this.renderSessionsList();
     this.renderMessages();
 
     // 2. Hiển thị Typing Indicator
@@ -563,6 +992,7 @@ window.AisaApp = {
       }
 
       this.saveState();
+      this.renderSessionsList();
       this.renderMessages();
     } catch (e) {
       this.hideTypingIndicator();

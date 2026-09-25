@@ -92,6 +92,15 @@
         <span>✨</span> <span>Phiên Trò Chuyện Mới</span>
       </button>
 
+      <!-- Sessions History Section (Multi-Chat Hub) -->
+      <div class="sidebar-section-title sessions-header">
+        <span>💬</span> <span>Lịch Sử Phiên Chat</span>
+        <span class="sessions-count-badge" id="sessions-count-badge">0</span>
+      </div>
+      <div class="sidebar-sessions-list" id="sidebar-sessions-list">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+
       <!-- Mode Selector (Song Hành / Harmony / Echo) -->
       <div class="mode-selector-widget">
         <div class="mode-buttons-group">
@@ -381,10 +390,38 @@
         </div>
 
         <div style="text-align: right; margin-top: 20px;">
-          <button type="button" class="btn-stream-tool" onclick="localStorage.clear(); alert('Đã dọn sạch bộ nhớ đệm cục bộ!'); location.reload();" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+          <button type="button" class="btn-stream-tool" id="btn-reset-all-data" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
             ⚠️ Đặt lại toàn bộ dữ liệu máy khách
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: MHENT UNIVERSE LUXURY CONFIRM & ALERT DIALOG
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-custom-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title-text">
+    <div class="modal-dialog modal-dialog-confirm">
+      <div class="modal-header dialog-header">
+        <div class="modal-title" id="dialog-header-title">
+          <span id="dialog-icon-badge">🌸</span>
+          <span id="dialog-title-text">Xác Nhận</span>
+        </div>
+        <button type="button" class="btn-modal-close" id="btn-dialog-close-x" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body dialog-body">
+        <div class="dialog-icon-circle" id="dialog-icon-circle">🌸</div>
+        <h3 class="dialog-prompt-heading" id="dialog-prompt-heading">Cậu có chắc chắn không nè?</h3>
+        <p class="dialog-prompt-sub" id="dialog-prompt-sub"></p>
+      </div>
+      <div class="dialog-actions-row">
+        <button type="button" class="btn-dialog-action btn-dialog-cancel" id="btn-dialog-cancel">
+          Hủy Bỏ
+        </button>
+        <button type="button" class="btn-dialog-action btn-dialog-confirm" id="btn-dialog-confirm">
+          Xác Nhận
+        </button>
       </div>
     </div>
   </div>

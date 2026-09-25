@@ -28,6 +28,8 @@ window.AISA_CONFIG = {
   // Storage Keys
   STORAGE: {
     HISTORY: "aisa_companion_history_v2",
+    SESSIONS: "aisa_companion_sessions_v2",
+    ACTIVE_SESSION: "aisa_active_session_id_v2",
     SETTINGS: "aisa_companion_settings",
     ACTIVE_SCOPE: "aisa_active_scope",
     ACTIVE_MODE: "aisa_active_mode",
