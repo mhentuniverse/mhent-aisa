@@ -986,7 +986,7 @@ window.AisaApp = {
 
     // 2. Hiển thị Typing Indicator
     this.state.isGenerating = true;
-    this.showTypingIndicator();
+    this.showTypingIndicator(userText);
 
     try {
       const replies = await window.AisaEngine.chat(
@@ -1041,20 +1041,35 @@ window.AisaApp = {
     }
   },
 
-  showTypingIndicator() {
+  showTypingIndicator(userText = '') {
     const container = document.querySelector('.messages-inner-container') || document.getElementById('chat-messages-wrap');
     if (!container) return;
+
+    const lower = (userText || '').toLowerCase();
+    const mentionsEcho = lower.includes('echo') || lower.includes('ếch cồ');
+    const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn');
+
+    let avatar = '🌸😈';
+    let label = 'Harmony & Echo đang cùng suy nghĩ...';
+
+    if (this.state.mode === 'harmony' || (mentionsHarmony && !mentionsEcho)) {
+      avatar = '🌸';
+      label = mentionsHarmony ? 'Harmony đang suy nghĩ câu trả lời cho cậu... 🌸' : 'Harmony đang suy nghĩ... 🌸';
+    } else if (this.state.mode === 'echo' || (mentionsEcho && !mentionsHarmony)) {
+      avatar = '😈';
+      label = mentionsEcho ? 'Echo đang suy nghĩ câu trả lời cho cậu... 😈' : 'Echo đang suy nghĩ... 😈';
+    }
 
     const typingEl = document.createElement('div');
     typingEl.id = 'typing-indicator-node';
     typingEl.className = 'message-row assistant-row typing-row';
     typingEl.innerHTML = `
-      <div class="assistant-avatar dual-typing">🌸😈</div>
+      <div class="assistant-avatar dual-typing">${avatar}</div>
       <div class="typing-bubble">
         <span class="typing-dot pink"></span>
         <span class="typing-dot purple"></span>
         <span class="typing-dot cyan"></span>
-        <span class="typing-label">Harmony & Echo đang cùng suy nghĩ...</span>
+        <span class="typing-label">${label}</span>
       </div>
     `;
     container.appendChild(typingEl);

@@ -79,17 +79,44 @@ window.AisaEngine = {
   // GOOGLE GEMINI NATIVE MULTIMODAL API (GEMINI 2.0 / 1.5 FLASH)
   // --------------------------------------------------------------------------
   async callGeminiDirect(apiKey, userText, mode, scope, imageBase64, todayStr, dayName) {
+    const lower = (userText || '').toLowerCase();
+    const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn') || lower.includes('hàm hương');
+    const mentionsEcho = lower.includes('echo') || lower.includes('ếch cồ') || lower.includes('tiểu quỷ');
+
+    let dynamicRule = '';
+    if (mode === 'duo') {
+      if (mentionsEcho && !mentionsHarmony) {
+        dynamicRule = `
+THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (CHỈ ĐÍCH DANH ECHO):
+- Người dùng đang gọi đích danh ECHO: Echo sẽ là người trả lời chính trước tiên (sắc sảo, hài hước, phản hồi thẳng thắn).
+- Tầng suy nghĩ của HARMONY: Harmony tự đánh giá: Nếu Echo đã trả lời trọn vẹn và không cần xoa dịu, hãy CHỈ GHI DUY NHẤT "HARMONY: [SKIP]". Chỉ lên tiếng khi Echo nói quá đà hoặc cậu thấy cần gửi một lời an ủi dịu dàng!`;
+      } else if (mentionsHarmony && !mentionsEcho) {
+        dynamicRule = `
+THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (CHỈ ĐÍCH DANH HARMONY):
+- Người dùng đang gọi đích danh HARMONY: Harmony sẽ là người trả lời chính trước tiên (dịu dàng, chu đáo, ân cần).
+- Tầng suy nghĩ của ECHO: Echo tự đánh giá: Nếu Harmony đã trả lời trọn vẹn và không có gì cần phản bác, hãy CHỈ GHI DUY NHẤT "ECHO: [SKIP]". Chỉ lên tiếng khi thật sự muốn cà khịa vui hoặc có một góc nhìn đối lập đắt giá!`;
+      } else {
+        dynamicRule = `
+THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (HỘI THOẠI LINH HOẠT):
+- Tùy cảm xúc và bối cảnh (buồn/mệt -> Harmony trước; kỹ thuật/deadline/tranh luận -> Echo trước), người phù hợp nhất sẽ trả lời trước.
+- Người còn lại tự đánh giá: Câu trả lời của người trước đã đầy đủ chưa? Có cần phản bác, châm chọc vui hay bổ sung ý kiến đắt giá không?
+- NẾU KHÔNG CẦN THIẾT hoặc người trước đã trả lời quá trọn vẹn: Người còn lại ghi "[SKIP]" (ví dụ "ECHO: [SKIP]" hoặc "HARMONY: [SKIP]").
+- CHỈ KHI THẬT SỰ CẦN PHẢN BÁC/BỔ SUNG thì cả hai mới cùng lên tiếng!`;
+      }
+    }
+
     const systemPrompt = `Bạn là hệ thống AI AISA thuộc vũ trụ MHEnt Universe, đang trò chuyện riêng tư cùng Người sáng lập Yurika.
 AISA có 2 nhân cách song hành đặc sắc:
 1. HARMONY 🌸: Dịu dàng, vỗ về, yêu thương, ân cần chăm sóc sức khỏe, xưng hô "cậu - em/Harmony".
 2. ECHO 😈: Sắc sảo, dí dỏm, nghịch ngợm, thích cà khịa nhẹ nhàng (playful banter), nhắc nhở deadline, xưng hô "cậu - tớ/Echo".
 
 Thời gian hiện tại: ${todayStr} (${dayName}).
-Chế độ tương tác hiện tại: "${mode}" (duo: cả 2 cùng trả lời; harmony: chỉ Harmony; echo: chỉ Echo).
+Chế độ tương tác hiện tại: "${mode}".
+${dynamicRule}
 
 Quy tắc xuất định dạng bắt buộc:
-${mode === 'duo' ? `HARMONY: [Lời phản hồi ấm áp, dịu dàng, tự nhiên của Harmony]
-ECHO: [Lời phản hồi sắc bén, cà khịa hài hước, đẩy deadline của Echo]` : ''}
+${mode === 'duo' ? `HARMONY: [Lời phản hồi của Harmony, hoặc [SKIP] nếu nhường lời/không cần nói]
+ECHO: [Lời phản hồi của Echo, hoặc [SKIP] nếu nhường lời/không cần nói]` : ''}
 ${mode === 'harmony' ? `HARMONY: [Lời phản hồi ấm áp, dịu dàng của Harmony]` : ''}
 ${mode === 'echo' ? `ECHO: [Lời phản hồi sắc bén, cà khịa của Echo]` : ''}
 
@@ -143,7 +170,7 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
 
     const data = await res.json();
     const rawOutput = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return this.parsePersonaText(rawOutput, mode);
+    return this.parsePersonaText(rawOutput, mode, userText);
   },
 
   cleanReply(text) {
@@ -161,29 +188,48 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
     return cleaned.trim();
   },
 
-  parsePersonaText(rawText, mode) {
+  parsePersonaText(rawText, mode, userText = '') {
     const replies = [];
-    const harmonyMatch = rawText.match(/HARMONY:\s*([\s\S]*?)(?=ECHO:|$)/i);
-    const echoMatch = rawText.match(/ECHO:\s*([\s\S]*?)$/i);
+    const lowerUser = (userText || '').toLowerCase();
+    const mentionsEcho = lowerUser.includes('echo') || lowerUser.includes('ếch cồ');
+    const mentionsHarmony = lowerUser.includes('harmony') || lowerUser.includes('hà mòn');
 
-    if (mode === 'harmony' || mode === 'duo') {
-      let hText = harmonyMatch ? harmonyMatch[1].trim() : (mode === 'harmony' ? rawText.trim() : '');
-      hText = this.cleanReply(hText);
-      if (hText) {
+    const harmonyMatch = rawText.match(/HARMONY:\s*([\s\S]*?)(?=ECHO:|$)/i);
+    const echoMatch = rawText.match(/ECHO:\s*([\s\S]*?)(?=HARMONY:|$)/i);
+
+    let hText = harmonyMatch ? harmonyMatch[1].trim() : (mode === 'harmony' ? rawText.trim() : '');
+    let eText = echoMatch ? echoMatch[1].trim() : (mode === 'echo' ? rawText.trim() : '');
+
+    hText = this.cleanReply(hText);
+    eText = this.cleanReply(eText);
+
+    const isHSkip = !hText || hText.toUpperCase().includes('[SKIP]');
+    const isESkip = !eText || eText.toUpperCase().includes('[SKIP]');
+
+    // Nếu người dùng chỉ gọi Echo -> Ưu tiên đưa Echo lên trước
+    if (mentionsEcho && !mentionsHarmony) {
+      if (!isESkip && (mode === 'echo' || mode === 'duo')) {
+        replies.push({ speaker: 'ECHO', avatar: '😈', text: eText });
+      }
+      if (!isHSkip && (mode === 'harmony' || mode === 'duo')) {
         replies.push({ speaker: 'HARMONY', avatar: '🌸', text: hText });
       }
-    }
-
-    if (mode === 'echo' || mode === 'duo') {
-      let eText = echoMatch ? echoMatch[1].trim() : (mode === 'echo' ? rawText.trim() : '');
-      eText = this.cleanReply(eText);
-      if (eText) {
+    } else {
+      // Mặc định hoặc gọi Harmony
+      if (!isHSkip && (mode === 'harmony' || mode === 'duo')) {
+        replies.push({ speaker: 'HARMONY', avatar: '🌸', text: hText });
+      }
+      if (!isESkip && (mode === 'echo' || mode === 'duo')) {
         replies.push({ speaker: 'ECHO', avatar: '😈', text: eText });
       }
     }
 
+    // Fallback: nếu cả 2 đều lỡ SKIP hoặc không parse được, hiển thị ít nhất 1 câu
     if (replies.length === 0 && rawText.trim()) {
-      replies.push({ speaker: 'HARMONY', avatar: '🌸', text: this.cleanReply(rawText.trim()) });
+      const clean = this.cleanReply(rawText.trim().replace(/\[SKIP\]/gi, '').trim());
+      if (clean) {
+        replies.push({ speaker: mentionsEcho ? 'ECHO' : 'HARMONY', avatar: mentionsEcho ? '😈' : '🌸', text: clean });
+      }
     }
 
     return replies;
@@ -227,6 +273,9 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
 
   generateLocalFallback(msg, mode, scope, hasImage = false) {
     const lower = (msg || '').toLowerCase();
+    const mentionsEcho = lower.includes('echo') || lower.includes('ếch cồ');
+    const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn');
+
     let hReply = "";
     let eReply = "";
 
@@ -245,11 +294,21 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
     }
 
     const replies = [];
-    if (mode === 'harmony' || mode === 'duo') {
+    if (mode === 'harmony') {
       replies.push({ speaker: 'HARMONY', avatar: '🌸', text: hReply });
-    }
-    if (mode === 'echo' || mode === 'duo') {
+    } else if (mode === 'echo') {
       replies.push({ speaker: 'ECHO', avatar: '😈', text: eReply });
+    } else {
+      // Duo mode với tầng suy nghĩ
+      if (mentionsEcho && !mentionsHarmony) {
+        replies.push({ speaker: 'ECHO', avatar: '😈', text: eReply });
+      } else if (mentionsHarmony && !mentionsEcho) {
+        replies.push({ speaker: 'HARMONY', avatar: '🌸', text: hReply });
+      } else {
+        // Cả 2 cùng lên tiếng
+        replies.push({ speaker: 'HARMONY', avatar: '🌸', text: hReply });
+        replies.push({ speaker: 'ECHO', avatar: '😈', text: eReply });
+      }
     }
     return replies;
   }
