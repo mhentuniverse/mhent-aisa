@@ -1083,6 +1083,30 @@ window.AisaApp = {
     if (el && el.parentNode) {
       el.parentNode.removeChild(el);
     }
+  },
+
+  showToast(message, icon = '🧠') {
+    let container = document.querySelector('.aisa-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'aisa-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'aisa-toast';
+    toast.innerHTML = `
+      <span class="toast-icon">${icon}</span>
+      <span class="toast-text">${message}</span>
+    `;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('hide');
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 400);
+    }, 4500);
   }
 };
 

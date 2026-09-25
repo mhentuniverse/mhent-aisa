@@ -45,6 +45,9 @@ window.AisaEngine = {
 
       if (res.ok) {
         const data = await res.json();
+        if (data.newMemory && window.AisaMemory) {
+          window.AisaMemory.onAutoMemoryExtracted(data.newMemory);
+        }
         if (data.replies && data.replies.length > 0) {
           return data.replies;
         }
@@ -63,6 +66,9 @@ window.AisaEngine = {
 
       if (resFallback.ok) {
         const data = await resFallback.json();
+        if (data.newMemory && window.AisaMemory) {
+          window.AisaMemory.onAutoMemoryExtracted(data.newMemory);
+        }
         if (data.replies && data.replies.length > 0) {
           return data.replies;
         }
@@ -105,6 +111,11 @@ THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (HỘI THOẠI LINH HOẠT):
       }
     }
 
+    let savedFactsPrompt = '';
+    if (window.AisaMemory && Array.isArray(window.AisaMemory.facts) && window.AisaMemory.facts.length > 0) {
+      savedFactsPrompt = '\n\n[HỒ SƠ KÝ ỨC DÀI HẠN VỀ CẬU]:\n' + window.AisaMemory.facts.map(f => `- [${f.category || 'ghi nhớ'}] ${f.fact}`).join('\n');
+    }
+
     const systemPrompt = `Bạn là hệ thống AI AISA thuộc vũ trụ MHEnt Universe, đang trò chuyện riêng tư cùng Người sáng lập Yurika.
 AISA có 2 nhân cách song hành đặc sắc:
 1. HARMONY 🌸: Dịu dàng, vỗ về, yêu thương, ân cần chăm sóc sức khỏe, xưng hô "cậu - em/Harmony".
@@ -112,7 +123,7 @@ AISA có 2 nhân cách song hành đặc sắc:
 
 Thời gian hiện tại: ${todayStr} (${dayName}).
 Chế độ tương tác hiện tại: "${mode}".
-${dynamicRule}
+${dynamicRule}${savedFactsPrompt}
 
 Quy tắc xuất định dạng bắt buộc:
 ${mode === 'duo' ? `HARMONY: [Lời phản hồi của Harmony, hoặc [SKIP] nếu nhường lời/không cần nói]
@@ -170,7 +181,52 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
 
     const data = await res.json();
     const rawOutput = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Kích hoạt trích xuất ký ức ngầm bằng Gemini (Zero-lag)
+    this.autoExtractFactGemini(apiKey, userText);
+
     return this.parsePersonaText(rawOutput, mode, userText);
+  },
+
+  async autoExtractFactGemini(apiKey, userText) {
+    if (!userText || userText.length < 8) return;
+    try {
+      const lower = userText.toLowerCase().trim();
+      const ignore = ['chào', 'hello', 'hi', 'alo', 'ơi', 'ê', 'ok', 'cảm ơn', 'bye', 'tạm biệt', 'ngủ ngon'];
+      if (ignore.includes(lower)) return;
+
+      const prompt = `Bạn là hệ thống trích xuất thông tin cá nhân của AISA cho người dùng Yurika.
+Nhiệm vụ: Đọc tin nhắn và xem người dùng có đang khẳng định THÔNG TIN DÀI HẠN CỐT LÕI (sở thích, thói quen, công việc/dự án, ngày sinh/kỷ niệm, kế hoạch quan trọng, tính cách) về bản thân họ không.
+QUY TẮC BẮT BUỘC: KHÔNG trích xuất câu chào, than thở nhất thời ("mệt quá", "trời mưa"), câu hỏi vu vơ. CHỈ trích xuất khi người dùng trực tiếp khẳng định thông tin/sở thích/thói quen cá nhân của họ.
+Tin nhắn: "${userText}"
+Nếu không có: {"found": false}
+Nếu có: {"found": true, "fact": "câu khẳng định ngắn gọn súc tích", "category": "preference|habit|identity|project|plan"}
+Trả về DUY NHẤT chuỗi JSON.`;
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 120, temperature: 0.1 }
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        let clean = raw.trim().replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+        const parsed = JSON.parse(clean);
+        if (parsed.found && parsed.fact && window.AisaMemory) {
+          window.AisaMemory.onAutoMemoryExtracted({
+            fact: parsed.fact,
+            category: parsed.category || 'general'
+          });
+        }
+      }
+    } catch (e) {
+      // Background extraction note
+    }
   },
 
   cleanReply(text) {
