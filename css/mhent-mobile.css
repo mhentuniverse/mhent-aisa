@@ -257,38 +257,105 @@
 
   .chat-stream-header {
     padding: 6px 12px !important;
-    font-size: 11.5px !important;
+    font-size: 11px !important;
     flex-shrink: 0 !important;
+  }
+
+  .stream-scope-badge {
+    font-size: 11px !important;
+    gap: 6px !important;
+  }
+
+  .btn-stream-tool {
+    font-size: 10px !important;
+    padding: 3px 6px !important;
   }
 
   .chat-messages-wrap {
     flex: 1 !important;
     padding: 10px 8px 8px 8px !important;
-    gap: 10px !important;
+    gap: 8px !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 
+  .message-row,
   .chat-message-row {
     max-width: 100% !important;
     gap: 6px !important;
+    margin-bottom: 8px !important;
   }
 
   .user-row {
-    max-width: 90% !important;
+    max-width: 88% !important;
+  }
+
+  .assistant-row {
+    max-width: 95% !important;
   }
 
   .assistant-avatar {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 1rem !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.9rem !important;
   }
 
   .message-bubble {
-    padding: 9px 12px !important;
-    font-size: 13.5px !important;
-    border-radius: 16px !important;
-    line-height: 1.5 !important;
+    padding: 8px 11px !important;
+    border-radius: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  .message-bubble,
+  .bubble-text,
+  .bubble-text p,
+  .bubble-text div,
+  .chat-bullet-text {
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+  }
+
+  .bubble-meta {
+    font-size: 10.5px !important;
+    margin-bottom: 3px !important;
+    gap: 6px !important;
+  }
+
+  .sender-name {
+    font-size: 11px !important;
+  }
+
+  .message-time {
+    font-size: 9.5px !important;
+  }
+
+  .btn-bubble-action {
+    font-size: 9.5px !important;
+    padding: 2px 4px !important;
+  }
+
+  .chat-inline-code {
+    font-size: 11px !important;
+    padding: 1px 4px !important;
+  }
+
+  .chat-code-block {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .chat-code-header {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .typing-bubble {
+    padding: 6px 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .typing-text {
+    font-size: 11px !important;
   }
 
   /* Khung Input Station sát Bottom Nav */
@@ -318,8 +385,8 @@
   .quick-prompt-btn {
     white-space: nowrap !important;
     flex-shrink: 0 !important;
-    padding: 4px 8px !important;
-    font-size: 11px !important;
+    padding: 3px 8px !important;
+    font-size: 10.5px !important;
     border-radius: 99px !important;
     scroll-snap-align: start;
   }
@@ -331,7 +398,7 @@
   }
 
   .chat-input-textarea {
-    font-size: 13px !important;
+    font-size: 12.5px !important;
     padding: 4px 2px !important;
     min-height: 34px !important;
     max-height: 100px !important;
@@ -378,12 +445,21 @@
     padding: 24px 18px !important;
   }
 
+  .gatekeeper-title {
+    font-size: 1.15rem !important;
+  }
+
+  .gatekeeper-subtitle {
+    font-size: 11.5px !important;
+  }
+
   .gate-input-wrapper {
     min-height: 44px !important;
   }
 
   .btn-gate-submit, .btn-gate-google {
     min-height: 44px !important;
+    font-size: 12.5px !important;
   }
 }
 
@@ -416,16 +492,16 @@
   background: rgba(14, 20, 32, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 22px;
-  padding: 22px 18px;
+  padding: 20px 16px;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   animation: appPageSlideUp 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .scope-picker-title {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 800;
   color: var(--text-high);
   text-align: center;
@@ -435,14 +511,14 @@
 .scope-picker-option {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-high);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 700;
   transition: all 0.2s ease;
 }
