@@ -21,7 +21,7 @@
   .sanctuary-stage {
     display: flex !important;
     flex-direction: column !important;
-    height: calc(100dvh - 52px) !important;
+    height: calc(100dvh - 54px) !important;
     position: relative !important;
     overflow: hidden !important;
   }
@@ -47,7 +47,7 @@
     left: 0;
     right: 0;
     width: 100%;
-    height: 60px;
+    height: 54px;
     background: rgba(8, 12, 20, 0.94) !important;
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -250,28 +250,28 @@
     height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    padding-bottom: 60px !important; /* Chừa chỗ cho Bottom Nav */
+    padding-bottom: 54px !important; /* Chừa đúng 54px cho Bottom Nav */
     box-sizing: border-box !important;
     overflow: hidden !important;
   }
 
   .chat-stream-header {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
     flex-shrink: 0 !important;
   }
 
   .chat-messages-wrap {
     flex: 1 !important;
-    padding: 12px 10px 10px 10px !important;
-    gap: 12px !important;
+    padding: 10px 8px 8px 8px !important;
+    gap: 10px !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 
   .chat-message-row {
     max-width: 100% !important;
-    gap: 8px !important;
+    gap: 6px !important;
   }
 
   .user-row {
@@ -279,22 +279,22 @@
   }
 
   .assistant-avatar {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 1.1rem !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 1rem !important;
   }
 
   .message-bubble {
-    padding: 11px 14px !important;
-    font-size: 14px !important;
-    border-radius: 18px !important;
-    line-height: 1.55 !important;
+    padding: 9px 12px !important;
+    font-size: 13.5px !important;
+    border-radius: 16px !important;
+    line-height: 1.5 !important;
   }
 
   /* Khung Input Station sát Bottom Nav */
   .chat-input-station {
-    padding: 6px 8px 8px 8px !important;
-    background: rgba(5, 7, 11, 0.95) !important;
+    padding: 4px 6px 6px 6px !important;
+    background: rgba(5, 7, 11, 0.96) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -305,8 +305,8 @@
     display: flex !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    gap: 6px !important;
-    padding-bottom: 6px !important;
+    gap: 5px !important;
+    padding-bottom: 4px !important;
     scroll-snap-type: x mandatory !important;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
@@ -318,36 +318,36 @@
   .quick-prompt-btn {
     white-space: nowrap !important;
     flex-shrink: 0 !important;
-    padding: 5px 10px !important;
-    font-size: 11.5px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
     border-radius: 99px !important;
     scroll-snap-align: start;
   }
 
   .input-box-wrapper {
-    padding: 4px 8px !important;
-    border-radius: 18px !important;
-    gap: 6px !important;
+    padding: 3px 6px !important;
+    border-radius: 16px !important;
+    gap: 4px !important;
   }
 
   .chat-input-textarea {
-    font-size: 14px !important;
-    padding: 6px 2px !important;
-    min-height: 36px !important;
-    max-height: 110px !important;
+    font-size: 13px !important;
+    padding: 4px 2px !important;
+    min-height: 34px !important;
+    max-height: 100px !important;
   }
 
   .btn-tool-icon {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 1rem !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.95rem !important;
   }
 
   .btn-send-message {
-    height: 32px !important;
-    padding: 0 12px !important;
-    font-size: 12px !important;
-    gap: 4px !important;
+    height: 30px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+    gap: 3px !important;
   }
 }
 
@@ -358,16 +358,16 @@
   .modal-overlay, .gatekeeper-overlay {
     align-items: center !important;
     justify-content: center !important;
-    padding: 16px !important;
+    padding: 14px !important;
     box-sizing: border-box !important;
   }
 
   .modal-card, .gatekeeper-card {
-    width: calc(100vw - 32px) !important;
-    max-width: 440px !important;
+    width: calc(100vw - 24px) !important;
+    max-width: 380px !important;
     margin: auto !important;
-    border-radius: 22px !important;
-    padding: 22px 18px !important;
+    border-radius: 18px !important;
+    padding: 18px 14px !important;
     max-height: 85vh !important;
     overflow-y: auto !important;
     box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6) !important;
