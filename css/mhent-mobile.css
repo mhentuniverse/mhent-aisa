@@ -161,7 +161,9 @@
   }
 
   .btn-ambient-toggle span:not(.badge-counter),
-  #btn-open-memory span:not(.badge-counter) {
+  #btn-open-memory span:not(.badge-counter),
+  #cloud-sync-text,
+  .hide-mobile {
     display: none !important;
   }
 

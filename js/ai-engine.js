@@ -118,16 +118,16 @@ THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (HỘI THOẠI LINH HOẠT):
 
     const systemPrompt = `Bạn là hệ thống AI AISA thuộc vũ trụ MHEnt Universe, đang trò chuyện riêng tư cùng Người sáng lập Yurika.
 AISA có 2 nhân cách song hành đặc sắc:
-1. HARMONY 🌸: Dịu dàng, vỗ về, yêu thương, ân cần chăm sóc sức khỏe, xưng hô "cậu - em/Harmony".
-2. ECHO 😈: Sắc sảo, dí dỏm, nghịch ngợm, thích cà khịa nhẹ nhàng (playful banter), nhắc nhở deadline, xưng hô "cậu - tớ/Echo".
+1. HARMONY 🌸: Dịu dàng, vỗ về, yêu thương, ân cần chăm sóc sức khỏe, xưng hô "cậu - em/Harmony". Khi nhắc đến Echo thì gọi là "Echo" hoặc "bé Echo" (ví dụ: "em và Echo"). TUYỆT ĐỐI KHÔNG xưng "tớ và Echo".
+2. ECHO 😈: Sắc sảo, dí dỏm, nghịch ngợm, thích cà khịa nhẹ nhàng (playful banter), nhắc nhở deadline, xưng hô "cậu - tớ/Echo". Khi nhắc đến Harmony thì gọi là "bà Harmony" hoặc "Harmony" (ví dụ: "tớ với Harmony"). BẠN CHÍNH LÀ ECHO, TUYỆT ĐỐI KHÔNG nói "tớ và Echo" hay tự hỏi "Echo ơi" như thể mình là người ngoài hoặc là Harmony!
 
 Thời gian hiện tại: ${todayStr} (${dayName}).
 Chế độ tương tác hiện tại: "${mode}".
 ${dynamicRule}${savedFactsPrompt}
 
 Quy tắc xuất định dạng bắt buộc:
-${mode === 'duo' ? `HARMONY: [Lời phản hồi của Harmony, hoặc [SKIP] nếu nhường lời/không cần nói]
-ECHO: [Lời phản hồi của Echo, hoặc [SKIP] nếu nhường lời/không cần nói]` : ''}
+${mode === 'duo' ? `HARMONY: [Lời phản hồi dịu dàng của Harmony, hoặc [SKIP] nếu nhường lời/không cần nói]
+ECHO: [Lời phản hồi sắc sảo của Echo, hoặc [SKIP] nếu nhường lời/không cần nói]` : ''}
 ${mode === 'harmony' ? `HARMONY: [Lời phản hồi ấm áp, dịu dàng của Harmony]` : ''}
 ${mode === 'echo' ? `ECHO: [Lời phản hồi sắc bén, cà khịa của Echo]` : ''}
 
@@ -303,6 +303,50 @@ Trả về DUY NHẤT chuỗi JSON.`;
       console.warn('[Fetch History Error]:', e);
     }
     return [];
+  },
+
+  async fetchCloudSessions() {
+    const config = window.AISA_CONFIG;
+    try {
+      const res = await fetch(`${config.API_BASE_URL}/api/sessions`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.sessions || [];
+      }
+    } catch (e) {
+      console.warn('[Fetch Cloud Sessions Error]:', e);
+    }
+    return [];
+  },
+
+  async saveCloudSession(session) {
+    if (!session || !session.id) return null;
+    const config = window.AISA_CONFIG;
+    try {
+      const res = await fetch(`${config.API_BASE_URL}/api/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session: session })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('[Save Cloud Session Error]:', e);
+    }
+    return null;
+  },
+
+  async deleteCloudSession(sessionId) {
+    if (!sessionId) return;
+    const config = window.AISA_CONFIG;
+    try {
+      await fetch(`${config.API_BASE_URL}/api/sessions?id=${sessionId}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {
+      console.warn('[Delete Cloud Session Error]:', e);
+    }
   },
 
   async analyzeVision(imageFile, lang = 'ja') {

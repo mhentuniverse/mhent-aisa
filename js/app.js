@@ -148,6 +148,13 @@ window.AisaApp = {
     pendingImageName: ''
   },
 
+  cloudSync: {
+    isSyncing: false,
+    lastSyncTime: 0,
+    syncTimer: null,
+    unsubscribeFirestore: null
+  },
+
   init() {
     this.loadState();
     this.bindEvents();
@@ -164,6 +171,9 @@ window.AisaApp = {
     if (window.AisaVoice) window.AisaVoice.init();
     if (window.AisaMemory) window.AisaMemory.init();
     if (window.AisaVision) window.AisaVision.init();
+
+    // Khởi tạo Bộ Điều Phối Đồng Bộ Đám Mây Đa Thiết Bị (Cloud Auto-Sync Engine)
+    this.initCloudSync();
 
     // Phục hồi lịch sử từ Cloudflare Edge D1 SQLite nếu máy chưa có
     if (this.state.sessions.length === 0 || (this.state.sessions.length === 1 && this.state.messages.length <= 2)) {
@@ -268,6 +278,9 @@ window.AisaApp = {
       localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
       localStorage.setItem(config.STORAGE.ACTIVE_MODE, this.state.mode);
       localStorage.setItem(config.STORAGE.ACTIVE_SCOPE, this.state.scope);
+
+      // Tự động đồng bộ lên Cloud (D1 & Firestore) trong nền
+      this.debounceSyncCloud();
     } catch (e) {}
   },
 
@@ -324,7 +337,7 @@ window.AisaApp = {
     const confirmed = await window.AisaDialog.confirm({
       title: 'Xóa Phiên Trò Chuyện',
       message: `Cậu có chắc muốn xóa phiên "${target.title}" không nè?`,
-      submessage: 'Toàn bộ nội dung của phiên này sẽ được dọn sạch khỏi thiết bị.',
+      submessage: 'Toàn bộ nội dung của phiên này sẽ được dọn sạch khỏi tất cả thiết bị đồng bộ.',
       icon: '🗑️',
       confirmText: 'Xóa Phiên',
       cancelText: 'Giữ Lại',
@@ -334,6 +347,14 @@ window.AisaApp = {
     if (!confirmed) return;
 
     this.state.sessions = this.state.sessions.filter(s => s.id !== sessionId);
+
+    // Xóa phiên trên Cloud D1 và Firestore
+    if (window.AisaEngine && window.AisaEngine.deleteCloudSession) {
+      window.AisaEngine.deleteCloudSession(sessionId);
+    }
+    if (window.AisaAuth && window.AisaAuth.db) {
+      window.AisaAuth.db.collection('aisa_sessions').doc(sessionId).delete().catch(() => {});
+    }
 
     if (this.state.sessions.length === 0) {
       this.createNewSession('Trò chuyện cùng AISA', true);
@@ -419,6 +440,10 @@ window.AisaApp = {
       window.AISA_CONFIG.USER.avatar = user.avatar || "👑";
     }
     this.updateGreeting();
+
+    // Khởi tạo Real-time Firestore sync & kéo dữ liệu Cloud đa thiết bị
+    this.initFirestoreRealtime();
+    this.syncFromCloud(true);
 
     // Nếu phiên hiện tại chỉ có 2 tin nhắn khởi tạo mẫu, cá nhân hóa lời chào cho Master
     if (this.state.messages.length === 2 && this.state.messages[0].id.startsWith('msg-welcome')) {
@@ -519,6 +544,261 @@ window.AisaApp = {
       }
     } catch (e) {
       console.warn('[Restore History Notice]:', e);
+    }
+  },
+
+  // ==========================================================================
+  // CLOUD AUTO-SYNC ENGINE (MULTI-DEVICE SEAMLESS REALTIME SYNC)
+  // Cơ chế đồng bộ Đám mây tự động đa thiết bị giống Gemini (gemini.google.com)
+  // ==========================================================================
+  initCloudSync() {
+    // 1. Đồng bộ khi chuyển đổi tab / cửa sổ (Tự động kéo chat vừa gửi từ điện thoại về máy tính)
+    window.addEventListener('focus', () => {
+      this.syncFromCloud(true);
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.syncFromCloud(true);
+      }
+    });
+
+    // 2. Chu kỳ kiểm tra ngầm định kỳ mỗi 25 giây khi tab đang mở
+    setInterval(() => {
+      if (document.visibilityState === 'visible' && !this.state.isGenerating) {
+        this.syncFromCloud(true);
+      }
+    }, 25000);
+
+    // 3. Kéo dữ liệu từ Cloud ngay khi khởi chạy (sau 600ms để UI render mượt mà trước)
+    setTimeout(() => {
+      this.syncFromCloud(true);
+    }, 600);
+  },
+
+  initFirestoreRealtime() {
+    if (!window.AisaAuth || !window.AisaAuth.db) return;
+    try {
+      if (this.cloudSync.unsubscribeFirestore) {
+        this.cloudSync.unsubscribeFirestore();
+      }
+      this.cloudSync.unsubscribeFirestore = window.AisaAuth.db.collection('aisa_sessions')
+        .onSnapshot((snapshot) => {
+          if (!snapshot || snapshot.empty) return;
+          const cloudSessions = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            cloudSessions.push({
+              id: doc.id,
+              ...data
+            });
+          });
+          this.mergeCloudSessions(cloudSessions, true);
+        }, (err) => {
+          console.warn('[Firestore Realtime Sync Notice]:', err.message);
+        });
+    } catch (e) {
+      console.warn('[Firestore Realtime Init Warning]:', e);
+    }
+  },
+
+  debounceSyncCloud() {
+    if (this.cloudSync.syncTimer) {
+      clearTimeout(this.cloudSync.syncTimer);
+    }
+    this.cloudSync.syncTimer = setTimeout(() => {
+      this.syncCurrentSessionToCloud();
+    }, 600);
+  },
+
+  async syncCurrentSessionToCloud(sessionToSync = null) {
+    const session = sessionToSync || this.state.sessions.find(s => s.id === this.state.currentSessionId);
+    if (!session || !session.id) return;
+
+    this.updateCloudSyncBadge('syncing');
+
+    // 1. Đồng bộ lên Cloudflare Edge D1 SQLite qua Worker API
+    try {
+      if (window.AisaEngine && window.AisaEngine.saveCloudSession) {
+        await window.AisaEngine.saveCloudSession(session);
+      }
+    } catch (e) {
+      console.warn('[Cloud D1 Sync Notice]:', e);
+    }
+
+    // 2. Đồng bộ lên Firebase Firestore Realtime (nếu có kết nối)
+    try {
+      if (window.AisaAuth && window.AisaAuth.db) {
+        await window.AisaAuth.db.collection('aisa_sessions').doc(session.id).set({
+          id: session.id,
+          title: session.title || 'Cuộc trò chuyện',
+          mode: session.mode || 'duo',
+          scope: session.scope || 'personal',
+          messages: session.messages || [],
+          createdAt: Number(session.createdAt) || Date.now(),
+          updatedAt: Number(session.updatedAt) || Date.now()
+        }, { merge: true });
+      }
+    } catch (fsErr) {
+      console.warn('[Firestore Sync Notice]:', fsErr);
+    }
+
+    this.cloudSync.lastSyncTime = Date.now();
+    this.updateCloudSyncBadge('synced');
+  },
+
+  async syncFromCloud(silent = false) {
+    if (this.cloudSync.isSyncing) return;
+    this.cloudSync.isSyncing = true;
+    this.updateCloudSyncBadge('syncing');
+
+    try {
+      let cloudSessions = [];
+
+      // 1. Thử lấy từ Cloudflare Edge D1 SQLite trước
+      if (window.AisaEngine && window.AisaEngine.fetchCloudSessions) {
+        const d1Sessions = await window.AisaEngine.fetchCloudSessions();
+        if (Array.isArray(d1Sessions) && d1Sessions.length > 0) {
+          cloudSessions = d1Sessions;
+        }
+      }
+
+      // 2. Lấy bổ sung từ Firebase Firestore
+      if (window.AisaAuth && window.AisaAuth.db) {
+        try {
+          const snapshot = await window.AisaAuth.db.collection('aisa_sessions')
+            .orderBy('updatedAt', 'desc')
+            .limit(30)
+            .get();
+          if (!snapshot.empty) {
+            const fsSessions = [];
+            snapshot.forEach(doc => fsSessions.push({ id: doc.id, ...doc.data() }));
+            fsSessions.forEach(fsSess => {
+              const existingIdx = cloudSessions.findIndex(s => s.id === fsSess.id);
+              if (existingIdx === -1) {
+                cloudSessions.push(fsSess);
+              } else if ((Number(fsSess.updatedAt) || 0) > (Number(cloudSessions[existingIdx].updatedAt) || 0)) {
+                cloudSessions[existingIdx] = fsSess;
+              }
+            });
+          }
+        } catch (fsErr) {
+          console.warn('[Firestore Sync Read Notice]:', fsErr);
+        }
+      }
+
+      if (cloudSessions.length > 0) {
+        this.mergeCloudSessions(cloudSessions);
+        if (!silent) {
+          this.showToast('Đã đồng bộ phiên chat mới nhất từ Cloud! ☁️', '✨');
+        }
+      }
+
+      this.cloudSync.lastSyncTime = Date.now();
+      this.updateCloudSyncBadge('synced');
+    } catch (err) {
+      console.warn('[Cloud Sync Error]:', err);
+      this.updateCloudSyncBadge('synced');
+    } finally {
+      this.cloudSync.isSyncing = false;
+    }
+  },
+
+  mergeCloudSessions(cloudSessions, fromRealtime = false) {
+    if (!Array.isArray(cloudSessions) || cloudSessions.length === 0) return;
+
+    let hasChanges = false;
+    let activeSessionUpdated = false;
+
+    cloudSessions.forEach(cloudSess => {
+      if (!cloudSess || !cloudSess.id) return;
+      const localIdx = this.state.sessions.findIndex(s => s.id === cloudSess.id);
+
+      if (localIdx === -1) {
+        // Phiên mới được tạo từ thiết bị khác (iPhone ➔ PC hoặc ngược lại)
+        this.state.sessions.push({
+          id: cloudSess.id,
+          title: cloudSess.title || 'Cuộc trò chuyện',
+          mode: cloudSess.mode || 'duo',
+          scope: cloudSess.scope || 'personal',
+          createdAt: Number(cloudSess.createdAt) || Date.now(),
+          updatedAt: Number(cloudSess.updatedAt) || Date.now(),
+          messages: cloudSess.messages || []
+        });
+        hasChanges = true;
+      } else {
+        // Đã có phiên cục bộ, so sánh thời gian cập nhật
+        const local = this.state.sessions[localIdx];
+        const cloudUpdated = Number(cloudSess.updatedAt) || 0;
+        const localUpdated = Number(local.updatedAt) || 0;
+
+        if (cloudUpdated > localUpdated) {
+          // Cloud có dữ liệu mới hơn (vừa nhắn tin trên thiết bị kia)
+          this.state.sessions[localIdx] = {
+            ...local,
+            title: cloudSess.title || local.title,
+            mode: cloudSess.mode || local.mode,
+            scope: cloudSess.scope || local.scope,
+            updatedAt: cloudUpdated,
+            messages: cloudSess.messages || local.messages
+          };
+          hasChanges = true;
+
+          if (this.state.currentSessionId === cloudSess.id) {
+            this.state.messages = cloudSess.messages || [];
+            activeSessionUpdated = true;
+          }
+        }
+      }
+    });
+
+    if (hasChanges) {
+      // Sắp xếp phiên chat mới nhất lên đầu
+      this.state.sessions.sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0));
+
+      // Tự động chuyển sang phiên có tin nhắn thực tế nếu phiên hiện tại chỉ có lời chào mặc định
+      const current = this.state.sessions.find(s => s.id === this.state.currentSessionId);
+      const isDefaultWelcome = !current || !current.messages || !current.messages.some(m => m.role === 'user');
+      if (isDefaultWelcome && this.state.sessions.length > 0) {
+        const bestSession = this.state.sessions.find(s => s.messages && s.messages.some(m => m.role === 'user')) || this.state.sessions[0];
+        if (bestSession && bestSession.id !== this.state.currentSessionId) {
+          this.state.currentSessionId = bestSession.id;
+          this.state.messages = bestSession.messages || [];
+          if (bestSession.mode) this.setMode(bestSession.mode, false);
+          activeSessionUpdated = true;
+        }
+      }
+
+      // Lưu lại vào localStorage
+      const config = window.AISA_CONFIG;
+      localStorage.setItem(config.STORAGE.SESSIONS, JSON.stringify(this.state.sessions));
+      localStorage.setItem(config.STORAGE.ACTIVE_SESSION, this.state.currentSessionId || '');
+      localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
+
+      this.renderSessionsList();
+      if (activeSessionUpdated) {
+        this.renderMessages();
+      }
+    }
+  },
+
+  updateCloudSyncBadge(status = 'synced') {
+    const icon = document.getElementById('cloud-sync-icon');
+    const text = document.getElementById('cloud-sync-text');
+    const btn = document.getElementById('btn-cloud-sync');
+    if (!icon) return;
+
+    if (status === 'syncing') {
+      icon.textContent = '🔄';
+      icon.classList.add('spinning');
+      if (text) text.textContent = 'Đang đồng bộ...';
+      if (btn) btn.title = 'Đang đồng bộ với đám mây...';
+    } else {
+      icon.textContent = '☁️';
+      icon.classList.remove('spinning');
+      const timeStr = this.cloudSync.lastSyncTime ? this.formatSessionTime(this.cloudSync.lastSyncTime) : 'Vừa xong';
+      if (text) text.textContent = 'Đồng bộ';
+      if (btn) btn.title = `Đã đồng bộ Cloud lúc ${timeStr} (Nhấp để làm mới)`;
     }
   },
 
@@ -802,6 +1082,22 @@ window.AisaApp = {
     if (btnNewSession) {
       btnNewSession.addEventListener('click', () => {
         this.createNewSession();
+      });
+    }
+
+    // Cloud Sync Buttons (Đồng bộ đám mây đa thiết bị)
+    const btnCloudSync = document.getElementById('btn-cloud-sync');
+    if (btnCloudSync) {
+      btnCloudSync.addEventListener('click', () => {
+        this.syncFromCloud(false);
+      });
+    }
+
+    const btnSidebarSync = document.getElementById('btn-sync-cloud');
+    if (btnSidebarSync) {
+      btnSidebarSync.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.syncFromCloud(false);
       });
     }
 

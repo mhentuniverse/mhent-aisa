@@ -444,6 +444,42 @@
   box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
 }
 
+/* Cloud Sync Elements */
+.spinning {
+  display: inline-block;
+  animation: spinCloud 1s linear infinite;
+}
+@keyframes spinCloud {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.btn-sync-cloud-icon {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-sync-cloud-icon:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+  transform: scale(1.1);
+}
+
+.sessions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* Wave visualizer */
 .ambient-visualizer {
   display: flex;
