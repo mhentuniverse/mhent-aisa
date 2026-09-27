@@ -56,7 +56,11 @@
       <!-- Gemini-style Model Selector Dropdown -->
       <div class="model-selector-container" id="model-selector-container">
         <button type="button" class="btn-model-selector" id="btn-model-selector" aria-haspopup="true" aria-expanded="false" title="Chọn mô hình AISA Multiverse">
-          <span class="model-sparkle">✨</span>
+          <span class="model-sparkle">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/>
+            </svg>
+          </span>
           <span class="model-name" id="current-model-name">AISA v1</span>
           <span class="model-arrow">▾</span>
         </button>
@@ -65,7 +69,7 @@
           <div class="model-option active" data-model="aisa-v1">
             <div class="model-opt-info">
               <div class="model-opt-title">🌸 AISA v1 <span class="model-badge">Mặc định</span></div>
-              <div class="model-opt-desc">Companion Song Hành • Harmony 🌸 & Echo 😈</div>
+              <div class="model-opt-desc">Companion Song Hành • Harmony & Echo</div>
             </div>
             <span class="model-check">✓</span>
           </div>
@@ -142,35 +146,61 @@
       <button type="button" class="scope-tab-btn" data-scope="portal">Portal</button>
     </nav>
 
-    <!-- Header Right Controls (Gemini clean action bar) -->
+    <!-- Header Right Controls (Gemini clean action bar with Vector Icons) -->
     <div class="header-actions">
       <!-- Ambient Synthesizer Button -->
       <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
-        <span class="ambient-icon">🎵</span>
+        <span class="ambient-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+        </span>
       </button>
 
       <!-- Memory Vault Trigger -->
       <button type="button" class="btn-header-action" id="btn-open-memory" title="Mở Ngân hàng Ký ức">
-        <span>🧠</span>
+        <span class="nav-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/>
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/>
+          </svg>
+        </span>
         <span class="badge-counter" id="memory-count-badge">3</span>
       </button>
 
       <!-- Cloud Sync Trigger (Đồng bộ đa thiết bị) -->
       <button type="button" class="btn-header-action" id="btn-cloud-sync" title="Đồng bộ Đám mây Đa Thiết Bị (Điện thoại ⇋ Máy tính)">
-        <span id="cloud-sync-icon">☁️</span>
+        <span id="cloud-sync-icon" class="sync-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            <path d="M12 13v6m-3-3 3 3 3-3"/>
+          </svg>
+        </span>
         <span id="cloud-sync-text" style="display: none;">Đồng bộ</span>
       </button>
 
       <!-- Settings Trigger -->
       <button type="button" class="btn-header-action" id="btn-open-settings" title="Cài đặt hệ thống & Cấu hình Gemini Key">
-        <span>⚙️</span>
+        <span class="nav-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </span>
       </button>
 
       <!-- Master Profile & Logout Action -->
       <div class="header-user-badge" id="header-user-badge" style="display: none;">
-        <div class="user-badge-inner" id="user-badge-inner" title="Master Sakura">
-          <span class="user-badge-avatar" id="header-user-avatar">🌸</span>
-          <span class="user-badge-name" id="header-user-name" style="display: none;">Sakura</span>
+        <div class="user-badge-inner" id="user-badge-inner" title="Master Profile">
+          <span class="user-badge-avatar" id="header-user-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <span class="user-badge-name" id="header-user-name" style="display: none;">User</span>
           <span class="user-badge-status-dot"></span>
         </div>
         <button type="button" class="btn-header-logout" id="btn-header-logout" title="Đăng xuất khỏi Sanctuary">
@@ -206,7 +236,12 @@
           <span>Gần đây</span>
           <span class="sessions-count-badge" id="sessions-count-badge">0</span>
         </div>
-        <button type="button" class="btn-sync-cloud-icon" id="btn-sync-cloud" title="Làm mới & Đồng bộ đám mây ngay">☁️</button>
+        <button type="button" class="btn-sync-cloud-icon" id="btn-sync-cloud" title="Làm mới & Đồng bộ đám mây ngay">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            <path d="M12 13v6m-3-3 3 3 3-3"/>
+          </svg>
+        </button>
       </div>
 
       <!-- Scrollable Recent Sessions (Expands naturally) -->
@@ -218,24 +253,45 @@
       <div class="sidebar-bottom-tools">
         <div class="sidebar-nav-links">
           <button type="button" class="sidebar-nav-btn" id="btn-sidebar-memory" onclick="document.getElementById('btn-open-memory')?.click()">
-            <span class="nav-icon">🧠</span>
+            <span class="nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/>
+              </svg>
+            </span>
             <span class="nav-label">Ngân hàng Ký ức</span>
           </button>
           <button type="button" class="sidebar-nav-btn btn-ambient-toggle" id="btn-sidebar-ambient">
-            <span class="nav-icon ambient-icon">🎵</span>
+            <span class="nav-icon ambient-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+              </svg>
+            </span>
             <span class="nav-label">Âm hưởng 432Hz</span>
             <div class="ambient-visualizer" id="ambient-visualizer">
               <span></span><span></span><span></span><span></span><span></span>
             </div>
           </button>
           <button type="button" class="sidebar-nav-btn" id="btn-sidebar-settings" onclick="document.getElementById('btn-open-settings')?.click()">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </span>
             <span class="nav-label">Cài đặt Sanctuary</span>
           </button>
         </div>
 
         <div class="sidebar-footer-badge">
-          <span>⚡ Cloudflare D1 • SQLite Edge</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Cloudflare D1 • SQLite Edge
+          </span>
         </div>
 
         <!-- Hidden elements preserved for 100% JS compatibility -->
@@ -546,15 +602,35 @@
     <div class="modal-dialog modal-dialog-confirm">
       <div class="modal-header dialog-header">
         <div class="modal-title" id="dialog-header-title">
-          <span id="dialog-icon-badge">🌸</span>
+          <span id="dialog-icon-badge" class="dialog-icon-svg-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/>
+            </svg>
+          </span>
           <span id="dialog-title-text">Xác Nhận</span>
         </div>
         <button type="button" class="btn-modal-close" id="btn-dialog-close-x" aria-label="Đóng">&times;</button>
       </div>
       <div class="modal-body dialog-body">
-        <div class="dialog-icon-circle" id="dialog-icon-circle">🌸</div>
+        <div class="dialog-icon-circle" id="dialog-icon-circle">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/>
+          </svg>
+        </div>
         <h3 class="dialog-prompt-heading" id="dialog-prompt-heading">Cậu có chắc chắn không nè?</h3>
         <p class="dialog-prompt-sub" id="dialog-prompt-sub"></p>
+        
+        <!-- Prompt Input Wrapper for custom prompt modal -->
+        <div class="dialog-input-container" id="dialog-input-container" style="display: none; width: 100%; margin-top: 14px;">
+          <input 
+            type="text" 
+            id="dialog-prompt-input" 
+            class="dialog-prompt-input" 
+            placeholder="Nhập tại đây..." 
+            autocomplete="off" 
+            spellcheck="false"
+          >
+        </div>
       </div>
       <div class="dialog-actions-row">
         <button type="button" class="btn-dialog-action btn-dialog-cancel" id="btn-dialog-cancel">

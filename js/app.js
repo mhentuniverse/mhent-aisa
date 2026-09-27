@@ -7,12 +7,22 @@
 // ============================================================================
 // 1. MHENT UNIVERSE LUXURY CUSTOM DIALOG & ALERT SYSTEM
 // ============================================================================
+// Helper to render icon (either SVG string or emoji)
+function setDialogIcon(el, icon) {
+  if (!el) return;
+  if (typeof icon === 'string' && icon.trim().startsWith('<')) {
+    el.innerHTML = icon;
+  } else {
+    el.textContent = icon;
+  }
+}
+
 window.AisaDialog = {
   confirm({
     title = "Xác Nhận",
     message = "Cậu có chắc chắn muốn thực hiện hành động này không?",
     submessage = "",
-    icon = "🌸",
+    icon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/><circle cx="12" cy="12" r="2.2" fill="#ffffff"/></svg>`,
     confirmText = "Xác Nhận",
     cancelText = "Hủy Bỏ",
     danger = false
@@ -29,18 +39,20 @@ window.AisaDialog = {
       const iconCircle = document.getElementById('dialog-icon-circle');
       const headEl = document.getElementById('dialog-prompt-heading');
       const subEl = document.getElementById('dialog-prompt-sub');
+      const inputContainer = document.getElementById('dialog-input-container');
       const btnConfirm = document.getElementById('btn-dialog-confirm');
       const btnCancel = document.getElementById('btn-dialog-cancel');
       const btnClose = document.getElementById('btn-dialog-close-x');
 
       if (titleEl) titleEl.textContent = title;
-      if (iconBadge) iconBadge.textContent = icon;
-      if (iconCircle) iconCircle.textContent = icon;
+      setDialogIcon(iconBadge, icon);
+      setDialogIcon(iconCircle, icon);
       if (headEl) headEl.textContent = message;
       if (subEl) {
         subEl.textContent = submessage;
         subEl.style.display = submessage ? 'block' : 'none';
       }
+      if (inputContainer) inputContainer.style.display = 'none';
 
       if (btnConfirm) {
         btnConfirm.textContent = confirmText;
@@ -76,7 +88,7 @@ window.AisaDialog = {
     title = "Thông Báo",
     message = "",
     submessage = "",
-    icon = "✨",
+    icon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="#38bdf8"/><circle cx="12" cy="11" r="2" fill="#ffffff"/></svg>`,
     okText = "Đã Hiểu"
   }) {
     return new Promise((resolve) => {
@@ -92,18 +104,20 @@ window.AisaDialog = {
       const iconCircle = document.getElementById('dialog-icon-circle');
       const headEl = document.getElementById('dialog-prompt-heading');
       const subEl = document.getElementById('dialog-prompt-sub');
+      const inputContainer = document.getElementById('dialog-input-container');
       const btnConfirm = document.getElementById('btn-dialog-confirm');
       const btnCancel = document.getElementById('btn-dialog-cancel');
       const btnClose = document.getElementById('btn-dialog-close-x');
 
       if (titleEl) titleEl.textContent = title;
-      if (iconBadge) iconBadge.textContent = icon;
-      if (iconCircle) iconCircle.textContent = icon;
+      setDialogIcon(iconBadge, icon);
+      setDialogIcon(iconCircle, icon);
       if (headEl) headEl.textContent = message;
       if (subEl) {
         subEl.textContent = submessage;
         subEl.style.display = submessage ? 'block' : 'none';
       }
+      if (inputContainer) inputContainer.style.display = 'none';
 
       if (btnConfirm) {
         btnConfirm.textContent = okText;
@@ -128,6 +142,103 @@ window.AisaDialog = {
       if (btnClose) btnClose.onclick = cleanup;
       modal.onclick = (e) => {
         if (e.target === modal) cleanup();
+      };
+    });
+  },
+
+  prompt({
+    title = "Nhập Thông Tin",
+    message = "Vui lòng nhập nội dung:",
+    submessage = "",
+    icon = null,
+    defaultValue = "",
+    placeholder = "Nhập tại đây...",
+    confirmText = "Lưu Lại",
+    cancelText = "Hủy Bỏ"
+  }) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-custom-dialog');
+      if (!modal) {
+        resolve(window.prompt(message, defaultValue));
+        return;
+      }
+
+      const defaultIcon = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+      const useIcon = icon || defaultIcon;
+
+      const titleEl = document.getElementById('dialog-title-text');
+      const iconBadge = document.getElementById('dialog-icon-badge');
+      const iconCircle = document.getElementById('dialog-icon-circle');
+      const headEl = document.getElementById('dialog-prompt-heading');
+      const subEl = document.getElementById('dialog-prompt-sub');
+      const inputContainer = document.getElementById('dialog-input-container');
+      const inputField = document.getElementById('dialog-prompt-input');
+      const btnConfirm = document.getElementById('btn-dialog-confirm');
+      const btnCancel = document.getElementById('btn-dialog-cancel');
+      const btnClose = document.getElementById('btn-dialog-close-x');
+
+      if (titleEl) titleEl.textContent = title;
+      setDialogIcon(iconBadge, useIcon);
+      setDialogIcon(iconCircle, useIcon);
+      if (headEl) headEl.textContent = message;
+      if (subEl) {
+        subEl.textContent = submessage;
+        subEl.style.display = submessage ? 'block' : 'none';
+      }
+
+      if (inputContainer && inputField) {
+        inputContainer.style.display = 'block';
+        inputField.value = defaultValue || '';
+        inputField.placeholder = placeholder;
+      }
+
+      if (btnConfirm) {
+        btnConfirm.textContent = confirmText;
+        btnConfirm.className = 'btn-dialog-action btn-dialog-confirm';
+      }
+
+      if (btnCancel) {
+        btnCancel.textContent = cancelText;
+        btnCancel.style.display = 'inline-flex';
+      }
+
+      modal.classList.add('active');
+
+      if (inputField) {
+        setTimeout(() => {
+          inputField.focus();
+          inputField.select();
+        }, 80);
+      }
+
+      const cleanup = (result) => {
+        modal.classList.remove('active');
+        if (inputContainer) inputContainer.style.display = 'none';
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnCancel) btnCancel.onclick = null;
+        if (btnClose) btnClose.onclick = null;
+        if (inputField) inputField.onkeydown = null;
+        modal.onclick = null;
+        resolve(result);
+      };
+
+      if (inputField) {
+        inputField.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            cleanup(inputField.value.trim());
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cleanup(null);
+          }
+        };
+      }
+
+      if (btnConfirm) btnConfirm.onclick = () => cleanup(inputField ? inputField.value.trim() : null);
+      if (btnCancel) btnCancel.onclick = () => cleanup(null);
+      if (btnClose) btnClose.onclick = () => cleanup(null);
+      modal.onclick = (e) => {
+        if (e.target === modal) cleanup(null);
       };
     });
   }
@@ -161,6 +272,7 @@ window.AisaApp = {
 
   init() {
     this.loadState();
+    this.setMode(this.state.mode || 'duo', false);
     this.bindEvents();
     this.updateGreeting();
     this.renderSessionsList();
@@ -392,22 +504,35 @@ window.AisaApp = {
       return;
     }
 
+    const getSessionSvg = (mode) => {
+      if (mode === 'harmony') {
+        return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/><circle cx="12" cy="12" r="2.2" fill="#ffffff"/></svg>`;
+      }
+      if (mode === 'echo') {
+        return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/><circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/><circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/><circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/></svg>`;
+      }
+      return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradSessionDuo)"/><circle cx="12" cy="11" r="2" fill="#ffffff"/><defs><linearGradient id="gradSessionDuo" x1="3" y1="2" x2="21" y2="20"><stop stop-color="#f472b6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg>`;
+    };
+
     container.innerHTML = this.state.sessions.map(s => {
       const isActive = s.id === this.state.currentSessionId;
       const timeStr = this.formatSessionTime(s.updatedAt || s.createdAt);
-      const icon = s.mode === 'harmony' ? '🌸' : (s.mode === 'echo' ? '😈' : '💬');
+      const iconSvg = getSessionSvg(s.mode);
 
       return `
         <div class="session-item ${isActive ? 'active' : ''}" onclick="window.AisaApp.switchSession('${s.id}')" title="${this.escapeQuotes(s.title)}">
           <div class="session-item-main">
-            <span class="session-item-icon">${icon}</span>
+            <span class="session-item-icon">${iconSvg}</span>
             <div class="session-item-texts">
               <div class="session-item-title">${this.escapeHtml(s.title)}</div>
               <div class="session-item-meta">${timeStr} • ${(s.messages || []).length} tin</div>
             </div>
           </div>
           <button type="button" class="btn-delete-session" onclick="window.AisaApp.deleteSession('${s.id}', event)" title="Xóa phiên này">
-            ✕
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
       `;
@@ -1403,6 +1528,16 @@ window.AisaApp = {
     this.state.mode = mode;
     if (save) this.saveState();
     this.updateActivePersonaBadges();
+
+    // Set persona aura attribute on body and stage for inward border glow
+    document.body.setAttribute('data-aisa-mode', mode);
+    const stage = document.querySelector('.sanctuary-stage') || document.querySelector('.main-content');
+    if (stage) stage.setAttribute('data-active-mode', mode);
+
+    // Synchronize mode pills active state
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+    });
   },
 
   setScope(scope) {
@@ -1467,17 +1602,28 @@ window.AisaApp = {
 
   async promptChangeUserName() {
     const currentName = this.getUserDisplayName();
-    const newName = prompt("Nhập tên hiển thị cậu muốn AISA gọi nè:", currentName);
+    const newName = await window.AisaDialog.prompt({
+      title: "Đổi Tên Gọi Thân Thương",
+      message: "Nhập tên hiển thị cậu muốn AISA gọi nè:",
+      submessage: "Tên này sẽ được Harmony và Echo dùng để xưng hô thân mật cùng cậu trong suốt Sanctuary.",
+      defaultValue: currentName,
+      placeholder: "Ví dụ: Haruto, Yurika, Sakura...",
+      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+      confirmText: "Lưu Tên Mới",
+      cancelText: "Hủy Bỏ"
+    });
+
     if (newName && newName.trim() && newName.trim() !== currentName) {
-      localStorage.setItem('aisa_user_display_name', newName.trim());
+      const trimmed = newName.trim();
+      localStorage.setItem('aisa_user_display_name', trimmed);
       if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
-        window.AISA_CONFIG.USER.name = newName.trim();
+        window.AISA_CONFIG.USER.name = trimmed;
       }
       if (window.AisaAuth && window.AisaAuth.currentUser) {
-        window.AisaAuth.currentUser.name = newName.trim();
+        window.AisaAuth.currentUser.name = trimmed;
       }
       this.renderMessages();
-      this.showToast(`Đã đổi tên xưng hô thành "${newName.trim()}" ✨`, '🌸');
+      this.showToast(`Đã đổi tên xưng hô thành "${trimmed}" ✨`, '🌸');
     }
   },
 
@@ -1613,12 +1759,22 @@ window.AisaApp = {
               <div class="message-row user-row" id="${m.id}">
                 <div class="message-bubble user-bubble">
                   <div class="bubble-meta">
-                    <span class="sender-name">👑 ${this.escapeHtml(userName)}</span>
+                    <span class="sender-name">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                        <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+                      </svg>
+                      ${this.escapeHtml(userName)}
+                    </span>
                     <span class="message-time">${m.time}</span>
                   </div>
                   ${m.file && !m.image ? `
                     <div class="bubble-attached-file-card">
-                      <div class="bubble-file-icon">${m.file.icon || '📄'}</div>
+                      <div class="bubble-file-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                      </div>
                       <div class="bubble-file-details">
                         <div class="bubble-file-name">${this.escapeHtml(m.file.name)}</div>
                         <div class="bubble-file-size">${m.file.sizeStr || 'Tệp đính kèm'}</div>
@@ -1637,33 +1793,50 @@ window.AisaApp = {
           }
 
           const isHarmony = m.speaker === 'HARMONY';
-          const speakerBadge = isHarmony ? '🌸 Harmony' : '😈 Echo';
+          const personaAvatarSvg = isHarmony
+            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/><circle cx="12" cy="12" r="2.4" fill="#ffffff"/></svg>`
+            : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/><circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/><circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/><circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/><path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+
+          const speakerBadgeHtml = isHarmony
+            ? `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/></svg> Harmony</span>`
+            : `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/></svg> Echo</span>`;
+
           const bubbleClass = isHarmony ? 'harmony-bubble' : 'echo-bubble';
-          const personaAvatar = isHarmony ? '🌸' : '😈';
           const cleanText = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
 
           return `
             <div class="message-row assistant-row ${isHarmony ? 'harmony-row' : 'echo-row'}" id="${m.id}">
-              <div class="assistant-avatar ${isHarmony ? 'avt-harmony' : 'avt-echo'}">${personaAvatar}</div>
+              <div class="assistant-avatar ${isHarmony ? 'avt-harmony' : 'avt-echo'}">${personaAvatarSvg}</div>
               <div class="message-bubble ${bubbleClass}">
                 <div class="bubble-meta">
-                  <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadge}</span>
+                  <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadgeHtml}</span>
                   <span class="message-time">${m.time}</span>
                 </div>
                 ${m.isDeepResearch ? `
                   <div class="deep-research-badge">
-                    <span class="badge-icon">🧭</span>
+                    <span class="badge-icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                      </svg>
+                    </span>
                     <span class="badge-title">Deep Research Dossier</span>
                     <span class="badge-tag">Phân tích đa chiều MHEnt</span>
                   </div>
                 ` : ''}
                 <div class="bubble-text">${window.AisaMarkdown.format(cleanText)}</div>
                 <div class="bubble-actions">
-                  <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
-                    🔊
+                  <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
                   </button>
                   <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(cleanText)}')" title="Sao chép câu trả lời">
-                    📋
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
                   </button>
                 </div>
               </div>

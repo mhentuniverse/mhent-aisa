@@ -834,6 +834,46 @@
   line-height: 1.5;
 }
 
+.dialog-input-container {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.dialog-prompt-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(244, 114, 182, 0.4);
+  border-radius: 14px;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.dialog-prompt-input:focus {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: #f472b6;
+  box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.2), 0 0 20px rgba(236, 72, 153, 0.25);
+}
+
+.dialog-icon-svg-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.dialog-icon-circle svg {
+  width: 32px;
+  height: 32px;
+}
+
 .dialog-actions-row {
   padding: 14px 22px 22px;
   display: flex;

@@ -850,3 +850,81 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* ==========================================================================
+   MHENT UNIVERSE LUXURY PERSONA INSET BORDER AURA & AMBIENT SHIFT
+   Harmony: Soft Cherry Blossom Pink Inset Bleed
+   Echo: Electric Neon Violet Inset Bleed
+   Song Hành (Duo): Dual Gradient Pink-to-Violet Inset Bleed
+   ========================================================================== */
+.sanctuary-chat-center::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  transition: box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.6s ease,
+              background 0.6s ease;
+  border-radius: 0;
+}
+
+/* 1. Harmony Mode: Inward Pink Aura */
+[data-aisa-mode="harmony"] .sanctuary-chat-center::after,
+.sanctuary-stage[data-active-mode="harmony"] .sanctuary-chat-center::after {
+  box-shadow: 
+    inset 0 0 55px rgba(244, 114, 182, 0.28),
+    inset 0 0 110px rgba(236, 72, 153, 0.14),
+    inset 0 0 200px rgba(236, 72, 153, 0.06);
+  border: 1.5px solid rgba(244, 114, 182, 0.4);
+}
+[data-aisa-mode="harmony"] .sanctuary-hero-aura::before,
+.sanctuary-stage[data-active-mode="harmony"] .sanctuary-hero-aura::before {
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.22) 0%, rgba(236, 72, 153, 0.1) 45%, transparent 70%);
+}
+[data-aisa-mode="harmony"] .gemini-input-capsule,
+.sanctuary-stage[data-active-mode="harmony"] .gemini-input-capsule {
+  border-color: rgba(244, 114, 182, 0.45);
+  box-shadow: 0 4px 25px rgba(244, 114, 182, 0.15);
+}
+
+/* 2. Echo Mode: Inward Purple Aura */
+[data-aisa-mode="echo"] .sanctuary-chat-center::after,
+.sanctuary-stage[data-active-mode="echo"] .sanctuary-chat-center::after {
+  box-shadow: 
+    inset 0 0 55px rgba(167, 139, 250, 0.28),
+    inset 0 0 110px rgba(139, 92, 246, 0.14),
+    inset 0 0 200px rgba(139, 92, 246, 0.06);
+  border: 1.5px solid rgba(167, 139, 250, 0.4);
+}
+[data-aisa-mode="echo"] .sanctuary-hero-aura::before,
+.sanctuary-stage[data-active-mode="echo"] .sanctuary-hero-aura::before {
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.22) 0%, rgba(139, 92, 246, 0.1) 45%, transparent 70%);
+}
+[data-aisa-mode="echo"] .gemini-input-capsule,
+.sanctuary-stage[data-active-mode="echo"] .gemini-input-capsule {
+  border-color: rgba(167, 139, 250, 0.45);
+  box-shadow: 0 4px 25px rgba(167, 139, 250, 0.15);
+}
+
+/* 3. Duo (Song Hành) Mode: Inward Dual Gradient Aura */
+[data-aisa-mode="duo"] .sanctuary-chat-center::after,
+.sanctuary-stage[data-active-mode="duo"] .sanctuary-chat-center::after,
+body:not([data-aisa-mode]) .sanctuary-chat-center::after {
+  box-shadow: 
+    inset 30px 30px 80px rgba(244, 114, 182, 0.18),
+    inset -30px -30px 80px rgba(139, 92, 246, 0.18),
+    inset 0 0 140px rgba(217, 70, 239, 0.08);
+  border: 1.5px solid rgba(236, 72, 153, 0.32);
+}
+[data-aisa-mode="duo"] .sanctuary-hero-aura::before,
+.sanctuary-stage[data-active-mode="duo"] .sanctuary-hero-aura::before,
+body:not([data-aisa-mode]) .sanctuary-hero-aura::before {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.12) 45%, transparent 70%);
+}
+[data-aisa-mode="duo"] .gemini-input-capsule,
+.sanctuary-stage[data-active-mode="duo"] .gemini-input-capsule,
+body:not([data-aisa-mode]) .gemini-input-capsule {
+  border-color: rgba(236, 72, 153, 0.35);
+  box-shadow: 0 4px 25px rgba(236, 72, 153, 0.12);
+}
