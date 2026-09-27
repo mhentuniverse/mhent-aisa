@@ -420,23 +420,20 @@
     color: var(--text-muted) !important;
   }
 
-  /* Tool chips row trên mobile - trượt ngang mượt mà */
-  .gemini-tools-chips-row {
-    display: flex !important;
-    gap: 6px !important;
-    overflow-x: auto !important;
-    padding: 2px 2px 4px 2px !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
+  /* User profile dropdown on mobile */
+  .user-profile-dropdown {
+    right: -4px !important;
+    top: calc(100% + 8px) !important;
+    width: min(300px, 92vw) !important;
+    max-width: 92vw !important;
   }
-  .gemini-tools-chips-row::-webkit-scrollbar {
-    display: none !important;
-  }
-  .gemini-tool-chip {
-    padding: 4px 10px !important;
-    font-size: 0.72rem !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
+
+  /* Tools popover on mobile */
+  .capsule-tools-popover {
+    left: 0 !important;
+    bottom: calc(100% + 10px) !important;
+    width: min(290px, 90vw) !important;
+    max-width: 90vw !important;
   }
 
   /* Companion & Model modal mobile adaptation */

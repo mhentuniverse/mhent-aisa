@@ -345,18 +345,33 @@ window.AisaAuth = {
     const badge = document.getElementById('header-user-badge');
     const avatarEl = document.getElementById('header-user-avatar');
     const nameEl = document.getElementById('header-user-name');
+    const uprofAvatar = document.getElementById('uprof-avatar-badge');
+    const uprofName = document.getElementById('uprof-display-name');
 
     if (user && this.isAuthorized) {
       if (badge) badge.style.display = 'inline-flex';
+      const displayName = user.name || "Master Yurika";
+      const isImg = user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:'));
+
       if (avatarEl) {
-        if (user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:'))) {
+        if (isImg) {
           avatarEl.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="user-avatar-img" />`;
         } else {
-          avatarEl.textContent = user.avatar || "👑";
+          avatarEl.textContent = user.avatar || "🌸";
         }
       }
       if (nameEl) {
-        nameEl.textContent = user.name || "Master Yurika";
+        nameEl.textContent = displayName;
+      }
+      if (uprofName) {
+        uprofName.textContent = displayName;
+      }
+      if (uprofAvatar) {
+        if (isImg) {
+          uprofAvatar.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="user-avatar-img" />`;
+        } else {
+          uprofAvatar.textContent = user.avatar || "🌸";
+        }
       }
     } else {
       if (badge) badge.style.display = 'none';

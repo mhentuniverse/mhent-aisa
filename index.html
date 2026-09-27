@@ -223,60 +223,9 @@
         </svg>
       </button>
 
-      <!-- Gemini 3-Dots More Options Menu -->
-      <div class="header-more-container" id="header-more-container">
-        <button type="button" class="btn-header-action btn-header-more" id="btn-header-more" title="Tùy chọn khác">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="5" r="2.2"/>
-            <circle cx="12" cy="12" r="2.2"/>
-            <circle cx="12" cy="19" r="2.2"/>
-          </svg>
-        </button>
-        <div class="header-more-dropdown" id="header-more-dropdown">
-          <div class="more-menu-header">Tiện ích Sanctuary</div>
-          <button type="button" class="more-menu-item" id="more-item-ambient">
-            <span class="more-item-icon">🎵</span>
-            <div class="more-item-text">
-              <span class="more-item-title">Âm hưởng 432Hz</span>
-              <span class="more-item-sub">Âm thanh thư giãn sóng não</span>
-            </div>
-            <span class="more-item-badge" id="more-badge-ambient">Tắt</span>
-          </button>
-          <button type="button" class="more-menu-item" id="more-item-cloud">
-            <span class="more-item-icon">☁️</span>
-            <div class="more-item-text">
-              <span class="more-item-title">Đồng bộ Đám mây</span>
-              <span class="more-item-sub">Cloudflare D1 Multi-device</span>
-            </div>
-          </button>
-          <button type="button" class="more-menu-item" id="more-item-memory">
-            <span class="more-item-icon">🏛️</span>
-            <div class="more-item-text">
-              <span class="more-item-title">Ngân hàng Ký ức</span>
-              <span class="more-item-sub">Trí nhớ dài hạn Master Yurika</span>
-            </div>
-            <span class="more-item-counter" id="more-badge-memory">3</span>
-          </button>
-          <button type="button" class="more-menu-item" id="more-item-clear">
-            <span class="more-item-icon">🗑️</span>
-            <div class="more-item-text">
-              <span class="more-item-title">Dọn dẹp phiên chat</span>
-              <span class="more-item-sub">Làm mới hội thoại hiện tại</span>
-            </div>
-          </button>
-          <button type="button" class="more-menu-item" id="more-item-settings">
-            <span class="more-item-icon">⚙️</span>
-            <div class="more-item-text">
-              <span class="more-item-title">Cài đặt Sanctuary</span>
-              <span class="more-item-sub">Cấu hình & Google Gemini Key</span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Master Profile & Logout Action -->
+      <!-- Master Profile & Utilities Hub (Gemini User Avatar Menu) -->
       <div class="header-user-badge" id="header-user-badge" style="display: none;">
-        <div class="user-badge-inner" id="user-badge-inner" title="Master Profile">
+        <button type="button" class="user-badge-inner" id="user-badge-inner" title="Hồ sơ Master Yurika & Tiện ích Sanctuary">
           <span class="user-badge-avatar" id="header-user-avatar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
@@ -286,15 +235,72 @@
           </span>
           <span class="user-badge-name" id="header-user-name" style="display: none;">User</span>
           <span class="user-badge-status-dot"></span>
-        </div>
-        <button type="button" class="btn-header-logout" id="btn-header-logout" title="Đăng xuất khỏi Sanctuary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
         </button>
+
+        <!-- Dropdown Menu inside User Avatar -->
+        <div class="user-profile-dropdown" id="user-profile-dropdown">
+          <div class="user-profile-header">
+            <div class="uprof-avatar-box">
+              <span class="uprof-avatar-badge" id="uprof-avatar-badge">🌸</span>
+            </div>
+            <div class="uprof-meta">
+              <div class="uprof-name" id="uprof-display-name">Master Yurika</div>
+              <div class="uprof-sub">Founder • MHEnt Universe</div>
+            </div>
+          </div>
+          <div class="uprof-divider"></div>
+
+          <div class="uprof-menu-group">
+            <button type="button" class="more-menu-item" id="more-item-ambient">
+              <span class="more-item-icon">🎵</span>
+              <div class="more-item-text">
+                <span class="more-item-title">Âm hưởng 432Hz</span>
+                <span class="more-item-sub">Âm thanh thư giãn sóng não</span>
+              </div>
+              <span class="more-item-badge" id="more-badge-ambient">Tắt</span>
+            </button>
+            <button type="button" class="more-menu-item" id="more-item-cloud">
+              <span class="more-item-icon">☁️</span>
+              <div class="more-item-text">
+                <span class="more-item-title">Đồng bộ Đám mây</span>
+                <span class="more-item-sub">Cloudflare D1 Multi-device</span>
+              </div>
+            </button>
+            <button type="button" class="more-menu-item" id="more-item-memory">
+              <span class="more-item-icon">🏛️</span>
+              <div class="more-item-text">
+                <span class="more-item-title">Ngân hàng Ký ức</span>
+                <span class="more-item-sub">Trí nhớ dài hạn Master Yurika</span>
+              </div>
+              <span class="more-item-counter" id="more-badge-memory">3</span>
+            </button>
+            <button type="button" class="more-menu-item" id="more-item-clear">
+              <span class="more-item-icon">🗑️</span>
+              <div class="more-item-text">
+                <span class="more-item-title">Dọn dẹp phiên chat</span>
+                <span class="more-item-sub">Làm mới hội thoại hiện tại</span>
+              </div>
+            </button>
+            <button type="button" class="more-menu-item" id="more-item-settings">
+              <span class="more-item-icon">⚙️</span>
+              <div class="more-item-text">
+                <span class="more-item-title">Cài đặt Sanctuary</span>
+                <span class="more-item-sub">Cấu hình & Google Gemini Key</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="uprof-divider"></div>
+          <button type="button" class="more-menu-item uprof-logout-btn" id="btn-user-menu-logout" title="Đăng xuất khỏi Sanctuary">
+            <span class="more-item-icon">🚪</span>
+            <div class="more-item-text">
+              <span class="more-item-title" style="color: #f87171;">Đăng xuất khỏi Sanctuary</span>
+              <span class="more-item-sub">Kết thúc phiên làm việc an toàn</span>
+            </div>
+          </button>
+        </div>
+
+        <button type="button" class="btn-header-logout" id="btn-header-logout" style="display: none;"></button>
       </div>
     </div>
   </header>
@@ -448,15 +454,70 @@
             <input type="file" id="chat-file-input"
               accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.html,.css,.sql" style="display: none;">
 
-            <!-- Attachment Button (Paperclip) -->
-            <button type="button" class="btn-capsule-tool" id="btn-attach-image"
-              title="Đính kèm tệp tin hoặc ảnh (Ảnh, PDF, TXT, Code, Docx...)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path
-                  d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-              </svg>
-            </button>
+            <!-- Grouped Tools Trigger & Popover Menu (4 Tools: Upload, Web Search, Deep Research, Thinking) -->
+            <div class="capsule-tools-group" id="capsule-tools-group">
+              <button type="button" class="btn-capsule-tool btn-capsule-plus" id="btn-capsule-tools"
+                title="Công cụ thông minh & Tệp đính kèm (+)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round" class="icon-tools-plus">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+
+              <!-- Popover with the 4 Grouped Tools -->
+              <div class="capsule-tools-popover" id="capsule-tools-popover">
+                <div class="capsule-tools-popover-title">Công cụ & Tệp đính kèm</div>
+
+                <!-- 1. Tải lên tệp / ảnh -->
+                <button type="button" class="capsule-tool-item" id="tool-item-upload" title="Tải tệp tin hoặc ảnh">
+                  <span class="tool-item-icon">📁</span>
+                  <div class="tool-item-info">
+                    <span class="tool-item-title">Tải tệp / Hình ảnh</span>
+                    <span class="tool-item-sub">Ảnh, PDF, TXT, Docx, Code...</span>
+                  </div>
+                </button>
+
+                <!-- 2. Tra cứu Web -->
+                <button type="button" class="capsule-tool-item" id="tool-item-web" title="Bật/Tắt tìm kiếm Web">
+                  <span class="tool-item-icon">🌐</span>
+                  <div class="tool-item-info">
+                    <span class="tool-item-title">Tra cứu Web</span>
+                    <span class="tool-item-sub">Tìm kiếm thông tin thời gian thực</span>
+                  </div>
+                  <span class="tool-item-status" id="status-popover-web">Tắt</span>
+                </button>
+
+                <!-- 3. Deep Research -->
+                <button type="button" class="capsule-tool-item" id="tool-item-research" title="Bật/Tắt Deep Research">
+                  <span class="tool-item-icon">🧭</span>
+                  <div class="tool-item-info">
+                    <span class="tool-item-title">Deep Research</span>
+                    <span class="tool-item-sub">Nghiên cứu chuyên sâu đa tầng</span>
+                  </div>
+                  <span class="tool-item-status" id="status-popover-research">Tắt</span>
+                </button>
+
+                <!-- 4. Tư duy sâu -->
+                <button type="button" class="capsule-tool-item" id="tool-item-thinking" title="Bật/Tắt tư duy sâu">
+                  <span class="tool-item-icon">💡</span>
+                  <div class="tool-item-info">
+                    <span class="tool-item-title">Tư duy sâu</span>
+                    <span class="tool-item-sub">Suy ngẫm từng bước logic</span>
+                  </div>
+                  <span class="tool-item-status" id="status-popover-thinking">Tắt</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Pills container (Shows active tools inside the input capsule) -->
+            <div class="capsule-active-pills" id="capsule-active-pills"></div>
+
+            <!-- Hidden backup triggers for legacy bindings -->
+            <button type="button" id="btn-attach-image" style="display: none;"></button>
+            <button type="button" id="btn-tool-deep-research" style="display: none;"><span id="badge-deep-research">Tắt</span></button>
+            <button type="button" id="btn-tool-web-search" style="display: none;"><span id="badge-web-search">Tắt</span></button>
+            <button type="button" id="btn-tool-thinking" style="display: none;"><span id="badge-thinking">Tắt</span></button>
 
             <!-- Textarea -->
             <textarea id="chat-input" class="gemini-textarea" placeholder="Nhập câu hỏi hoặc tâm sự cùng AISA..."
@@ -485,48 +546,7 @@
             </div>
           </div>
 
-          <!-- Sanctuary Tool Chips (Deep Research, Web Search, Thinking) -->
-          <div class="gemini-tools-chips-row">
-            <button type="button" class="gemini-tool-chip" id="btn-tool-deep-research"
-              title="Bật/Tắt chế độ Deep Research (Báo cáo nghiên cứu chuyên sâu đa nguồn)">
-              <span class="tool-icon-svg">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                </svg>
-              </span>
-              <span class="tool-name">Deep Research</span>
-              <span class="tool-badge-status" id="badge-deep-research">Tắt</span>
-            </button>
-            <button type="button" class="gemini-tool-chip" id="btn-tool-web-search"
-              title="Tra cứu nguồn tin thực tế & Web Search">
-              <span class="tool-icon-svg">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path
-                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-              </span>
-              <span class="tool-name">Tra cứu Web</span>
-              <span class="tool-badge-status" id="badge-web-search">Tắt</span>
-            </button>
-            <button type="button" class="gemini-tool-chip" id="btn-tool-thinking"
-              title="Suy ngẫm từng bước (Step-by-step Thinking)">
-              <span class="tool-icon-svg">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path
-                    d="M12 2a6 6 0 0 0-6 6c0 2.2 1.2 4.1 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.8-1.1 3-3 3-5.2a6 6 0 0 0-6-6z" />
-                  <path d="M9 21h6" />
-                  <path d="M10 18h4" />
-                </svg>
-              </span>
-              <span class="tool-name">Tư duy sâu</span>
-            </button>
-          </div>
+
 
           <!-- MHEnt Sanctuary Signature Footer Disclaimer -->
           <div class="gemini-disclaimer-text sanctuary-identity-text">

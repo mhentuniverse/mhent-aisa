@@ -274,8 +274,10 @@ window.AisaApp = {
     this.loadState();
     this.setMode(this.state.mode || 'duo', false);
     this.bindEvents();
+    this.syncToolsUI();
     this.updateGreeting();
     this.renderSessionsList();
+    this.initRouter();
     this.renderMessages();
 
     // Khởi tạo Cổng Xác Thực Độc Quyền (Gatekeeper)
@@ -345,27 +347,41 @@ window.AisaApp = {
         }
 
         const initialMsgs = oldMsgs.some(m => m.role === 'user') ? oldMsgs : [];
-        const initialTitle = this.deriveSessionTitle(initialMsgs) || 'Phiên trò chuyện mới';
-        const defaultSession = {
-          id: 'session-' + Date.now(),
-          title: initialTitle,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          mode: 'duo',
-          scope: 'personal',
-          messages: initialMsgs
-        };
-        this.state.sessions = [defaultSession];
-        this.state.currentSessionId = defaultSession.id;
+        if (initialMsgs.length > 0) {
+          const initialTitle = this.deriveSessionTitle(initialMsgs) || 'Phiên trò chuyện';
+          const defaultSession = {
+            id: 'session-' + Date.now(),
+            title: initialTitle,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            mode: 'duo',
+            scope: 'personal',
+            messages: initialMsgs
+          };
+          this.state.sessions = [defaultSession];
+        }
       }
 
-      // Xác định phiên hoạt động hiện tại
-      let current = this.state.sessions.find(s => s.id === activeId);
-      if (!current) {
-        current = this.state.sessions[0];
+      // Lọc bỏ các phiên rỗng không có tin nhắn người dùng (giữ lịch sử sạch sẽ chuẩn Gemini)
+      this.state.sessions = (this.state.sessions || []).filter(s => Array.isArray(s.messages) && s.messages.some(m => m.role === 'user'));
+
+      // Kiểm tra tham số 'id' trên thanh địa chỉ URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSessionId = urlParams.get('id');
+
+      let current = null;
+      if (urlSessionId) {
+        current = this.state.sessions.find(s => s.id === urlSessionId);
       }
-      this.state.currentSessionId = current.id;
-      this.state.messages = current.messages || [];
+
+      if (current) {
+        this.state.currentSessionId = current.id;
+        this.state.messages = current.messages || [];
+      } else {
+        // Màn hình ban đầu root (/): hiển thị Hero Greeting giới thiệu, chưa chọn phiên nào
+        this.state.currentSessionId = null;
+        this.state.messages = [];
+      }
 
       // Nạp mode, scope và model
       const savedMode = localStorage.getItem(config.STORAGE.ACTIVE_MODE);
@@ -381,16 +397,15 @@ window.AisaApp = {
 
     } catch (e) {
       console.warn('Could not load saved state:', e);
-      if (this.state.sessions.length === 0) {
-        this.createNewSession('Phiên trò chuyện mới', false);
-      }
+      this.state.currentSessionId = null;
+      this.state.messages = [];
     }
   },
 
   saveState() {
     try {
       const config = window.AISA_CONFIG;
-      // Cập nhật messages của session hiện tại vào sessions array
+      // Cập nhật messages của session hiện tại vào sessions array nếu có session đang hoạt động
       if (this.state.currentSessionId) {
         const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId);
         if (currentSession) {
@@ -413,8 +428,70 @@ window.AisaApp = {
   },
 
   // --------------------------------------------------------------------------
-  // MULTI-SESSION CONTROLLER
+  // SPA URL ROUTER & MULTI-SESSION CONTROLLER
+  // Quản lý URL / và /chat?id=... mượt mà, phản chiếu trực tiếp lên thanh địa chỉ
   // --------------------------------------------------------------------------
+  updateUrlRoute(path, queryParams = {}) {
+    try {
+      const search = new URLSearchParams(queryParams).toString();
+      if (window.location.protocol === 'file:') {
+        const newUrl = search ? `?${search}` : (window.location.pathname.split('/').pop() || 'index.html');
+        window.history.pushState(null, '', newUrl);
+        return;
+      }
+      const targetUrl = path + (search ? `?${search}` : '');
+      const currentUrl = window.location.pathname + window.location.search;
+      if (currentUrl !== targetUrl) {
+        window.history.pushState(null, '', targetUrl);
+      }
+    } catch (e) {
+      console.warn('[Router Warning]:', e);
+    }
+  },
+
+  initRouter() {
+    const handleRoute = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('id');
+      const pathname = window.location.pathname;
+
+      if (sessionId) {
+        const existing = this.state.sessions.find(s => s.id === sessionId);
+        if (existing) {
+          this.switchSession(sessionId, false);
+          return;
+        }
+      }
+
+      // Nếu không có id hoặc ở root /
+      if (!sessionId || pathname === '/' || pathname.endsWith('/index.html')) {
+        this.openNewChatIntro(false);
+      }
+    };
+
+    window.addEventListener('popstate', handleRoute);
+  },
+
+  openNewChatIntro(updateUrl = true) {
+    this.saveState();
+    this.state.currentSessionId = null;
+    this.state.messages = [];
+    this.clearAttachedFile();
+
+    const input = document.getElementById('chat-input');
+    if (input) {
+      input.value = '';
+      input.style.height = 'auto';
+    }
+
+    if (updateUrl) {
+      this.updateUrlRoute('/');
+    }
+
+    this.renderSessionsList();
+    this.renderMessages();
+  },
+
   createNewSession(title = 'Phiên trò chuyện mới', shouldSave = true) {
     const newSession = {
       id: 'session-' + Date.now(),
@@ -430,6 +507,8 @@ window.AisaApp = {
     this.state.currentSessionId = newSession.id;
     this.state.messages = [];
 
+    this.updateUrlRoute('/chat', { id: newSession.id });
+
     if (shouldSave) {
       this.saveState();
     }
@@ -437,17 +516,24 @@ window.AisaApp = {
     this.renderMessages();
   },
 
-  switchSession(sessionId) {
+  switchSession(sessionId, updateUrl = true) {
     if (this.state.currentSessionId === sessionId) return;
 
     this.saveState();
     const target = this.state.sessions.find(s => s.id === sessionId);
-    if (!target) return;
+    if (!target) {
+      this.openNewChatIntro(updateUrl);
+      return;
+    }
 
     this.state.currentSessionId = target.id;
     this.state.messages = target.messages || [];
     if (target.mode) {
       this.setMode(target.mode, false);
+    }
+
+    if (updateUrl) {
+      this.updateUrlRoute('/chat', { id: target.id });
     }
 
     this.saveState();
@@ -483,14 +569,9 @@ window.AisaApp = {
       window.AisaAuth.db.collection('aisa_sessions').doc(sessionId).delete().catch(() => {});
     }
 
-    if (this.state.sessions.length === 0) {
-      this.createNewSession('Trò chuyện cùng AISA', true);
+    if (this.state.sessions.length === 0 || this.state.currentSessionId === sessionId) {
+      this.openNewChatIntro(true);
       return;
-    }
-
-    if (this.state.currentSessionId === sessionId) {
-      this.state.currentSessionId = this.state.sessions[0].id;
-      this.state.messages = this.state.sessions[0].messages || [];
     }
 
     this.saveState();
@@ -1061,19 +1142,18 @@ window.AisaApp = {
     const btnNewChatTop = document.getElementById('btn-new-chat-top');
     if (btnNewChatTop) {
       btnNewChatTop.addEventListener('click', () => {
-        const btnNewSession = document.getElementById('btn-new-session');
-        if (btnNewSession) btnNewSession.click();
+        this.openNewChatIntro(true);
       });
     }
 
-    // Menu 3 Chấm Đa Tiện Ích Chuẩn Gemini (Âm hưởng, Ký ức, Đồng bộ, Dọn dẹp...)
-    const btnHeaderMore = document.getElementById('btn-header-more');
-    const headerMoreDropdown = document.getElementById('header-more-dropdown');
+    // Menu Hồ sơ Master & Tiện ích trong Avatar Dropdown (Gộp chức năng 3 chấm & Đăng xuất)
+    const userBadgeBtn = document.getElementById('user-badge-inner');
+    const userProfileDropdown = document.getElementById('user-profile-dropdown');
 
-    if (btnHeaderMore && headerMoreDropdown) {
-      btnHeaderMore.addEventListener('click', (e) => {
+    if (userBadgeBtn && userProfileDropdown) {
+      userBadgeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        headerMoreDropdown.classList.toggle('active');
+        userProfileDropdown.classList.toggle('active');
       });
 
       // 1. Âm hưởng thư giãn 432Hz
@@ -1099,7 +1179,7 @@ window.AisaApp = {
       const itemCloud = document.getElementById('more-item-cloud');
       if (itemCloud) {
         itemCloud.addEventListener('click', () => {
-          headerMoreDropdown.classList.remove('active');
+          userProfileDropdown.classList.remove('active');
           const btnCloud = document.getElementById('btn-cloud-sync');
           if (btnCloud) btnCloud.click();
         });
@@ -1109,7 +1189,7 @@ window.AisaApp = {
       const itemMemory = document.getElementById('more-item-memory');
       if (itemMemory) {
         itemMemory.addEventListener('click', () => {
-          headerMoreDropdown.classList.remove('active');
+          userProfileDropdown.classList.remove('active');
           const btnMemory = document.getElementById('btn-open-memory');
           if (btnMemory) btnMemory.click();
         });
@@ -1119,7 +1199,7 @@ window.AisaApp = {
       const itemClear = document.getElementById('more-item-clear');
       if (itemClear) {
         itemClear.addEventListener('click', () => {
-          headerMoreDropdown.classList.remove('active');
+          userProfileDropdown.classList.remove('active');
           const btnClear = document.getElementById('btn-clear-chat');
           if (btnClear) btnClear.click();
         });
@@ -1129,16 +1209,27 @@ window.AisaApp = {
       const itemSettings = document.getElementById('more-item-settings');
       if (itemSettings) {
         itemSettings.addEventListener('click', () => {
-          headerMoreDropdown.classList.remove('active');
+          userProfileDropdown.classList.remove('active');
           const btnSettings = document.getElementById('btn-open-settings');
           if (btnSettings) btnSettings.click();
         });
       }
 
+      // 6. Đăng xuất khỏi Sanctuary
+      const btnUserLogout = document.getElementById('btn-user-menu-logout');
+      if (btnUserLogout) {
+        btnUserLogout.addEventListener('click', () => {
+          userProfileDropdown.classList.remove('active');
+          if (window.AisaAuth) {
+            window.AisaAuth.confirmLogout();
+          }
+        });
+      }
+
       // Đóng menu khi click ra ngoài
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('#header-more-container')) {
-          headerMoreDropdown.classList.remove('active');
+        if (!e.target.closest('#header-user-badge')) {
+          userProfileDropdown.classList.remove('active');
         }
       });
     }
@@ -1200,11 +1291,39 @@ window.AisaApp = {
       sendBtn.addEventListener('click', () => this.handleSendMessage());
     }
 
-    // Đính kèm tệp tin / hình ảnh đa định dạng (File Picker)
-    const btnAttach = document.getElementById('btn-attach-image');
+    // Bộ 4 công cụ thông minh chuẩn Gemini (+): Tải tệp, Tra cứu Web, Deep Research, Tư duy sâu
+    const btnCapsuleTools = document.getElementById('btn-capsule-tools');
+    const capsuleToolsPopover = document.getElementById('capsule-tools-popover');
     const fileInput = document.getElementById('chat-file-input');
-    if (btnAttach && fileInput) {
-      btnAttach.addEventListener('click', () => fileInput.click());
+
+    if (btnCapsuleTools && capsuleToolsPopover) {
+      btnCapsuleTools.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = capsuleToolsPopover.classList.toggle('active');
+        btnCapsuleTools.classList.toggle('active-popover', isOpen);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#capsule-tools-group')) {
+          capsuleToolsPopover.classList.remove('active');
+          btnCapsuleTools.classList.remove('active-popover');
+        }
+      });
+    }
+
+    // 1. Tải lên tệp / ảnh
+    const toolItemUpload = document.getElementById('tool-item-upload');
+    const btnAttach = document.getElementById('btn-attach-image');
+    const triggerFilePicker = () => {
+      if (capsuleToolsPopover) capsuleToolsPopover.classList.remove('active');
+      if (btnCapsuleTools) btnCapsuleTools.classList.remove('active-popover');
+      if (fileInput) fileInput.click();
+    };
+
+    if (toolItemUpload) toolItemUpload.addEventListener('click', triggerFilePicker);
+    if (btnAttach) btnAttach.addEventListener('click', triggerFilePicker);
+
+    if (fileInput) {
       fileInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
           this.attachFile(e.target.files[0]);
@@ -1212,60 +1331,28 @@ window.AisaApp = {
       });
     }
 
+    // 2. Tra cứu Web
+    const toolItemWeb = document.getElementById('tool-item-web');
+    if (toolItemWeb) {
+      toolItemWeb.addEventListener('click', () => this.toggleTool('web'));
+    }
+
+    // 3. Deep Research
+    const toolItemResearch = document.getElementById('tool-item-research');
+    if (toolItemResearch) {
+      toolItemResearch.addEventListener('click', () => this.toggleTool('research'));
+    }
+
+    // 4. Tư duy sâu (Thinking)
+    const toolItemThinking = document.getElementById('tool-item-thinking');
+    if (toolItemThinking) {
+      toolItemThinking.addEventListener('click', () => this.toggleTool('thinking'));
+    }
+
     // Nút gỡ tệp đính kèm
     const btnRemoveAttach = document.getElementById('btn-remove-attachment');
     if (btnRemoveAttach) {
       btnRemoveAttach.addEventListener('click', () => this.clearAttachedFile());
-    }
-
-    // Google Gemini Tool Chips (Deep Research, Tra cứu Web, Tư duy sâu)
-    const btnDeepResearch = document.getElementById('btn-tool-deep-research');
-    const badgeDeepResearch = document.getElementById('badge-deep-research');
-    const inputCapsule = document.getElementById('gemini-input-capsule');
-
-    if (btnDeepResearch) {
-      btnDeepResearch.addEventListener('click', () => {
-        this.state.isDeepResearch = !this.state.isDeepResearch;
-        btnDeepResearch.classList.toggle('active', this.state.isDeepResearch);
-        if (badgeDeepResearch) {
-          badgeDeepResearch.textContent = this.state.isDeepResearch ? 'Bật' : 'Tắt';
-        }
-        if (inputCapsule) {
-          inputCapsule.classList.toggle('deep-research-active', this.state.isDeepResearch);
-        }
-        if (input) {
-          input.placeholder = this.state.isDeepResearch
-            ? 'Nhập chủ đề cần nghiên cứu sâu đa tầng cùng AISA...'
-            : 'Nhập câu hỏi hoặc tâm sự cùng AISA...';
-        }
-        if (this.state.isDeepResearch) {
-          this.showToast('Đã kích hoạt chế độ Deep Research đa nguồn! 🧭', '🧭');
-        }
-      });
-    }
-
-    const btnWebSearch = document.getElementById('btn-tool-web-search');
-    const badgeWebSearch = document.getElementById('badge-web-search');
-    if (btnWebSearch) {
-      btnWebSearch.addEventListener('click', () => {
-        this.state.isWebSearch = !this.state.isWebSearch;
-        btnWebSearch.classList.toggle('active', this.state.isWebSearch);
-        if (badgeWebSearch) {
-          badgeWebSearch.textContent = this.state.isWebSearch ? 'Bật' : 'Tắt';
-        }
-      });
-    }
-
-    const btnThinking = document.getElementById('btn-tool-thinking');
-    const badgeThinking = document.getElementById('badge-thinking');
-    if (btnThinking) {
-      btnThinking.addEventListener('click', () => {
-        this.state.isThinking = !this.state.isThinking;
-        btnThinking.classList.toggle('active', this.state.isThinking);
-        if (badgeThinking) {
-          badgeThinking.textContent = this.state.isThinking ? 'Bật' : 'Tắt';
-        }
-      });
     }
 
     // Quick Chips & Sidebar Prompts
@@ -1476,11 +1563,11 @@ window.AisaApp = {
       });
     }
 
-    // New Session Button
+    // New Session Button (Quay về màn hình chào đón Intro ban đầu, URL /)
     const btnNewSession = document.getElementById('btn-new-session');
     if (btnNewSession) {
       btnNewSession.addEventListener('click', () => {
-        this.createNewSession();
+        this.openNewChatIntro(true);
       });
     }
 
@@ -1671,6 +1758,82 @@ window.AisaApp = {
         if (e.target === modal) modal.classList.remove('active');
       });
     }
+  },
+
+  toggleTool(toolName) {
+    if (toolName === 'web') {
+      this.state.isWebSearch = !this.state.isWebSearch;
+      if (this.state.isWebSearch) {
+        this.showToast('Đã kích hoạt Tra cứu Web! 🌐', '🌐');
+      }
+    } else if (toolName === 'research') {
+      this.state.isDeepResearch = !this.state.isDeepResearch;
+      if (this.state.isDeepResearch) {
+        this.showToast('Đã kích hoạt Deep Research đa nguồn! 🧭', '🧭');
+      }
+    } else if (toolName === 'thinking') {
+      this.state.isThinking = !this.state.isThinking;
+      if (this.state.isThinking) {
+        this.showToast('Đã kích hoạt Tư duy sâu (Step-by-step)! 💡', '💡');
+      }
+    }
+
+    this.syncToolsUI();
+  },
+
+  syncToolsUI() {
+    const input = document.getElementById('chat-input');
+    const inputCapsule = document.getElementById('gemini-input-capsule');
+
+    // 1. Cập nhật popover items
+    const itemWeb = document.getElementById('tool-item-web');
+    const statusWeb = document.getElementById('status-popover-web');
+    if (itemWeb) itemWeb.classList.toggle('active', this.state.isWebSearch);
+    if (statusWeb) statusWeb.textContent = this.state.isWebSearch ? 'Bật' : 'Tắt';
+
+    const itemResearch = document.getElementById('tool-item-research');
+    const statusResearch = document.getElementById('status-popover-research');
+    if (itemResearch) itemResearch.classList.toggle('active', this.state.isDeepResearch);
+    if (statusResearch) statusResearch.textContent = this.state.isDeepResearch ? 'Bật' : 'Tắt';
+
+    const itemThinking = document.getElementById('tool-item-thinking');
+    const statusThinking = document.getElementById('status-popover-thinking');
+    if (itemThinking) itemThinking.classList.toggle('active', this.state.isThinking);
+    if (statusThinking) statusThinking.textContent = this.state.isThinking ? 'Bật' : 'Tắt';
+
+    // 2. Cập nhật capsule styles & placeholder
+    if (inputCapsule) {
+      inputCapsule.classList.toggle('deep-research-active', this.state.isDeepResearch);
+    }
+    if (input) {
+      input.placeholder = this.state.isDeepResearch
+        ? 'Nhập chủ đề cần nghiên cứu sâu đa tầng cùng AISA...'
+        : 'Nhập câu hỏi hoặc tâm sự cùng AISA...';
+    }
+
+    // 3. Render active pills inside capsule
+    const pillsContainer = document.getElementById('capsule-active-pills');
+    if (pillsContainer) {
+      let html = '';
+      if (this.state.isWebSearch) {
+        html += `<span class="capsule-pill" onclick="window.AisaApp.toggleTool('web')" title="Nhấp để tắt">🌐 Web <span class="capsule-pill-close">✕</span></span>`;
+      }
+      if (this.state.isDeepResearch) {
+        html += `<span class="capsule-pill pill-research" onclick="window.AisaApp.toggleTool('research')" title="Nhấp để tắt">🧭 Deep Research <span class="capsule-pill-close">✕</span></span>`;
+      }
+      if (this.state.isThinking) {
+        html += `<span class="capsule-pill pill-thinking" onclick="window.AisaApp.toggleTool('thinking')" title="Nhấp để tắt">💡 Tư duy sâu <span class="capsule-pill-close">✕</span></span>`;
+      }
+      pillsContainer.innerHTML = html;
+    }
+
+    // 4. Đồng bộ các legacy badges nếu có
+    const badgeResearch = document.getElementById('badge-deep-research');
+    if (badgeResearch) badgeResearch.textContent = this.state.isDeepResearch ? 'Bật' : 'Tắt';
+    const badgeWeb = document.getElementById('badge-web-search');
+    if (badgeWeb) badgeWeb.textContent = this.state.isWebSearch ? 'Bật' : 'Tắt';
+    const badgeThinking = document.getElementById('badge-thinking');
+    if (badgeThinking) badgeThinking.textContent = this.state.isThinking ? 'Bật' : 'Tắt';
   },
 
   setMode(mode, save = true) {
@@ -2071,7 +2234,25 @@ window.AisaApp = {
     // Xóa trạng thái preview sau khi đã lấy dữ liệu
     this.clearAttachedFile();
 
-    // 1. Thêm tin nhắn user vào lịch sử
+    // 1. Nếu chưa có phiên nào (đang ở màn hình chào mừng root), tạo phiên mới ngay khi gửi tin nhắn đầu tiên
+    if (!this.state.currentSessionId) {
+      const summaryText = userText || (attachedFile ? `Tệp: ${attachedFile.name}` : 'Hình ảnh');
+      const cleanTitle = summaryText.length > 26 ? summaryText.slice(0, 26) + '...' : summaryText;
+      const newSession = {
+        id: 'session-' + Date.now(),
+        title: cleanTitle || 'Cuộc trò chuyện',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        mode: this.state.mode,
+        scope: this.state.scope,
+        messages: []
+      };
+      this.state.sessions.unshift(newSession);
+      this.state.currentSessionId = newSession.id;
+      this.updateUrlRoute('/chat', { id: newSession.id });
+    }
+
+    // 2. Thêm tin nhắn user vào lịch sử
     const userMsg = {
       id: 'msg-' + Date.now(),
       role: 'user',
