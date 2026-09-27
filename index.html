@@ -864,14 +864,14 @@
   </div>
 
   <!-- Companion & Model Selector Modal (Gemini Style) -->
-  <div class="modal-overlay" id="modal-companion-model">
-    <div class="modal-card modal-companion-card">
+  <div class="modal-backdrop modal-companion-backdrop" id="modal-companion-model" role="dialog" aria-modal="true" style="display: none;">
+    <div class="modal-dialog modal-companion-card">
       <div class="modal-header">
         <div class="modal-title-wrap">
           <div class="modal-subtitle">AISA Sanctuary Core</div>
-          <h2>Mô hình & Người đồng hành</h2>
+          <h2 class="modal-title" style="margin: 0;">Mô hình & Người đồng hành</h2>
         </div>
-        <button type="button" class="btn-close-modal" id="btn-close-companion-modal" title="Đóng">&times;</button>
+        <button type="button" class="btn-modal-close" id="btn-close-companion-modal" title="Đóng">&times;</button>
       </div>
 
       <div class="modal-body companion-modal-body">

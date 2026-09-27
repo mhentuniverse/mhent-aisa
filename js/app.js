@@ -971,10 +971,20 @@ window.AisaApp = {
         this.updateModelBadge();
       };
 
+      const openCompanionModal = () => {
+        syncCompanionModalState();
+        modalCompanion.classList.add('active');
+        modalCompanion.style.display = 'flex';
+      };
+
+      const closeCompanionModal = () => {
+        modalCompanion.classList.remove('active');
+        modalCompanion.style.display = 'none';
+      };
+
       btnModelSelector.addEventListener('click', (e) => {
         e.stopPropagation();
-        syncCompanionModalState();
-        modalCompanion.classList.add('show');
+        openCompanionModal();
       });
 
       // Chọn người đồng hành (Persona Mode)
@@ -1024,13 +1034,26 @@ window.AisaApp = {
 
       // Đóng cửa sổ chọn Model & Companion
       if (btnCloseCompanion) {
-        btnCloseCompanion.addEventListener('click', () => modalCompanion.classList.remove('show'));
+        btnCloseCompanion.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeCompanionModal();
+        });
       }
       if (btnConfirmCompanion) {
-        btnConfirmCompanion.addEventListener('click', () => modalCompanion.classList.remove('show'));
+        btnConfirmCompanion.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeCompanionModal();
+        });
       }
       modalCompanion.addEventListener('click', (e) => {
-        if (e.target === modalCompanion) modalCompanion.classList.remove('show');
+        if (e.target === modalCompanion) {
+          closeCompanionModal();
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalCompanion.classList.contains('active')) {
+          closeCompanionModal();
+        }
       });
     }
 

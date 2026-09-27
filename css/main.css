@@ -424,6 +424,24 @@ body {
 /* ==========================================================================
    COMPANION & MODEL SELECTOR MODAL (GEMINI EXPERIENCE)
    ========================================================================== */
+.modal-companion-backdrop {
+  display: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(4, 6, 10, 0.85) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  z-index: 100000 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  animation: fadeIn 0.2s ease-out;
+}
+.modal-companion-backdrop.active {
+  display: flex !important;
+}
+
 .modal-companion-card {
   max-width: 540px !important;
   width: 95% !important;
