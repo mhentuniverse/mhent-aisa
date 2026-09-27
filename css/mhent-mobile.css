@@ -294,6 +294,11 @@
   }
 
   /* Gemini Hero Greeting on Mobile */
+  .gemini-hero-greeting-container {
+    padding: 16px 8px 24px 8px !important;
+    min-height: auto !important;
+    justify-content: center !important;
+  }
   .gemini-hero-greeting {
     margin: 16px auto 10px auto !important;
   }

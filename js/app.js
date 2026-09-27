@@ -190,16 +190,23 @@ window.AisaApp = {
       if (rawSessions) {
         const parsed = JSON.parse(rawSessions);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.state.sessions = parsed.map(s => ({
-            ...s,
-            messages: (s.messages || []).map(m => {
-              if (m.role === 'assistant' && m.text) {
-                const clean = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
-                return { ...m, text: clean };
-              }
-              return m;
-            })
-          }));
+          this.state.sessions = parsed.map(s => {
+            let msgs = s.messages || [];
+            // Nếu phiên chỉ có tin chào mẫu cũ mà chưa có trao đổi người dùng, làm sạch để hiện giao diện Gemini
+            if (msgs.length <= 2 && !msgs.some(m => m.role === 'user')) {
+              msgs = [];
+            }
+            return {
+              ...s,
+              messages: msgs.map(m => {
+                if (m.role === 'assistant' && m.text) {
+                  const clean = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
+                  return { ...m, text: clean };
+                }
+                return m;
+              })
+            };
+          });
         }
       }
 
@@ -221,8 +228,8 @@ window.AisaApp = {
           } catch (e) {}
         }
 
-        const initialMsgs = oldMsgs.length > 0 ? oldMsgs : this.generateWelcomeMessages();
-        const initialTitle = this.deriveSessionTitle(initialMsgs) || 'Cuộc trò chuyện chính';
+        const initialMsgs = oldMsgs.some(m => m.role === 'user') ? oldMsgs : [];
+        const initialTitle = this.deriveSessionTitle(initialMsgs) || 'Phiên trò chuyện mới';
         const defaultSession = {
           id: 'session-' + Date.now(),
           title: initialTitle,
@@ -254,7 +261,7 @@ window.AisaApp = {
     } catch (e) {
       console.warn('Could not load saved state:', e);
       if (this.state.sessions.length === 0) {
-        this.createNewSession('Trò chuyện cùng AISA', false);
+        this.createNewSession('Phiên trò chuyện mới', false);
       }
     }
   },
@@ -288,7 +295,6 @@ window.AisaApp = {
   // MULTI-SESSION CONTROLLER
   // --------------------------------------------------------------------------
   createNewSession(title = 'Phiên trò chuyện mới', shouldSave = true) {
-    const welcomeMessages = this.generateWelcomeMessages();
     const newSession = {
       id: 'session-' + Date.now(),
       title: title,
@@ -296,12 +302,12 @@ window.AisaApp = {
       updatedAt: Date.now(),
       mode: this.state.mode,
       scope: this.state.scope,
-      messages: welcomeMessages
+      messages: []
     };
 
     this.state.sessions.unshift(newSession);
     this.state.currentSessionId = newSession.id;
-    this.state.messages = welcomeMessages;
+    this.state.messages = [];
 
     if (shouldSave) {
       this.saveState();
@@ -445,9 +451,9 @@ window.AisaApp = {
     this.initFirestoreRealtime();
     this.syncFromCloud(true);
 
-    // Nếu phiên hiện tại chỉ có 2 tin nhắn khởi tạo mẫu, cá nhân hóa lời chào cho Master
-    if (this.state.messages.length === 2 && this.state.messages[0].id.startsWith('msg-welcome')) {
-      this.state.messages = this.generateWelcomeMessages();
+    // Nếu phiên hiện tại chỉ có các tin chào mẫu cũ mà chưa có câu hỏi của người dùng, làm sạch để hiển thị Hero Greeting chuẩn Gemini
+    if (this.state.messages.length <= 2 && !this.state.messages.some(m => m.role === 'user')) {
+      this.state.messages = [];
       this.saveState();
       this.renderMessages();
     }
@@ -1304,40 +1310,54 @@ window.AisaApp = {
     const hasUserMessages = Array.isArray(this.state.messages) && this.state.messages.some(m => m.role === 'user');
     const masterName = (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) ? window.AISA_CONFIG.USER.name : "Sakura";
 
-    let heroGreetingHtml = '';
+    // 1. Trạng thái bắt đầu / mới tạo: Render Hero Greeting thoáng đãng chuẩn mực Google Gemini
     if (!hasUserMessages) {
-      heroGreetingHtml = `
-        <div class="gemini-hero-greeting" id="gemini-hero-greeting">
-          <h1 class="gemini-gradient-headline">
-            <span class="gradient-text">Xin chào, ${this.escapeHtml(masterName)}</span>
-          </h1>
-          <p class="gemini-sub-headline">Hôm nay tớ có thể giúp gì cho cậu?</p>
-          
-          <div class="gemini-prompt-cards-grid">
-            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
-              <div class="gemini-card-text">Tâm sự cùng Harmony khi thấy mệt mỏi hay áp lực bài vở...</div>
-              <div class="gemini-card-icon">🌸</div>
-            </div>
-            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
-              <div class="gemini-card-text">Nhờ Echo bóc mẽ lỗi code hoặc cà khịa deadline sấp mặt...</div>
-              <div class="gemini-card-icon">😈</div>
-            </div>
-            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
-              <div class="gemini-card-text">Phối beat và thảo luận kịch bản Yume Tsukai Precure!...</div>
-              <div class="gemini-card-icon">🎼</div>
-            </div>
-            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
-              <div class="gemini-card-text">Xem lại những gì AISA đã ghi nhớ dài hạn về tớ...</div>
-              <div class="gemini-card-icon">🧠</div>
+      container.innerHTML = `
+        <div class="gemini-hero-greeting-container">
+          <div class="gemini-hero-greeting" id="gemini-hero-greeting">
+            <h1 class="gemini-gradient-headline">
+              <span class="gradient-text">Xin chào, ${this.escapeHtml(masterName)}</span>
+            </h1>
+            <p class="gemini-sub-headline">Hôm nay tớ có thể giúp gì cho cậu?</p>
+            
+            <div class="gemini-prompt-cards-grid">
+              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
+                <div class="gemini-card-text">Tâm sự cùng Harmony khi thấy mệt mỏi hay áp lực bài vở...</div>
+                <div class="gemini-card-icon">🌸</div>
+              </div>
+              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
+                <div class="gemini-card-text">Nhờ Echo bóc mẽ lỗi code hoặc cà khịa deadline sấp mặt...</div>
+                <div class="gemini-card-icon">😈</div>
+              </div>
+              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
+                <div class="gemini-card-text">Phối beat và thảo luận kịch bản Yume Tsukai Precure!...</div>
+                <div class="gemini-card-icon">🎼</div>
+              </div>
+              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
+                <div class="gemini-card-text">Xem lại những gì AISA đã ghi nhớ dài hạn về tớ...</div>
+                <div class="gemini-card-icon">🧠</div>
+              </div>
             </div>
           </div>
         </div>
       `;
+
+      // Gắn sự kiện click cho các gợi ý thẻ câu hỏi
+      container.querySelectorAll('.quick-prompt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const text = btn.getAttribute('data-prompt') || btn.textContent.trim();
+          this.sendPrompt(text);
+        });
+      });
+
+      // Tuyệt đối không cuộn xuống dưới, giữ bố cục trọn vẹn và thư thái
+      container.scrollTop = 0;
+      return;
     }
 
+    // 2. Khi đã có hội thoại thực tế
     container.innerHTML = `
       <div class="messages-inner-container">
-        ${heroGreetingHtml}
         ${this.state.messages.map(m => {
           const isUser = m.role === 'user';
           if (isUser) {
@@ -1389,7 +1409,7 @@ window.AisaApp = {
       </div>
     `;
 
-    // Re-bind prompt buttons inside container
+    // Re-bind prompt buttons inside container nếu có
     container.querySelectorAll('.quick-prompt-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const text = btn.getAttribute('data-prompt') || btn.textContent.trim();

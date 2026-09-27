@@ -145,11 +145,15 @@ window.AisaAuth = {
     this.showLoginLoading(false);
 
     if (check.authorized) {
+      let cleanName = "Sakura";
+      if (user.displayName && !user.displayName.includes("Miyazaki") && !user.displayName.includes("Entertainment")) {
+        cleanName = user.displayName;
+      }
       this.currentUser = {
         uid: user.uid,
         email: user.email,
-        name: user.displayName || (user.email ? user.email.split('@')[0] : "Master Yurika"),
-        avatar: user.photoURL || "👑",
+        name: cleanName,
+        avatar: user.photoURL || "🌸",
         role: check.role || "master"
       };
       this.isAuthorized = true;

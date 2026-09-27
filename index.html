@@ -122,18 +122,19 @@
     <div class="header-actions">
       <!-- Ambient Synthesizer Button -->
       <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
-        <span class="ambient-icon">🎵</span> <span class="hide-mobile">432Hz Chill</span>
+        <span class="ambient-icon">🎵</span>
       </button>
 
       <!-- Memory Vault Trigger -->
       <button type="button" class="btn-header-action" id="btn-open-memory" title="Mở Ngân hàng Ký ức">
-        <span>🧠</span> <span class="hide-mobile">Ký Ức</span>
+        <span>🧠</span>
         <span class="badge-counter" id="memory-count-badge">3</span>
       </button>
 
       <!-- Cloud Sync Trigger (Đồng bộ đa thiết bị) -->
       <button type="button" class="btn-header-action" id="btn-cloud-sync" title="Đồng bộ Đám mây Đa Thiết Bị (Điện thoại ⇋ Máy tính)">
-        <span id="cloud-sync-icon">☁️</span> <span id="cloud-sync-text" class="hide-mobile">Đồng bộ</span>
+        <span id="cloud-sync-icon">☁️</span>
+        <span id="cloud-sync-text" style="display: none;">Đồng bộ</span>
       </button>
 
       <!-- Settings Trigger -->
@@ -143,13 +144,13 @@
 
       <!-- Master Profile & Logout Action -->
       <div class="header-user-badge" id="header-user-badge" style="display: none;">
-        <div class="user-badge-inner" id="user-badge-inner" title="Tài khoản Master">
-          <span class="user-badge-avatar" id="header-user-avatar">👑</span>
-          <span class="user-badge-name" id="header-user-name">Master Yurika</span>
+        <div class="user-badge-inner" id="user-badge-inner" title="Master Sakura">
+          <span class="user-badge-avatar" id="header-user-avatar">🌸</span>
+          <span class="user-badge-name" id="header-user-name" style="display: none;">Sakura</span>
           <span class="user-badge-status-dot"></span>
         </div>
         <button type="button" class="btn-header-logout" id="btn-header-logout" title="Đăng xuất khỏi Sanctuary">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -183,83 +184,54 @@
         </div>
         <button type="button" class="btn-sync-cloud-icon" id="btn-sync-cloud" title="Làm mới & Đồng bộ đám mây ngay">☁️</button>
       </div>
+
+      <!-- Scrollable Recent Sessions (Expands naturally) -->
       <div class="sidebar-sessions-list" id="sidebar-sessions-list">
         <!-- Rendered dynamically via app.js -->
       </div>
 
-      <!-- Companion Presence Card -->
-      <div class="sanctuary-presence-card">
-        <div class="presence-avatars-row">
-          <div class="presence-avatar-pill harmony" id="persona-card-harmony">
-            <span class="presence-icon">🌸</span>
-            <span class="presence-name name-pink">Harmony</span>
-          </div>
-          <div class="presence-avatar-pill echo" id="persona-card-echo">
-            <span class="presence-icon">😈</span>
-            <span class="presence-name name-purple">Echo</span>
-          </div>
-        </div>
-        <div class="presence-status-quote" id="sanctuary-greeting-time">
-          "Harmony đang pha trà hoa cúc 🍵 • Echo đang sẵn sàng chiến deadline cùng cậu 😈"
-        </div>
-      </div>
-
-      <!-- Quick Conversation Starters -->
-      <div class="sidebar-section-title">
-        <span>Gợi ý câu hỏi</span>
-      </div>
-      <div class="sidebar-quick-prompts">
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
-          <span>🌸</span> <span>Cậu ơi hôm nay em thấy mệt...</span>
-        </button>
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
-          <span>😈</span> <span>Echo ơi, vào việc thôi nào!</span>
-        </button>
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
-          <span>🎼</span> <span>Kịch bản Yume Tsukai Precure!</span>
-        </button>
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
-          <span>🧠</span> <span>Kiểm tra hồ sơ ký ức AISA</span>
-        </button>
-      </div>
-
-      <!-- Sidebar Bottom Utilities -->
+      <!-- Gemini Minimal Bottom Drawer Utilities -->
       <div class="sidebar-bottom-tools">
-        <!-- Quick Fact Add -->
-        <div class="sidebar-quick-fact-card">
-          <div class="sidebar-fact-header">
-            <span>🧠 Ghim ký ức nhanh</span>
-            <button type="button" class="btn-slim-link" id="btn-quick-open-vault">Mở kho ↗</button>
-          </div>
-          <form id="form-quick-add-fact" class="quick-add-fact-row">
-            <input type="text" id="input-sidebar-fact" class="input-sidebar-fact" placeholder="Ghi nhớ điều mới..." required>
-            <button type="submit" class="btn-sidebar-add-fact">+</button>
-          </form>
-        </div>
-
-        <!-- 432Hz Chill Audio -->
-        <div class="sidebar-ambient-card">
-          <div class="ambient-player-row">
-            <div class="ambient-info">
-              <span class="ambient-label">🎵 Sóng 432Hz Chill</span>
-              <div class="ambient-visualizer" id="ambient-visualizer">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
+        <div class="sidebar-nav-links">
+          <button type="button" class="sidebar-nav-btn" id="btn-sidebar-memory" onclick="document.getElementById('btn-open-memory')?.click()">
+            <span class="nav-icon">🧠</span>
+            <span class="nav-label">Ngân hàng Ký ức</span>
+          </button>
+          <button type="button" class="sidebar-nav-btn btn-ambient-toggle" id="btn-sidebar-ambient">
+            <span class="nav-icon ambient-icon">🎵</span>
+            <span class="nav-label">Âm hưởng 432Hz</span>
+            <div class="ambient-visualizer" id="ambient-visualizer">
+              <span></span><span></span><span></span><span></span><span></span>
             </div>
-            <button type="button" class="btn-ambient-toggle btn-ambient-mini">Bật/Tắt</button>
-          </div>
+          </button>
+          <button type="button" class="sidebar-nav-btn" id="btn-sidebar-settings" onclick="document.getElementById('btn-open-settings')?.click()">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Cài đặt Sanctuary</span>
+          </button>
         </div>
 
         <div class="sidebar-footer-badge">
           <span>⚡ Cloudflare D1 • SQLite Edge</span>
+        </div>
+
+        <!-- Hidden elements preserved for 100% JS compatibility -->
+        <div style="display: none;">
+          <div id="persona-card-harmony"></div>
+          <div id="persona-card-echo"></div>
+          <span id="sanctuary-greeting-time"></span>
+          <button type="button" id="btn-quick-open-vault"></button>
+          <form id="form-quick-add-fact">
+            <input type="text" id="input-sidebar-fact">
+            <button type="submit" class="btn-sidebar-add-fact">+</button>
+          </form>
         </div>
       </div>
     </aside>
 
     <!-- 2. CENTER STAGE: GEMINI IMMERSIVE CHAT STREAM -->
     <section class="sanctuary-chat-center">
-      <!-- Stream Top Bar -->
-      <div class="chat-stream-header">
+      <!-- Hidden Stream Top Bar (Kept for JS references while maximizing canvas) -->
+      <div class="chat-stream-header" style="display: none;">
         <div class="stream-scope-badge" id="current-scope-label">
           ✨ AISA Sanctuary • Song Hành (Harmony 🌸 & Echo 😈)
         </div>
