@@ -250,29 +250,30 @@
       <!-- Signature Gemini Floating Capsule Input Station -->
       <div class="chat-input-station">
         <div class="input-station-inner">
-          <!-- Image Attachment Preview Above Input (Gemini Style) -->
+          <!-- Attachment Preview Above Input (Supports Images, Documents, Code, PDF) -->
           <div class="chat-attached-preview" id="chat-attached-preview" style="display: none;">
-            <div class="attached-img-card">
-              <img id="attached-img-thumb" class="attached-img-thumb" src="" alt="Thumbnail">
+            <div class="attached-file-card" id="attached-file-card">
+              <div class="attached-file-icon-box" id="attached-file-icon-box">
+                <img id="attached-img-thumb" class="attached-img-thumb" src="" alt="Thumbnail" style="display: none;">
+                <span id="attached-doc-icon" class="attached-doc-icon">📄</span>
+              </div>
               <div class="attached-img-info">
-                <span class="attached-img-name" id="attached-img-name">image.png</span>
+                <span class="attached-img-name" id="attached-img-name">tài_liệu.pdf</span>
                 <span class="attached-img-size" id="attached-img-size">120 KB</span>
               </div>
-              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment" title="Gỡ ảnh đính kèm">&times;</button>
+              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment" title="Gỡ tệp đính kèm">&times;</button>
             </div>
           </div>
 
           <!-- Capsule Pill Wrapper (Google Gemini Signature) -->
-          <div class="gemini-input-capsule">
-            <!-- Hidden File Input for Image Attachment -->
-            <input type="file" id="chat-file-input" accept="image/*" style="display: none;">
+          <div class="gemini-input-capsule" id="gemini-input-capsule">
+            <!-- Multi-format File Input (Images, Documents, Code, PDF, Sheets) -->
+            <input type="file" id="chat-file-input" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.html,.css,.sql" style="display: none;">
 
-            <!-- Attachment Button -->
-            <button type="button" class="btn-capsule-tool" id="btn-attach-image" title="Đính kèm hình ảnh (hoặc dán Ctrl+V trực tiếp)">
+            <!-- Attachment Button (Paperclip) -->
+            <button type="button" class="btn-capsule-tool" id="btn-attach-image" title="Đính kèm tệp tin hoặc ảnh (Ảnh, PDF, TXT, Code, Docx...)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-                <circle cx="9" cy="9" r="2"/>
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
               </svg>
             </button>
 
@@ -302,6 +303,24 @@
                 </svg>
               </button>
             </div>
+          </div>
+
+          <!-- Google Gemini Tool Chips (Deep Research, Web Search, Thinking) -->
+          <div class="gemini-tools-chips-row">
+            <button type="button" class="gemini-tool-chip" id="btn-tool-deep-research" title="Bật/Tắt chế độ Deep Research (Báo cáo nghiên cứu chuyên sâu đa nguồn)">
+              <span class="tool-icon">🧭</span>
+              <span class="tool-name">Deep Research</span>
+              <span class="tool-badge-status" id="badge-deep-research">Tắt</span>
+            </button>
+            <button type="button" class="gemini-tool-chip active" id="btn-tool-web-search" title="Tra cứu nguồn tin thực tế & Web Search">
+              <span class="tool-icon">🌐</span>
+              <span class="tool-name">Tra cứu Web</span>
+              <span class="tool-badge-status" id="badge-web-search">Bật</span>
+            </button>
+            <button type="button" class="gemini-tool-chip" id="btn-tool-thinking" title="Suy ngẫm từng bước (Step-by-step Thinking)">
+              <span class="tool-icon">💡</span>
+              <span class="tool-name">Tư duy sâu</span>
+            </button>
           </div>
 
           <!-- Gemini Footer Disclaimer -->

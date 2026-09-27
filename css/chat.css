@@ -263,6 +263,53 @@
   transform: scale(1.02);
 }
 
+/* Attached Document / File Card inside Messages */
+.bubble-attached-file-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  max-width: 100%;
+}
+.bubble-file-icon {
+  font-size: 1.4rem;
+}
+.bubble-file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.bubble-file-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-high);
+}
+.bubble-file-size {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Deep Research Badge in Assistant Responses */
+.deep-research-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
 /* ==========================================================================
    3. MARKDOWN TYPOGRAPHY (GEMINI RICH TEXT RENDERING)
    ========================================================================== */
@@ -428,36 +475,56 @@
   gap: 6px;
 }
 
-/* Image Attachment Card Preview */
+/* Multi-Format Attachment Card Preview (Images & Documents) */
 .chat-attached-preview {
   display: flex;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  animation: heroFadeIn 0.2s ease;
 }
-.attached-img-card {
+.attached-file-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--bg-surface);
+  gap: 10px;
+  background: var(--bg-surface-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 6px 10px;
+  border-radius: 14px;
+  padding: 6px 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  max-width: 320px;
 }
-.attached-img-thumb {
+.attached-file-icon-box {
   width: 36px;
   height: 36px;
-  object-fit: cover;
   border-radius: 8px;
+  background: var(--bg-canvas);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border-hairline);
+  overflow: hidden;
+}
+.attached-file-icon-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.attached-doc-icon {
+  font-size: 1.2rem;
 }
 .attached-img-info {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 0;
+  flex: 1;
 }
 .attached-img-name {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-high);
-  max-width: 180px;
+  max-width: 190px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -471,12 +538,14 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.1rem;
   padding: 2px 6px;
   border-radius: 50%;
+  transition: var(--transition-smooth);
 }
 .btn-remove-attachment:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
 }
 
 /* Capsule Pill */
@@ -488,12 +557,69 @@
   border-radius: 28px;
   padding: 6px 12px 6px 14px;
   gap: 10px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 .gemini-input-capsule:focus-within {
   border-color: rgba(168, 199, 250, 0.6);
   box-shadow: 0 0 0 1px rgba(168, 199, 250, 0.4), 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Signature Deep Research Capsule Glow */
+.gemini-input-capsule.deep-research-active {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 1.5px rgba(56, 189, 248, 0.5), 0 8px 30px rgba(56, 189, 248, 0.2) !important;
+  background: linear-gradient(180deg, #1e1f20 0%, #131c2a 100%) !important;
+}
+
+/* Google Gemini Tool Chips (Deep Research, Web Search, Thinking) */
+.gemini-tools-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.gemini-tool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-medium);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+.gemini-tool-chip:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--text-high);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+.gemini-tool-chip.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(168, 85, 247, 0.15));
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+.tool-badge-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface-elevated);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+.gemini-tool-chip.active .tool-badge-status {
+  background: #38bdf8;
+  color: #0f172a;
 }
 
 .btn-capsule-tool {

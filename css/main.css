@@ -462,33 +462,53 @@ body {
    ========================================================================== */
 .sanctuary-stage {
   flex: 1;
-  display: grid;
-  grid-template-columns: 270px 1fr;
+  display: flex;
   height: calc(100vh - 56px);
   height: calc(100dvh - 56px);
   overflow: hidden;
   position: relative;
-  transition: grid-template-columns 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
 }
 
 /* ==========================================================================
    LEFT SIDEBAR: GEMINI COLLAPSIBLE DRAWER
    ========================================================================== */
 .sanctuary-sidebar-left {
+  width: 270px;
+  min-width: 270px;
+  max-width: 270px;
+  box-sizing: border-box;
   background: var(--bg-surface);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 14px 12px;
   gap: 12px;
   z-index: 50;
-  transition: margin-left 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s ease;
+  flex-shrink: 0;
+  transition: width 0.25s cubic-bezier(0.2, 0, 0, 1),
+              min-width 0.25s cubic-bezier(0.2, 0, 0, 1),
+              max-width 0.25s cubic-bezier(0.2, 0, 0, 1),
+              padding 0.25s cubic-bezier(0.2, 0, 0, 1),
+              opacity 0.2s ease,
+              visibility 0.25s ease;
 }
 
 .sanctuary-sidebar-left.collapsed {
-  margin-left: -270px;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  border-right: none !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  margin-left: 0 !important;
 }
 
 /* Gemini "+ New Chat" Button */
@@ -505,6 +525,9 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
   transition: var(--transition-smooth);
 }
 .btn-new-session:hover {
@@ -825,6 +848,8 @@ body {
    CENTER CHAT STAGE: IMMERSIVE GEMINI CANVAS
    ========================================================================== */
 .sanctuary-chat-center {
+  flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -832,6 +857,7 @@ body {
   overflow: hidden;
   position: relative;
   height: 100%;
+  width: 100%;
 }
 
 /* Stream Top Bar */
@@ -879,7 +905,8 @@ body {
 /* Responsive Rules */
 @media (max-width: 900px) {
   .sanctuary-stage {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
   .sanctuary-sidebar-left {
     position: fixed;
@@ -887,9 +914,16 @@ body {
     left: 0;
     bottom: 0;
     width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     box-shadow: 10px 0 35px rgba(0, 0, 0, 0.7);
     transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto;
     margin-left: 0 !important;
+    z-index: 200;
   }
   .sanctuary-sidebar-left.open-mobile {
     transform: translateX(0);

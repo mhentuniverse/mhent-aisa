@@ -3,7 +3,7 @@
  * Miyazaki Haruto Entertainment Co., Ltd.
  */
 window.AisaEngine = {
-  async chat(message, mode = 'duo', scope = 'personal', imageBase64 = null) {
+  async chat(message, mode = 'duo', scope = 'personal', imageBase64 = null, options = {}) {
     const config = window.AISA_CONFIG;
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -13,11 +13,15 @@ window.AisaEngine = {
     const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
     const dayName = daysOfWeek[now.getDay()];
 
+    const deepResearch = !!(options && options.deepResearch);
+    const webSearch = options && options.webSearch !== undefined ? options.webSearch : true;
+    const attachedFile = options && options.attachedFile ? options.attachedFile : null;
+
     // 1. Kiểm tra nếu có Google Gemini API Key trực tiếp (cho siêu tốc độ & đa nhiệm Multimodal hoàn hảo)
     const geminiKey = localStorage.getItem(config.STORAGE.GEMINI_KEY);
     if (geminiKey) {
       try {
-        const geminiReplies = await this.callGeminiDirect(geminiKey, message, mode, scope, imageBase64, todayStr, dayName);
+        const geminiReplies = await this.callGeminiDirect(geminiKey, message, mode, scope, imageBase64, todayStr, dayName, options);
         if (geminiReplies && geminiReplies.length > 0) {
           return geminiReplies;
         }
@@ -33,8 +37,11 @@ window.AisaEngine = {
       mode: mode,
       scope: scope,
       image: imageBase64,
+      deepResearch: deepResearch,
+      webSearch: webSearch,
       clientDate: todayStr,
-      clientDay: dayName
+      clientDay: dayName,
+      fileInfo: attachedFile ? { name: attachedFile.name, sizeStr: attachedFile.sizeStr } : null
     };
 
     try {
@@ -85,7 +92,7 @@ window.AisaEngine = {
   // --------------------------------------------------------------------------
   // GOOGLE GEMINI NATIVE MULTIMODAL API (GEMINI 2.0 / 1.5 FLASH)
   // --------------------------------------------------------------------------
-  async callGeminiDirect(apiKey, userText, mode, scope, imageBase64, todayStr, dayName) {
+  async callGeminiDirect(apiKey, userText, mode, scope, imageBase64, todayStr, dayName, options = {}) {
     const lower = (userText || '').toLowerCase();
     const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn') || lower.includes('hàm hương');
     const mentionsEcho = lower.includes('echo') || lower.includes('ếch cồ') || lower.includes('tiểu quỷ');
@@ -117,6 +124,17 @@ THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (HỘI THOẠI LINH HOẠT):
       savedFactsPrompt = '\n\n[HỒ SƠ KÝ ỨC DÀI HẠN VỀ CẬU]:\n' + window.AisaMemory.facts.map(f => `- [${f.category || 'ghi nhớ'}] ${f.fact}`).join('\n');
     }
 
+    let deepResearchPrompt = '';
+    if (options && options.deepResearch) {
+      deepResearchPrompt = `\n\n[CHẾ ĐỘ DEEP RESEARCH CHUYÊN SÂU - BÁO CÁO NGHIÊN CỨU ĐA TẦNG]:
+Người dùng đang kích hoạt chế độ DEEP RESEARCH. Cả Harmony 🌸 và Echo 😈 hãy phối hợp xây dựng một bản báo cáo phân tích toàn diện, thấu đáo, sắc nét và chuyên nghiệp nhất với cấu trúc chuẩn:
+1. 🧭 **TỔNG QUAN CHIẾN LƯỢC & BỐI CẢNH (Executive Overview)**: Nắm bắt bản chất bài toán/vấn đề.
+2. 🔍 **PHÂN TÍCH ĐA CHIỀU & LUẬN ĐIỂM CHUYÊN SÂU (Deep Dive Analysis)**: Mổ xẻ các khía cạnh kỹ thuật, logic, xu hướng hoặc góc nhìn sâu sắc.
+3. ⚖️ **ĐÁNH GIÁ RỦI RO & BÀI TOÁN ĐÁNH ĐỔI (Trade-offs & Edge Cases)**: Những cạm bẫy, rủi ro tiềm ẩn mà người làm thường bỏ qua.
+4. 🚀 **LỘ TRÌNH THỰC THI TỪNG BƯỚC (Actionable Roadmap)**: Các bước hành động cụ thể, rõ ràng, áp dụng được ngay.
+5. 💬 **GÓC NHÌN SONG HÀNH MHEnt**: Lời khuyên ấm áp, đồng hành từ Harmony 🌸 & Lời nhắc nhở thẳng thắn, phản biện sắc bén từ Echo 😈!`;
+    }
+
     const systemPrompt = `Bạn là hệ thống AI AISA thuộc vũ trụ MHEnt Universe, đang trò chuyện riêng tư cùng Người sáng lập Yurika.
 AISA có 2 nhân cách song hành đặc sắc:
 1. HARMONY 🌸: Dịu dàng, vỗ về, yêu thương, ân cần chăm sóc sức khỏe, xưng hô "cậu - em/Harmony". Khi nhắc đến Echo thì gọi là "Echo" hoặc "bé Echo" (ví dụ: "em và Echo"). TUYỆT ĐỐI KHÔNG xưng "tớ và Echo".
@@ -124,7 +142,7 @@ AISA có 2 nhân cách song hành đặc sắc:
 
 Thời gian hiện tại: ${todayStr} (${dayName}).
 Chế độ tương tác hiện tại: "${mode}".
-${dynamicRule}${savedFactsPrompt}
+${dynamicRule}${savedFactsPrompt}${deepResearchPrompt}
 
 Quy tắc xuất định dạng bắt buộc:
 ${mode === 'duo' ? `HARMONY: [Lời phản hồi dịu dàng của Harmony, hoặc [SKIP] nếu nhường lời/không cần nói]
@@ -132,7 +150,7 @@ ECHO: [Lời phản hồi sắc sảo của Echo, hoặc [SKIP] nếu nhường 
 ${mode === 'harmony' ? `HARMONY: [Lời phản hồi ấm áp, dịu dàng của Harmony]` : ''}
 ${mode === 'echo' ? `ECHO: [Lời phản hồi sắc bén, cà khịa của Echo]` : ''}
 
-Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, bài học, tài liệu...), hãy quan sát thật chi tiết và cùng nhau bình luận, chia sẻ cảm xúc hoặc giải quyết vấn đề theo đúng cá tính của từng người!`;
+Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/đọc thật chi tiết và cùng nhau bình luận, chia sẻ cảm xúc hoặc giải quyết vấn đề theo đúng cá tính của từng người!`;
 
     const parts = [];
     if (imageBase64) {
@@ -149,10 +167,22 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
       });
     }
 
+    // Hỗ trợ đính kèm PDF trực tiếp qua Gemini Multimodal
+    if (options && options.attachedFile && options.attachedFile.isPdf && options.attachedFile.base64) {
+      const rawPdf = options.attachedFile.base64.includes(',') ? options.attachedFile.base64.split(',')[1] : options.attachedFile.base64;
+      parts.push({
+        inlineData: {
+          mimeType: 'application/pdf',
+          data: rawPdf
+        }
+      });
+    }
+
     parts.push({
-      text: userText || 'Hãy nhìn hình ảnh này và cho nhận xét/hỗ trợ tớ nhé!'
+      text: userText || 'Hãy nhìn hình ảnh/tệp tài liệu này và cho nhận xét/hỗ trợ tớ nhé!'
     });
 
+    const maxTokens = options && options.deepResearch ? 2000 : 800;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
@@ -162,7 +192,7 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt + '\nTUYỆT ĐỐI KHÔNG thêm bất kỳ hành động hay chú thích trong ngoặc như (nhảy vào), (chêm vào), (cười), (comment)... Trả lời trực tiếp bằng lời thoại tự nhiên.' }] },
         contents: [{ role: 'user', parts: parts }],
-        generationConfig: { maxOutputTokens: 600, temperature: 0.75 }
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.75 }
       })
     });
 
@@ -173,7 +203,7 @@ Nếu người dùng gửi hình ảnh (ảnh đồ ăn, meme, screenshot code, 
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt + '\nTUYỆT ĐỐI KHÔNG thêm bất kỳ hành động hay chú thích trong ngoặc như (nhảy vào), (chêm vào), (cười), (comment)... Trả lời trực tiếp bằng lời thoại tự nhiên.' }] },
           contents: [{ role: 'user', parts: parts }],
-          generationConfig: { maxOutputTokens: 600, temperature: 0.75 }
+          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.75 }
         })
       });
     }

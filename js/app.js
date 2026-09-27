@@ -145,7 +145,11 @@ window.AisaApp = {
     messages: [],          // Tin nhắn của phiên hiện tại
     isGenerating: false,
     pendingImage: null,
-    pendingImageName: ''
+    pendingImageName: '',
+    pendingFile: null,      // Tệp tài liệu/code/PDF đính kèm { name, size, sizeStr, type, isImage, isText, isPdf, icon, textContent, base64 }
+    isDeepResearch: false,  // Chế độ Deep Research đa tầng
+    isWebSearch: true,      // Chế độ Tra cứu Web
+    isThinking: false       // Chế độ Tư duy sâu (Step-by-step thinking)
   },
 
   cloudSync: {
@@ -902,15 +906,17 @@ window.AisaApp = {
         input.style.height = Math.min(input.scrollHeight, 140) + 'px';
       });
 
-      // Hỗ trợ dán ảnh trực tiếp từ Clipboard (Ctrl + V)
+      // Hỗ trợ dán ảnh hoặc tệp văn bản trực tiếp từ Clipboard (Ctrl + V)
       input.addEventListener('paste', (e) => {
         const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
         if (!items) return;
         for (let i = 0; i < items.length; i++) {
-          if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+          if (items[i].kind === 'file') {
             const blob = items[i].getAsFile();
-            this.attachImageFile(blob);
-            break;
+            if (blob) {
+              this.attachFile(blob);
+              break;
+            }
           }
         }
       });
@@ -920,22 +926,72 @@ window.AisaApp = {
       sendBtn.addEventListener('click', () => this.handleSendMessage());
     }
 
-    // Đính kèm hình ảnh (File Picker)
+    // Đính kèm tệp tin / hình ảnh đa định dạng (File Picker)
     const btnAttach = document.getElementById('btn-attach-image');
     const fileInput = document.getElementById('chat-file-input');
     if (btnAttach && fileInput) {
       btnAttach.addEventListener('click', () => fileInput.click());
       fileInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
-          this.attachImageFile(e.target.files[0]);
+          this.attachFile(e.target.files[0]);
         }
       });
     }
 
-    // Nút gỡ ảnh đính kèm
+    // Nút gỡ tệp đính kèm
     const btnRemoveAttach = document.getElementById('btn-remove-attachment');
     if (btnRemoveAttach) {
-      btnRemoveAttach.addEventListener('click', () => this.clearAttachedImage());
+      btnRemoveAttach.addEventListener('click', () => this.clearAttachedFile());
+    }
+
+    // Google Gemini Tool Chips (Deep Research, Tra cứu Web, Tư duy sâu)
+    const btnDeepResearch = document.getElementById('btn-tool-deep-research');
+    const badgeDeepResearch = document.getElementById('badge-deep-research');
+    const inputCapsule = document.getElementById('gemini-input-capsule');
+
+    if (btnDeepResearch) {
+      btnDeepResearch.addEventListener('click', () => {
+        this.state.isDeepResearch = !this.state.isDeepResearch;
+        btnDeepResearch.classList.toggle('active', this.state.isDeepResearch);
+        if (badgeDeepResearch) {
+          badgeDeepResearch.textContent = this.state.isDeepResearch ? 'Bật' : 'Tắt';
+        }
+        if (inputCapsule) {
+          inputCapsule.classList.toggle('deep-research-active', this.state.isDeepResearch);
+        }
+        if (input) {
+          input.placeholder = this.state.isDeepResearch
+            ? 'Nhập chủ đề cần nghiên cứu sâu đa tầng cùng AISA...'
+            : 'Nhập câu hỏi hoặc tâm sự cùng AISA...';
+        }
+        if (this.state.isDeepResearch) {
+          this.showToast('Đã kích hoạt chế độ Deep Research đa nguồn! 🧭', '🧭');
+        }
+      });
+    }
+
+    const btnWebSearch = document.getElementById('btn-tool-web-search');
+    const badgeWebSearch = document.getElementById('badge-web-search');
+    if (btnWebSearch) {
+      btnWebSearch.addEventListener('click', () => {
+        this.state.isWebSearch = !this.state.isWebSearch;
+        btnWebSearch.classList.toggle('active', this.state.isWebSearch);
+        if (badgeWebSearch) {
+          badgeWebSearch.textContent = this.state.isWebSearch ? 'Bật' : 'Tắt';
+        }
+      });
+    }
+
+    const btnThinking = document.getElementById('btn-tool-thinking');
+    const badgeThinking = document.getElementById('badge-thinking');
+    if (btnThinking) {
+      btnThinking.addEventListener('click', () => {
+        this.state.isThinking = !this.state.isThinking;
+        btnThinking.classList.toggle('active', this.state.isThinking);
+        if (badgeThinking) {
+          badgeThinking.textContent = this.state.isThinking ? 'Bật' : 'Tắt';
+        }
+      });
     }
 
     // Quick Chips & Sidebar Prompts
@@ -971,14 +1027,21 @@ window.AisaApp = {
     const sidebarLeft = document.getElementById('sanctuary-sidebar-left');
     const mobileOverlay = document.getElementById('mhent-aisa-overlay');
 
+    // Phục hồi trạng thái sidebar đã lưu trên desktop
+    if (sidebarLeft && window.innerWidth > 900) {
+      const isSavedCollapsed = localStorage.getItem('aisa_sidebar_collapsed') === '1';
+      sidebarLeft.classList.toggle('collapsed', isSavedCollapsed);
+    }
+
     const toggleMobileLeftDrawer = (force) => {
       if (!sidebarLeft) return;
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 900) {
         const next = typeof force === 'boolean' ? force : !sidebarLeft.classList.contains('open-mobile');
         sidebarLeft.classList.toggle('open-mobile', next);
         if (mobileOverlay) mobileOverlay.classList.toggle('show', next);
       } else {
-        sidebarLeft.classList.toggle('collapsed');
+        const isCollapsed = sidebarLeft.classList.toggle('collapsed');
+        localStorage.setItem('aisa_sidebar_collapsed', isCollapsed ? '1' : '0');
       }
     };
 
@@ -995,8 +1058,8 @@ window.AisaApp = {
     // Auto-close drawer on mobile when clicking session or new session
     if (sidebarLeft) {
       sidebarLeft.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768) {
-          if (e.target.closest('.sidebar-session-item, .btn-new-session, .sidebar-prompt-item')) {
+        if (window.innerWidth <= 900) {
+          if (e.target.closest('.sidebar-session-item, .session-item, .btn-new-session, .sidebar-prompt-item')) {
             setTimeout(() => toggleMobileLeftDrawer(false), 200);
           }
         }
@@ -1187,41 +1250,128 @@ window.AisaApp = {
     }
   },
 
-  async attachImageFile(file) {
-    if (!file || !file.type.startsWith('image/')) {
-      await window.AisaDialog.alert({
-        title: 'Tệp Không Hợp Lệ',
-        message: 'Vui lòng chọn hoặc dán tệp hình ảnh hợp lệ (PNG, JPG, WebP).',
-        icon: '🖼️',
-        okText: 'Đã Hiểu'
-      });
-      return;
+  async attachFile(file) {
+    if (!file) return;
+
+    const isImg = file.type.startsWith('image/');
+    const fileName = file.name || (isImg ? 'image.png' : 'document.txt');
+    const fileSizeStr = file.size > 1024 * 1024 
+      ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+      : Math.round(file.size / 1024) + ' KB';
+
+    // Xác định icon phù hợp với loại tệp
+    let icon = '📄';
+    const lowerName = fileName.toLowerCase();
+    if (isImg) icon = '🖼️';
+    else if (lowerName.endsWith('.pdf')) icon = '📕';
+    else if (lowerName.endsWith('.csv') || lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) icon = '📊';
+    else if (lowerName.endsWith('.doc') || lowerName.endsWith('.docx')) icon = '📘';
+    else if (lowerName.endsWith('.txt') || lowerName.endsWith('.md')) icon = '📝';
+    else if (lowerName.endsWith('.json') || lowerName.endsWith('.js') || lowerName.endsWith('.ts') || lowerName.endsWith('.py') || lowerName.endsWith('.html') || lowerName.endsWith('.css') || lowerName.endsWith('.sql')) icon = '💻';
+
+    const previewBox = document.getElementById('chat-attached-preview');
+    const thumb = document.getElementById('attached-img-thumb');
+    const docIcon = document.getElementById('attached-doc-icon');
+    const nameEl = document.getElementById('attached-img-name');
+    const sizeEl = document.getElementById('attached-img-size');
+
+    if (nameEl) nameEl.textContent = fileName;
+    if (sizeEl) sizeEl.textContent = fileSizeStr;
+
+    if (isImg) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.state.pendingImage = e.target.result;
+        this.state.pendingImageName = fileName;
+        this.state.pendingFile = {
+          name: fileName,
+          size: file.size,
+          sizeStr: fileSizeStr,
+          type: file.type,
+          isImage: true,
+          base64: e.target.result,
+          icon: '🖼️'
+        };
+
+        if (thumb) {
+          thumb.src = e.target.result;
+          thumb.style.display = 'block';
+        }
+        if (docIcon) docIcon.style.display = 'none';
+        if (previewBox) previewBox.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Tệp tài liệu, code, hoặc PDF
+      this.state.pendingImage = null;
+      this.state.pendingImageName = '';
+
+      if (thumb) thumb.style.display = 'none';
+      if (docIcon) {
+        docIcon.textContent = icon;
+        docIcon.style.display = 'inline-block';
+      }
+
+      // Đọc nội dung tệp (nếu là văn bản/code/json/csv/markdown)
+      const isTextReadable = file.type.startsWith('text/') || 
+        ['.txt', '.md', '.json', '.csv', '.js', '.ts', '.py', '.html', '.css', '.sql', '.toml', '.yaml', '.yml'].some(ext => lowerName.endsWith(ext));
+
+      if (isTextReadable) {
+        const textReader = new FileReader();
+        textReader.onload = (e) => {
+          this.state.pendingFile = {
+            name: fileName,
+            size: file.size,
+            sizeStr: fileSizeStr,
+            type: file.type,
+            isImage: false,
+            isText: true,
+            icon: icon,
+            textContent: e.target.result
+          };
+          if (previewBox) previewBox.style.display = 'flex';
+        };
+        textReader.readAsText(file);
+      } else {
+        // Tệp nhị phân như PDF
+        const dataReader = new FileReader();
+        dataReader.onload = (e) => {
+          this.state.pendingFile = {
+            name: fileName,
+            size: file.size,
+            sizeStr: fileSizeStr,
+            type: file.type || 'application/octet-stream',
+            isImage: false,
+            isPdf: lowerName.endsWith('.pdf'),
+            icon: icon,
+            base64: e.target.result
+          };
+          if (previewBox) previewBox.style.display = 'flex';
+        };
+        dataReader.readAsDataURL(file);
+      }
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.state.pendingImage = e.target.result;
-      this.state.pendingImageName = file.name || 'image.png';
+  },
 
-      const previewBox = document.getElementById('chat-attached-preview');
-      const thumb = document.getElementById('attached-img-thumb');
-      const nameEl = document.getElementById('attached-img-name');
-      const sizeEl = document.getElementById('attached-img-size');
+  clearAttachedFile() {
+    this.state.pendingImage = null;
+    this.state.pendingImageName = '';
+    this.state.pendingFile = null;
+    const previewBox = document.getElementById('chat-attached-preview');
+    if (previewBox) previewBox.style.display = 'none';
+    const thumb = document.getElementById('attached-img-thumb');
+    if (thumb) { thumb.src = ''; thumb.style.display = 'none'; }
+    const fileInput = document.getElementById('chat-file-input');
+    if (fileInput) fileInput.value = '';
+  },
 
-      if (thumb) thumb.src = e.target.result;
-      if (nameEl) nameEl.textContent = file.name || 'Hình ảnh đính kèm';
-      if (sizeEl) sizeEl.textContent = Math.round(file.size / 1024) + ' KB';
-      if (previewBox) previewBox.style.display = 'flex';
-    };
-    reader.readAsDataURL(file);
+  // Giữ phương thức tương thích ngược
+  async attachImageFile(file) {
+    return this.attachFile(file);
   },
 
   clearAttachedImage() {
-    this.state.pendingImage = null;
-    this.state.pendingImageName = '';
-    const previewBox = document.getElementById('chat-attached-preview');
-    if (previewBox) previewBox.style.display = 'none';
-    const fileInput = document.getElementById('chat-file-input');
-    if (fileInput) fileInput.value = '';
+    this.clearAttachedFile();
   },
 
   bindModal(openBtnId, modalId, closeBtnId) {
@@ -1368,12 +1518,21 @@ window.AisaApp = {
                     <span class="sender-name">👑 ${window.AISA_CONFIG.USER.name}</span>
                     <span class="message-time">${m.time}</span>
                   </div>
+                  ${m.file && !m.image ? `
+                    <div class="bubble-attached-file-card">
+                      <div class="bubble-file-icon">${m.file.icon || '📄'}</div>
+                      <div class="bubble-file-details">
+                        <div class="bubble-file-name">${this.escapeHtml(m.file.name)}</div>
+                        <div class="bubble-file-size">${m.file.sizeStr || 'Tệp đính kèm'}</div>
+                      </div>
+                    </div>
+                  ` : ''}
                   ${m.image ? `
                     <div class="bubble-attached-img-wrap">
                       <img src="${m.image}" class="bubble-attached-img" onclick="window.open('${m.image}', '_blank')" alt="Ảnh đính kèm" title="Nhấp để xem ảnh đầy đủ">
                     </div>
                   ` : ''}
-                  <div class="bubble-text">${window.AisaMarkdown.format(m.text || '')}</div>
+                  ${m.text ? `<div class="bubble-text">${window.AisaMarkdown.format(m.text || '')}</div>` : ''}
                 </div>
               </div>
             `;
@@ -1393,6 +1552,13 @@ window.AisaApp = {
                   <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadge}</span>
                   <span class="message-time">${m.time}</span>
                 </div>
+                ${m.isDeepResearch ? `
+                  <div class="deep-research-badge">
+                    <span class="badge-icon">🧭</span>
+                    <span class="badge-title">Deep Research Dossier</span>
+                    <span class="badge-tag">Phân tích đa chiều MHEnt</span>
+                  </div>
+                ` : ''}
                 <div class="bubble-text">${window.AisaMarkdown.format(cleanText)}</div>
                 <div class="bubble-actions">
                   <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
@@ -1447,18 +1613,20 @@ window.AisaApp = {
 
     const input = document.getElementById('chat-input');
     const userText = input ? input.value.trim() : '';
+    const attachedFile = this.state.pendingFile;
     const imageToSend = this.state.pendingImage;
+    const isDeepResearch = this.state.isDeepResearch;
 
-    // Phải có ít nhất nội dung văn bản hoặc hình ảnh
-    if (!userText && !imageToSend) return;
+    // Phải có ít nhất nội dung văn bản hoặc hình ảnh hoặc tệp đính kèm
+    if (!userText && !imageToSend && !attachedFile) return;
 
     if (input) {
       input.value = '';
       input.style.height = 'auto';
     }
 
-    // Xóa trạng thái preview ảnh sau khi đã lấy dữ liệu
-    this.clearAttachedImage();
+    // Xóa trạng thái preview sau khi đã lấy dữ liệu
+    this.clearAttachedFile();
 
     // 1. Thêm tin nhắn user vào lịch sử
     const userMsg = {
@@ -1466,14 +1634,22 @@ window.AisaApp = {
       role: 'user',
       time: this.getCurrentTimeString(),
       text: userText,
-      image: imageToSend
+      image: imageToSend,
+      file: attachedFile ? {
+        name: attachedFile.name,
+        sizeStr: attachedFile.sizeStr,
+        icon: attachedFile.icon,
+        isImage: attachedFile.isImage
+      } : null,
+      isDeepResearch: isDeepResearch
     };
     this.state.messages.push(userMsg);
 
     // Cập nhật tiêu đề phiên tự động theo nội dung câu hỏi đầu tiên
     const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId);
     if (currentSession && (currentSession.title === 'Phiên trò chuyện mới' || currentSession.title === 'Trò chuyện cùng AISA')) {
-      const cleanTitle = userText.length > 26 ? userText.slice(0, 26) + '...' : userText;
+      const summaryText = userText || (attachedFile ? `Tệp: ${attachedFile.name}` : 'Hình ảnh');
+      const cleanTitle = summaryText.length > 26 ? summaryText.slice(0, 26) + '...' : summaryText;
       currentSession.title = cleanTitle || 'Cuộc trò chuyện';
     }
 
@@ -1483,14 +1659,33 @@ window.AisaApp = {
 
     // 2. Hiển thị Typing Indicator
     this.state.isGenerating = true;
-    this.showTypingIndicator(userText);
+    this.showTypingIndicator(userText, isDeepResearch);
+
+    // Chuẩn bị nội dung gửi cho AI Engine
+    let messageForAi = userText;
+    if (attachedFile && attachedFile.isText && attachedFile.textContent) {
+      const maxLen = 40000;
+      let textSnippet = attachedFile.textContent;
+      if (textSnippet.length > maxLen) {
+        textSnippet = textSnippet.slice(0, maxLen) + '\n... [Nội dung đã được cắt bớt vì vượt quá giới hạn] ...';
+      }
+      messageForAi = `[TỆP ĐÍNH KÈM: ${attachedFile.name} (${attachedFile.sizeStr})]\n--- BẮT ĐẦU NỘI DUNG TỆP ---\n${textSnippet}\n--- KẾT THÚC NỘI DUNG TỆP ---\n\n${userText || 'Hãy phân tích, tóm tắt hoặc giải quyết bài toán/trả lời câu hỏi dựa trên tệp tài liệu này giúp tớ nhé!'}`;
+    } else if (attachedFile && attachedFile.isPdf) {
+      messageForAi = `[TỆP ĐÍNH KÈM PDF: ${attachedFile.name} (${attachedFile.sizeStr})]\n${userText || 'Hãy đọc và phân tích tệp tài liệu PDF này giúp tớ nhé!'}`;
+    }
 
     try {
       const replies = await window.AisaEngine.chat(
-        userText,
+        messageForAi,
         this.state.mode,
         this.state.scope,
-        imageToSend
+        imageToSend,
+        {
+          deepResearch: isDeepResearch,
+          webSearch: this.state.isWebSearch,
+          thinking: this.state.isThinking,
+          attachedFile: attachedFile
+        }
       );
 
       this.hideTypingIndicator();
@@ -1504,7 +1699,8 @@ window.AisaApp = {
             speaker: rep.speaker,
             avatar: rep.avatar || (rep.speaker === 'HARMONY' ? '🌸' : '😈'),
             time: this.getCurrentTimeString(),
-            text: clean
+            text: clean,
+            isDeepResearch: isDeepResearch
           });
         });
       } else {
@@ -1514,7 +1710,8 @@ window.AisaApp = {
           speaker: 'HARMONY',
           avatar: '🌸',
           time: this.getCurrentTimeString(),
-          text: `Dạ em đã ghi nhận yêu cầu của cậu rồi nà! Cậu cần em hỗ trợ thêm điều gì không? 🌸`
+          text: `Dạ em đã ghi nhận yêu cầu của cậu rồi nà! Cậu cần em hỗ trợ thêm điều gì không? 🌸`,
+          isDeepResearch: isDeepResearch
         });
       }
 
@@ -1538,7 +1735,7 @@ window.AisaApp = {
     }
   },
 
-  showTypingIndicator(userText = '') {
+  showTypingIndicator(userText = '', isDeepResearch = false) {
     const container = document.querySelector('.messages-inner-container') || document.getElementById('chat-messages-wrap');
     if (!container) return;
 
@@ -1547,14 +1744,18 @@ window.AisaApp = {
     const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn');
 
     let avatar = '🌸😈';
-    let label = 'Harmony & Echo đang cùng suy nghĩ...';
+    let label = isDeepResearch 
+      ? '🧭 AISA đang tiến hành Deep Research, tổng hợp & phân tích đa tầng...'
+      : 'Harmony & Echo đang cùng suy nghĩ...';
 
-    if (this.state.mode === 'harmony' || (mentionsHarmony && !mentionsEcho)) {
-      avatar = '🌸';
-      label = mentionsHarmony ? 'Harmony đang suy nghĩ câu trả lời cho cậu... 🌸' : 'Harmony đang suy nghĩ... 🌸';
-    } else if (this.state.mode === 'echo' || (mentionsEcho && !mentionsHarmony)) {
-      avatar = '😈';
-      label = mentionsEcho ? 'Echo đang suy nghĩ câu trả lời cho cậu... 😈' : 'Echo đang suy nghĩ... 😈';
+    if (!isDeepResearch) {
+      if (this.state.mode === 'harmony' || (mentionsHarmony && !mentionsEcho)) {
+        avatar = '🌸';
+        label = mentionsHarmony ? 'Harmony đang suy nghĩ câu trả lời cho cậu... 🌸' : 'Harmony đang suy nghĩ... 🌸';
+      } else if (this.state.mode === 'echo' || (mentionsEcho && !mentionsHarmony)) {
+        avatar = '😈';
+        label = mentionsEcho ? 'Echo đang suy nghĩ câu trả lời cho cậu... 😈' : 'Echo đang suy nghĩ... 😈';
+      }
     }
 
     const typingEl = document.createElement('div');
