@@ -385,8 +385,8 @@
   /* Khung Capsule Input Station sát Bottom Nav */
   .chat-input-station {
     padding: 4px 8px 8px 8px !important;
-    background: var(--bg-canvas) !important;
-    border-top: 1px solid var(--border-hairline) !important;
+    background: transparent !important;
+    border-top: none !important;
     flex-shrink: 0 !important;
   }
 

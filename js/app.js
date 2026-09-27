@@ -259,7 +259,7 @@ window.AisaApp = {
     pendingImageName: '',
     pendingFile: null,      // Tệp tài liệu/code/PDF đính kèm { name, size, sizeStr, type, isImage, isText, isPdf, icon, textContent, base64 }
     isDeepResearch: false,  // Chế độ Deep Research đa tầng
-    isWebSearch: true,      // Chế độ Tra cứu Web
+    isWebSearch: false,     // Chế độ Tra cứu Web (Mặc định tắt, người dùng chủ động bật khi cần)
     isThinking: false       // Chế độ Tư duy sâu (Step-by-step thinking)
   },
 

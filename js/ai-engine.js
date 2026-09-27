@@ -14,7 +14,7 @@ window.AisaEngine = {
     const dayName = daysOfWeek[now.getDay()];
 
     const deepResearch = !!(options && options.deepResearch);
-    const webSearch = options && options.webSearch !== undefined ? options.webSearch : true;
+    const webSearch = options && options.webSearch !== undefined ? options.webSearch : false;
     const attachedFile = options && options.attachedFile ? options.attachedFile : null;
 
     // 1. Kiểm tra nếu có Google Gemini API Key trực tiếp (cho siêu tốc độ & đa nhiệm Multimodal hoàn hảo)
