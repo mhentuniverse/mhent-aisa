@@ -7,9 +7,16 @@ window.AISA_CONFIG = {
   SUBTITLE: "Personal Companion AI Sanctuary",
   VERSION: "2.2.0-Multimodal",
   
-  // Cloudflare Workers AI Endpoint
+  // Cloudflare Workers AI Endpoint & Multiverse Model
   API_BASE_URL: "https://api.mhentuniverse.com",
   FALLBACK_API_URL: "https://aisa.mhentuniverse.com",
+  MODEL: localStorage.getItem("aisa_selected_model") || "aisa-v1",
+  MODELS: [
+    { id: "aisa-v1", name: "AISA v1", desc: "Companion Song Hành • Harmony 🌸 & Echo 😈", icon: "🌸", badge: "Mặc định" },
+    { id: "aisa-scholar-v1", name: "AISA Scholar v1", desc: "Nghiên cứu & Học tập Ngoại ngữ Study", icon: "📚", badge: "Study" },
+    { id: "aisa-workspace-v1", name: "AISA Workspace v1", desc: "Quản trị Task, Lịch trình & Mail Workspace", icon: "💼", badge: "Workspace" },
+    { id: "aisa-universe-v1", name: "AISA Universe v1", desc: "Cổng Thông tin & Dịch vụ Vũ trụ Universe", icon: "🌌", badge: "Universe" }
+  ],
 
   // Supabase Configuration
   SUPABASE: {
@@ -17,12 +24,15 @@ window.AISA_CONFIG = {
     ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0emtnY2hqaGVpcnh3ZWpjdHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjA0MTgsImV4cCI6MjA5MTgzNjQxOH0.Wl-sBpH1VvcR6-Y4D4UAVm1f5_brGK3cVIHRJBEhOJ0"
   },
 
-  // Default User / Companion Master
+  // Default User / Companion Master Profile (Sakura)
   USER: {
-    id: "user-master-01",
-    name: "Yurika",
-    role: "Master / Creator",
-    avatar: "👑"
+    id: "user-master-sakura",
+    name: "Sakura",
+    realName: "Phạm Huỳnh Lam Chi",
+    alias: "Tokugawa Sakura / Yorutsuki Yurika",
+    role: "Co-Founder MHEnt. & Creator",
+    birthday: "06/12/2006",
+    avatar: "🌸"
   },
 
   // Firebase Configuration (Matching MHEnt Universe & Workspace)

@@ -7,7 +7,7 @@
   
   <!-- Meta & SEO -->
   <meta name="description" content="AISA Companion Sanctuary – Không gian AI đồng hành cá nhân đa nhiệm với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
-  <meta name="theme-color" content="#05070b">
+  <meta name="theme-color" content="#131314">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" type="image/png" href="assets/icon-logo.png">
@@ -36,46 +36,98 @@
        ======================================================================== -->
   <header class="sanctuary-header">
     <div class="header-left">
-      <!-- Sidebar Toggle -->
-      <button type="button" class="btn-sidebar-toggle" id="btn-toggle-sidebar" title="Đóng/Mở thanh điều khiển">
-        <span>☰</span>
+      <!-- Sidebar Toggle (Gemini style) -->
+      <button type="button" class="btn-sidebar-toggle" id="btn-toggle-sidebar" title="Đóng/Mở thanh điều khiển (Ctrl+B)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
       </button>
 
       <!-- Brand -->
       <a href="https://mhentuniverse.com" class="brand-badge" title="MHEnt Universe Portal">
         <img src="assets/icon-logo.png" alt="AISA Logo" class="brand-logo-img">
         <div class="brand-info">
-          <h1>AISA <span>SANCTUARY</span></h1>
+          <h1>AISA</h1>
         </div>
       </a>
+
+      <!-- Gemini-style Model Selector Dropdown -->
+      <div class="model-selector-container" id="model-selector-container">
+        <button type="button" class="btn-model-selector" id="btn-model-selector" aria-haspopup="true" aria-expanded="false" title="Chọn mô hình AISA Multiverse">
+          <span class="model-sparkle">✨</span>
+          <span class="model-name" id="current-model-name">AISA v1</span>
+          <span class="model-arrow">▾</span>
+        </button>
+        <div class="model-dropdown-menu" id="model-dropdown-menu">
+          <div class="model-dropdown-header">Chọn mô hình AISA Multiverse</div>
+          <div class="model-option active" data-model="aisa-v1">
+            <div class="model-opt-info">
+              <div class="model-opt-title">🌸 AISA v1 <span class="model-badge">Mặc định</span></div>
+              <div class="model-opt-desc">Companion Song Hành • Harmony 🌸 & Echo 😈</div>
+            </div>
+            <span class="model-check">✓</span>
+          </div>
+          <div class="model-option" data-model="aisa-scholar-v1">
+            <div class="model-opt-info">
+              <div class="model-opt-title">📚 AISA Scholar v1</div>
+              <div class="model-opt-desc">Nghiên cứu & Học thuật Ngoại ngữ MHEnt Study</div>
+            </div>
+            <span class="model-check"></span>
+          </div>
+          <div class="model-option" data-model="aisa-workspace-v1">
+            <div class="model-opt-info">
+              <div class="model-opt-title">💼 AISA Workspace v1</div>
+              <div class="model-opt-desc">Điều hành, Lịch trình & Mail MHEnt Workspace</div>
+            </div>
+            <span class="model-check"></span>
+          </div>
+          <div class="model-option" data-model="aisa-universe-v1">
+            <div class="model-opt-info">
+              <div class="model-opt-title">🌌 AISA Universe v1</div>
+              <div class="model-opt-desc">Cổng Thông tin & Dịch vụ Vũ trụ Universe</div>
+            </div>
+            <span class="model-check"></span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Central Scope Selector Tabs -->
-    <nav class="header-scope-tabs" aria-label="AISA Scope Selector">
-      <button type="button" class="scope-tab-btn active" data-scope="personal" title="Chế độ Cá nhân & Tâm sự riêng tư">
-        <span>💖</span> Sanctuary
+    <!-- Central Persona Mode Pill (Gemini Segmented Style) -->
+    <div class="header-mode-pill" aria-label="AISA Persona Selector">
+      <button type="button" class="mode-btn active" data-mode="duo" title="Cả Harmony và Echo cùng trò chuyện">
+        <span class="mode-icon">🌸😈</span>
+        <span class="mode-label">Song Hành</span>
       </button>
-      <button type="button" class="scope-tab-btn" data-scope="workspace" title="Chế độ Hỗ trợ công việc & Lịch trình">
-        <span>💼</span> Workspace
+      <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào">
+        <span class="mode-icon">🌸</span>
+        <span class="mode-label">Harmony</span>
       </button>
-      <button type="button" class="scope-tab-btn" data-scope="study" title="Chế độ Học tập & Ngoại ngữ">
-        <span>📚</span> Study
+      <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo">
+        <span class="mode-icon">😈</span>
+        <span class="mode-label">Echo</span>
       </button>
-      <button type="button" class="scope-tab-btn" data-scope="portal" title="Chế độ Vũ trụ MHEnt Universe">
-        <span>🌌</span> Portal
-      </button>
+    </div>
+
+    <!-- Preserved Scope Selector Tabs (Hidden for JS compatibility) -->
+    <nav class="header-scope-tabs" aria-label="AISA Scope Selector" style="display: none;">
+      <button type="button" class="scope-tab-btn active" data-scope="personal">Sanctuary</button>
+      <button type="button" class="scope-tab-btn" data-scope="workspace">Workspace</button>
+      <button type="button" class="scope-tab-btn" data-scope="study">Study</button>
+      <button type="button" class="scope-tab-btn" data-scope="portal">Portal</button>
     </nav>
 
-    <!-- Header Right Controls -->
+    <!-- Header Right Controls (Gemini clean action bar) -->
     <div class="header-actions">
       <!-- Ambient Synthesizer Button -->
       <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
-        <span>🎵</span> <span>432Hz Chill</span>
+        <span class="ambient-icon">🎵</span> <span class="hide-mobile">432Hz Chill</span>
       </button>
 
       <!-- Memory Vault Trigger -->
       <button type="button" class="btn-header-action" id="btn-open-memory" title="Mở Ngân hàng Ký ức">
-        <span>🧠</span> <span>Vault</span>
+        <span>🧠</span> <span class="hide-mobile">Ký Ức</span>
         <span class="badge-counter" id="memory-count-badge">3</span>
       </button>
 
@@ -108,45 +160,31 @@
   </header>
 
   <!-- ========================================================================
-       MAIN APP STAGE (SLIM LEFT + CENTER IMMERSIVE CHAT + SLIM RIGHT)
+       MAIN APP STAGE (GEMINI 2-COLUMN: COLLAPSIBLE DRAWER + IMMERSIVE CHAT)
        ======================================================================== -->
   <main class="sanctuary-stage">
 
-    <!-- 1. LEFT SIDEBAR: SLEEK COMPANION PANEL (250px) -->
+    <!-- 1. LEFT SIDEBAR: GEMINI COLLAPSIBLE DRAWER -->
     <aside class="sanctuary-sidebar-left" id="sanctuary-sidebar-left">
-      <!-- New Session Button -->
+      <!-- Gemini New Chat Button -->
       <button type="button" class="btn-new-session" id="btn-new-session">
-        <span>✨</span> <span>Phiên Trò Chuyện Mới</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Cuộc trò chuyện mới</span>
       </button>
 
-      <!-- Sessions History Section (Multi-Chat Hub) -->
+      <!-- Sessions History Section (Recent Chats Hub) -->
       <div class="sidebar-section-title sessions-header">
         <div style="display: flex; align-items: center; gap: 6px;">
-          <span>💬</span> <span>Lịch Sử Phiên Chat</span>
+          <span>Gần đây</span>
           <span class="sessions-count-badge" id="sessions-count-badge">0</span>
         </div>
         <button type="button" class="btn-sync-cloud-icon" id="btn-sync-cloud" title="Làm mới & Đồng bộ đám mây ngay">☁️</button>
       </div>
       <div class="sidebar-sessions-list" id="sidebar-sessions-list">
         <!-- Rendered dynamically via app.js -->
-      </div>
-
-      <!-- Mode Selector (Song Hành / Harmony / Echo) -->
-      <div class="mode-selector-widget">
-        <div class="mode-buttons-group">
-          <button type="button" class="mode-btn active" data-mode="duo" title="Cả Harmony và Echo cùng trò chuyện">
-            <span class="mode-icon">🌸😈</span>
-            <span>Song Hành</span>
-          </button>
-          <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào">
-            <span class="mode-icon">🌸</span>
-            <span>Harmony</span>
-          </button>
-          <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo">
-            <span class="mode-icon">😈</span>
-            <span>Echo</span>
-          </button>
-        </div>
       </div>
 
       <!-- Companion Presence Card -->
@@ -168,34 +206,66 @@
 
       <!-- Quick Conversation Starters -->
       <div class="sidebar-section-title">
-        <span>⚡</span> Gợi Ý Trò Chuyện
+        <span>Gợi ý câu hỏi</span>
       </div>
       <div class="sidebar-quick-prompts">
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt...">
-          <span>🌸</span> <span>Cậu ơi hôm nay em thấy hơi mệt...</span>
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
+          <span>🌸</span> <span>Cậu ơi hôm nay em thấy mệt...</span>
         </button>
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Echo ơi, vào việc thôi nào! Giúp tớ lên dây cót tinh thần!">
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
           <span>😈</span> <span>Echo ơi, vào việc thôi nào!</span>
         </button>
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Hôm nay tớ có những lịch trình hay công việc gì cần làm không?">
-          <span>📅</span> <span>Kiểm tra lịch trình hôm nay</span>
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
+          <span>🎼</span> <span>Kịch bản Yume Tsukai Precure!</span>
         </button>
-        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Kể cho tớ nghe một mẩu chuyện cười xả stress đi!">
-          <span>✨</span> <span>Kể tớ nghe chuyện vui xả stress</span>
+        <button type="button" class="sidebar-prompt-item quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
+          <span>🧠</span> <span>Kiểm tra hồ sơ ký ức AISA</span>
         </button>
+      </div>
+
+      <!-- Sidebar Bottom Utilities -->
+      <div class="sidebar-bottom-tools">
+        <!-- Quick Fact Add -->
+        <div class="sidebar-quick-fact-card">
+          <div class="sidebar-fact-header">
+            <span>🧠 Ghim ký ức nhanh</span>
+            <button type="button" class="btn-slim-link" id="btn-quick-open-vault">Mở kho ↗</button>
+          </div>
+          <form id="form-quick-add-fact" class="quick-add-fact-row">
+            <input type="text" id="input-sidebar-fact" class="input-sidebar-fact" placeholder="Ghi nhớ điều mới..." required>
+            <button type="submit" class="btn-sidebar-add-fact">+</button>
+          </form>
+        </div>
+
+        <!-- 432Hz Chill Audio -->
+        <div class="sidebar-ambient-card">
+          <div class="ambient-player-row">
+            <div class="ambient-info">
+              <span class="ambient-label">🎵 Sóng 432Hz Chill</span>
+              <div class="ambient-visualizer" id="ambient-visualizer">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <button type="button" class="btn-ambient-toggle btn-ambient-mini">Bật/Tắt</button>
+          </div>
+        </div>
+
+        <div class="sidebar-footer-badge">
+          <span>⚡ Cloudflare D1 • SQLite Edge</span>
+        </div>
       </div>
     </aside>
 
-    <!-- 2. CENTER STAGE: IMMERSIVE CHAT STREAM -->
+    <!-- 2. CENTER STAGE: GEMINI IMMERSIVE CHAT STREAM -->
     <section class="sanctuary-chat-center">
       <!-- Stream Top Bar -->
       <div class="chat-stream-header">
         <div class="stream-scope-badge" id="current-scope-label">
-          💖 Sanctuary (Cá nhân & Tâm sự)
+          ✨ AISA Sanctuary • Song Hành (Harmony 🌸 & Echo 😈)
         </div>
         <div class="stream-actions">
           <button type="button" class="btn-stream-tool" id="btn-clear-chat" title="Dọn dẹp phiên trò chuyện hiện tại">
-            <span>🗑️ Dọn dẹp chat</span>
+            <span>🗑️ Dọn dẹp</span>
           </button>
         </div>
       </div>
@@ -205,18 +275,9 @@
         <!-- Rendered reactively via app.js -->
       </div>
 
-      <!-- Floating Input Island (Pinned firmly at bottom) -->
+      <!-- Signature Gemini Floating Capsule Input Station -->
       <div class="chat-input-station">
         <div class="input-station-inner">
-          <!-- Quick Prompts Chips -->
-          <div class="quick-prompts-bar">
-            <button type="button" class="quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt...">🌸 Tâm sự mệt mỏi</button>
-            <button type="button" class="quick-prompt-btn" data-prompt="Kiểm tra lịch hôm nay trên Calendar giúp tớ với!">📅 Kiểm tra lịch hôm nay</button>
-            <button type="button" class="quick-prompt-btn" data-prompt="Gợi ý cho tớ cách giải quyết vấn đề này với...">💡 Lời khuyên công việc</button>
-            <button type="button" class="quick-prompt-btn" data-prompt="Dạy tớ một mẫu ngữ pháp ngoại ngữ hay gặp nha!">📚 Học ngoại ngữ</button>
-            <button type="button" class="quick-prompt-btn" data-prompt="Tâm sự đêm muộn cùng tớ đi...">🌙 Tâm sự đêm muộn</button>
-          </div>
-
           <!-- Image Attachment Preview Above Input (Gemini Style) -->
           <div class="chat-attached-preview" id="chat-attached-preview" style="display: none;">
             <div class="attached-img-card">
@@ -229,36 +290,51 @@
             </div>
           </div>
 
-          <!-- Input Box Wrapper -->
-          <div class="input-box-wrapper">
+          <!-- Capsule Pill Wrapper (Google Gemini Signature) -->
+          <div class="gemini-input-capsule">
             <!-- Hidden File Input for Image Attachment -->
             <input type="file" id="chat-file-input" accept="image/*" style="display: none;">
 
-            <!-- Attachment Button (Gemini Style) -->
-            <button type="button" class="btn-tool-icon" id="btn-attach-image" title="Đính kèm hình ảnh (hoặc dán Ctrl+V trực tiếp)">
-              📎
+            <!-- Attachment Button -->
+            <button type="button" class="btn-capsule-tool" id="btn-attach-image" title="Đính kèm hình ảnh (hoặc dán Ctrl+V trực tiếp)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
             </button>
 
             <!-- Textarea -->
             <textarea 
               id="chat-input" 
-              class="chat-input-textarea" 
-              placeholder="Tâm sự cùng Harmony & Echo... (Nhập câu hỏi hoặc dán ảnh Ctrl+V)"
+              class="gemini-textarea" 
+              placeholder="Nhập câu hỏi hoặc tâm sự cùng AISA..."
               rows="1"
             ></textarea>
 
-            <div class="input-tools">
+            <div class="capsule-right-tools">
               <!-- Voice Input Button (STT) -->
-              <button type="button" class="btn-tool-icon" id="btn-voice-input" title="Nói bằng giọng nói (Microphone)">
-                🎙️
+              <button type="button" class="btn-capsule-tool btn-voice-capsule" id="btn-voice-input" title="Nói bằng giọng nói (Microphone)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
               </button>
 
               <!-- Send Button -->
-              <button type="button" class="btn-send-message" id="btn-send" title="Gửi tin nhắn">
-                <span>Gửi</span>
-                <span>🚀</span>
+              <button type="button" class="btn-capsule-send" id="btn-send" title="Gửi tin nhắn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"/>
+                  <polyline points="5 12 12 5 19 12"/>
+                </svg>
               </button>
             </div>
+          </div>
+
+          <!-- Gemini Footer Disclaimer -->
+          <div class="gemini-disclaimer-text">
+            AISA v1 có thể đưa ra câu trả lời dựa trên tính cách song hành Harmony & Echo. Hãy kiểm tra các thông tin quan trọng.
           </div>
         </div>
       </div>

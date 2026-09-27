@@ -803,6 +803,62 @@ window.AisaApp = {
   },
 
   bindEvents() {
+    // Gemini Model Selector Dropdown
+    const btnModelSelector = document.getElementById('btn-model-selector');
+    const modelDropdown = document.getElementById('model-dropdown-menu');
+    const currentModelName = document.getElementById('current-model-name');
+
+    if (btnModelSelector && modelDropdown) {
+      const activeModel = window.AISA_CONFIG.MODEL || 'aisa-v1';
+      if (currentModelName) currentModelName.textContent = activeModel;
+      document.querySelectorAll('.model-option').forEach(opt => {
+        const isMatch = opt.getAttribute('data-model') === activeModel;
+        opt.classList.toggle('active', isMatch);
+        const check = opt.querySelector('.model-check');
+        if (check) check.textContent = isMatch ? '✓' : '';
+      });
+
+      btnModelSelector.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = modelDropdown.classList.toggle('active');
+        btnModelSelector.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+
+      document.querySelectorAll('.model-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const modelId = opt.getAttribute('data-model');
+          if (!modelId) return;
+
+          window.AISA_CONFIG.MODEL = modelId;
+          localStorage.setItem('aisa_selected_model', modelId);
+
+          if (currentModelName) currentModelName.textContent = modelId;
+          document.querySelectorAll('.model-option').forEach(o => {
+            const isMatch = o.getAttribute('data-model') === modelId;
+            o.classList.toggle('active', isMatch);
+            const check = o.querySelector('.model-check');
+            if (check) check.textContent = isMatch ? '✓' : '';
+          });
+
+          modelDropdown.classList.remove('active');
+          btnModelSelector.setAttribute('aria-expanded', 'false');
+
+          const scopeBadge = document.getElementById('current-scope-label');
+          if (scopeBadge) {
+            scopeBadge.innerHTML = `✨ Đang kết nối mô hình: <strong>${modelId}</strong>`;
+          }
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#model-selector-container')) {
+          modelDropdown.classList.remove('active');
+          btnModelSelector.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
     // Mode Switchers
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1245,8 +1301,43 @@ window.AisaApp = {
     const container = document.getElementById('chat-messages-wrap');
     if (!container) return;
 
+    const hasUserMessages = Array.isArray(this.state.messages) && this.state.messages.some(m => m.role === 'user');
+    const masterName = (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) ? window.AISA_CONFIG.USER.name : "Sakura";
+
+    let heroGreetingHtml = '';
+    if (!hasUserMessages) {
+      heroGreetingHtml = `
+        <div class="gemini-hero-greeting" id="gemini-hero-greeting">
+          <h1 class="gemini-gradient-headline">
+            <span class="gradient-text">Xin chào, ${this.escapeHtml(masterName)}</span>
+          </h1>
+          <p class="gemini-sub-headline">Hôm nay tớ có thể giúp gì cho cậu?</p>
+          
+          <div class="gemini-prompt-cards-grid">
+            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
+              <div class="gemini-card-text">Tâm sự cùng Harmony khi thấy mệt mỏi hay áp lực bài vở...</div>
+              <div class="gemini-card-icon">🌸</div>
+            </div>
+            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
+              <div class="gemini-card-text">Nhờ Echo bóc mẽ lỗi code hoặc cà khịa deadline sấp mặt...</div>
+              <div class="gemini-card-icon">😈</div>
+            </div>
+            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
+              <div class="gemini-card-text">Phối beat và thảo luận kịch bản Yume Tsukai Precure!...</div>
+              <div class="gemini-card-icon">🎼</div>
+            </div>
+            <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
+              <div class="gemini-card-text">Xem lại những gì AISA đã ghi nhớ dài hạn về tớ...</div>
+              <div class="gemini-card-icon">🧠</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     container.innerHTML = `
       <div class="messages-inner-container">
+        ${heroGreetingHtml}
         ${this.state.messages.map(m => {
           const isUser = m.role === 'user';
           if (isUser) {
@@ -1281,22 +1372,30 @@ window.AisaApp = {
                 <div class="bubble-meta">
                   <span class="sender-name ${isHarmony ? 'name-harmony' : 'name-echo'}">${speakerBadge}</span>
                   <span class="message-time">${m.time}</span>
-                  <div class="bubble-actions">
-                    <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
-                      🔊
-                    </button>
-                    <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(cleanText)}')" title="Sao chép">
-                      📋
-                    </button>
-                  </div>
                 </div>
                 <div class="bubble-text">${window.AisaMarkdown.format(cleanText)}</div>
+                <div class="bubble-actions">
+                  <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói 🔊">
+                    🔊
+                  </button>
+                  <button type="button" class="btn-bubble-action" onclick="navigator.clipboard.writeText('${this.escapeQuotes(cleanText)}')" title="Sao chép câu trả lời">
+                    📋
+                  </button>
+                </div>
               </div>
             </div>
           `;
         }).join('')}
       </div>
     `;
+
+    // Re-bind prompt buttons inside container
+    container.querySelectorAll('.quick-prompt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.getAttribute('data-prompt') || btn.textContent.trim();
+        this.sendPrompt(text);
+      });
+    });
 
     container.scrollTop = container.scrollHeight;
   },
@@ -1442,12 +1541,10 @@ window.AisaApp = {
     typingEl.id = 'typing-indicator-node';
     typingEl.className = 'message-row assistant-row typing-row';
     typingEl.innerHTML = `
-      <div class="assistant-avatar dual-typing">${avatar}</div>
-      <div class="typing-bubble">
-        <span class="typing-dot pink"></span>
-        <span class="typing-dot purple"></span>
-        <span class="typing-dot cyan"></span>
-        <span class="typing-label">${label}</span>
+      <div class="assistant-avatar" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle);">${avatar}</div>
+      <div class="typing-bubble" style="display: flex; align-items: center; gap: 8px;">
+        <span class="typing-gemini-sparkle">✨</span>
+        <span class="typing-text">${label}</span>
       </div>
     `;
     container.appendChild(typingEl);

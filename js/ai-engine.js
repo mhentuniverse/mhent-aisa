@@ -28,6 +28,7 @@ window.AisaEngine = {
 
     // 2. Gọi backend Cloudflare Workers AI chính
     const payload = {
+      model: config.MODEL || 'aisa-v1',
       message: message,
       mode: mode,
       scope: scope,

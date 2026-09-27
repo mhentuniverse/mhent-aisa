@@ -139,25 +139,37 @@
   }
 
   .brand-logo-img {
-    width: 28px !important;
-    height: 28px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
 
   .brand-info h1 {
-    font-size: 15px !important;
+    font-size: 14px !important;
   }
 
   .brand-info span {
-    font-size: 9px !important;
+    display: none !important;
   }
 
-  /* Ẩn các tabs phạm vi trên topbar vì đã có nút Không Gian ở Bottom Nav */
-  .header-scope-tabs {
+  /* Model Selector on Mobile */
+  .btn-model-selector {
+    padding: 4px 10px !important;
+    font-size: 0.78rem !important;
+    gap: 4px !important;
+  }
+  .model-dropdown-menu {
+    width: calc(100vw - 32px) !important;
+    left: -40px !important;
+  }
+
+  /* Ẩn tabs phạm vi và pill chế độ trên topbar mobile */
+  .header-scope-tabs,
+  .header-mode-pill {
     display: none !important;
   }
 
   .header-actions {
-    gap: 6px !important;
+    gap: 4px !important;
   }
 
   .btn-ambient-toggle span:not(.badge-counter),
@@ -168,9 +180,9 @@
   }
 
   .btn-header-action {
-    padding: 6px 8px !important;
-    min-width: 34px !important;
-    height: 34px !important;
+    padding: 4px 6px !important;
+    min-width: 32px !important;
+    height: 32px !important;
   }
 
   .header-user-badge .user-badge-name {
@@ -275,17 +287,47 @@
 
   .chat-messages-wrap {
     flex: 1 !important;
-    padding: 10px 8px 8px 8px !important;
-    gap: 8px !important;
+    padding: 10px 12px 8px 12px !important;
+    gap: 16px !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Gemini Hero Greeting on Mobile */
+  .gemini-hero-greeting {
+    margin: 16px auto 10px auto !important;
+  }
+  .gemini-gradient-headline {
+    font-size: 1.85rem !important;
+  }
+  .gemini-sub-headline {
+    font-size: 1.65rem !important;
+    margin-bottom: 20px !important;
+  }
+  .gemini-prompt-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .gemini-prompt-card {
+    min-height: 100px !important;
+    padding: 12px 10px !important;
+    border-radius: 14px !important;
+  }
+  .gemini-card-text {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+  }
+  .gemini-card-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.85rem !important;
   }
 
   .message-row,
   .chat-message-row {
     max-width: 100% !important;
-    gap: 6px !important;
-    margin-bottom: 8px !important;
+    gap: 10px !important;
+    margin-bottom: 4px !important;
   }
 
   .user-row {
@@ -293,28 +335,26 @@
   }
 
   .assistant-row {
-    max-width: 95% !important;
+    max-width: 100% !important;
   }
 
   .assistant-avatar {
-    width: 26px !important;
-    height: 26px !important;
-    font-size: 0.9rem !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.95rem !important;
   }
 
-  .message-bubble {
-    padding: 8px 11px !important;
-    border-radius: 14px !important;
-    line-height: 1.45 !important;
+  .user-bubble {
+    padding: 10px 14px !important;
+    border-radius: 16px !important;
+    font-size: 13.5px !important;
   }
 
-  .message-bubble,
   .bubble-text,
   .bubble-text p,
-  .bubble-text div,
-  .chat-bullet-text {
-    font-size: 12.5px !important;
-    line-height: 1.45 !important;
+  .bubble-text div {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
   }
 
   .bubble-meta {
@@ -324,7 +364,7 @@
   }
 
   .sender-name {
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
 
   .message-time {
@@ -332,91 +372,53 @@
   }
 
   .btn-bubble-action {
-    font-size: 9.5px !important;
-    padding: 2px 4px !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.75rem !important;
   }
 
-  .chat-inline-code {
-    font-size: 11px !important;
-    padding: 1px 4px !important;
-  }
-
-  .chat-code-block {
-    padding: 6px 8px !important;
-    font-size: 11px !important;
-  }
-
-  .chat-code-header {
-    padding: 3px 8px !important;
-    font-size: 10px !important;
-  }
-
-  .typing-bubble {
-    padding: 6px 10px !important;
-    border-radius: 12px !important;
-  }
-
-  .typing-text {
-    font-size: 11px !important;
-  }
-
-  /* Khung Input Station sát Bottom Nav */
+  /* Khung Capsule Input Station sát Bottom Nav */
   .chat-input-station {
-    padding: 4px 6px 6px 6px !important;
-    background: rgba(5, 7, 11, 0.96) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 4px 8px 8px 8px !important;
+    background: var(--bg-canvas) !important;
+    border-top: 1px solid var(--border-hairline) !important;
     flex-shrink: 0 !important;
   }
 
-  .quick-prompts-bar {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    gap: 5px !important;
-    padding-bottom: 4px !important;
-    scroll-snap-type: x mandatory !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .quick-prompts-bar::-webkit-scrollbar {
-    display: none;
+  .gemini-input-capsule {
+    padding: 3px 8px 3px 10px !important;
+    border-radius: 24px !important;
+    gap: 6px !important;
   }
 
-  .quick-prompt-btn {
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    padding: 3px 8px !important;
-    font-size: 10.5px !important;
-    border-radius: 99px !important;
-    scroll-snap-align: start;
+  .btn-capsule-tool {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .btn-capsule-tool svg {
+    width: 17px !important;
+    height: 17px !important;
   }
 
-  .input-box-wrapper {
-    padding: 3px 6px !important;
-    border-radius: 16px !important;
-    gap: 4px !important;
-  }
-
-  .chat-input-textarea {
-    font-size: 12.5px !important;
-    padding: 4px 2px !important;
-    min-height: 34px !important;
+  .gemini-textarea {
+    font-size: 13.5px !important;
+    padding: 6px 2px !important;
+    height: 32px !important;
     max-height: 100px !important;
   }
 
-  .btn-tool-icon {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 0.95rem !important;
+  .btn-capsule-send {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .btn-capsule-send svg {
+    width: 15px !important;
+    height: 15px !important;
   }
 
-  .btn-send-message {
-    height: 30px !important;
-    padding: 0 10px !important;
-    font-size: 11px !important;
-    gap: 3px !important;
+  .gemini-disclaimer-text {
+    font-size: 0.64rem !important;
+    margin-top: 3px !important;
   }
 }
 
