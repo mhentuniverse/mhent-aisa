@@ -145,15 +145,14 @@ window.AisaAuth = {
     this.showLoginLoading(false);
 
     if (check.authorized) {
-      let cleanName = "Sakura";
-      if (user.displayName && !user.displayName.includes("Miyazaki") && !user.displayName.includes("Entertainment")) {
-        cleanName = user.displayName;
-      }
+      // Ưu tiên tên hiển thị thực tế của User từ Google / Firebase Auth
+      let cleanName = localStorage.getItem('aisa_user_display_name') || user.displayName || (user.email ? user.email.split('@')[0] : "User");
+      
       this.currentUser = {
         uid: user.uid,
         email: user.email,
         name: cleanName,
-        avatar: user.photoURL || "🌸",
+        avatar: user.photoURL || "👑",
         role: check.role || "master"
       };
       this.isAuthorized = true;

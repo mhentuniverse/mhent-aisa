@@ -185,7 +185,7 @@
   gap: 4px;
 }
 
-.mode-btn {
+.mode-buttons-group .mode-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -201,16 +201,16 @@
   gap: 3px;
 }
 
-.mode-btn .mode-icon {
+.mode-buttons-group .mode-btn .mode-icon {
   font-size: 1.05rem;
 }
 
-.mode-btn:hover {
+.mode-buttons-group .mode-btn:hover {
   color: var(--text-high);
   background: rgba(255, 255, 255, 0.05);
 }
 
-.mode-btn.active {
+.mode-buttons-group .mode-btn.active {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(139, 92, 246, 0.25));
   border: 1px solid rgba(244, 114, 182, 0.4);
   color: #ffffff;

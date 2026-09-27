@@ -94,18 +94,42 @@
       </div>
     </div>
 
-    <!-- Central Persona Mode Pill (Gemini Segmented Style) -->
+    <!-- Central Persona Mode Pill (Spacious Luxury Segmented Style) -->
     <div class="header-mode-pill" aria-label="AISA Persona Selector">
-      <button type="button" class="mode-btn active" data-mode="duo" title="Cả Harmony và Echo cùng trò chuyện">
-        <span class="mode-icon">🌸😈</span>
+      <button type="button" class="mode-btn active" data-mode="duo" title="Cả Harmony và Echo cùng trò chuyện song hành">
+        <span class="mode-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradDuoSpark)" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/>
+            <circle cx="12" cy="11" r="2.2" fill="#ffffff"/>
+            <defs>
+              <linearGradient id="gradDuoSpark" x1="3" y1="2" x2="21" y2="20" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#f472b6"/>
+                <stop offset="1" stop-color="#a78bfa"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
         <span class="mode-label">Song Hành</span>
       </button>
-      <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào">
-        <span class="mode-icon">🌸</span>
+      <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào & vỗ về">
+        <span class="mode-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 6.5C11.5 4 9.5 2.5 7.5 3.5C5.5 4.5 6 7 7.5 8.5C6 7.5 4 8.5 4 11C4 13.5 6.5 13.5 8 12.5C7 14 8 16.5 10.5 16C13 15.5 12.5 13 11.5 11.5C13 12.5 15 11.5 15 9C15 6.5 12.5 6.5 12 6.5Z" fill="#f472b6"/>
+            <circle cx="10" cy="10" r="2.2" fill="#ffffff"/>
+          </svg>
+        </span>
         <span class="mode-label">Harmony</span>
       </button>
-      <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo">
-        <span class="mode-icon">😈</span>
+      <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo & cà khịa">
+        <span class="mode-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/>
+            <circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/>
+            <circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/>
+            <circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/>
+            <path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
         <span class="mode-label">Echo</span>
       </button>
     </div>
@@ -305,27 +329,44 @@
             </div>
           </div>
 
-          <!-- Google Gemini Tool Chips (Deep Research, Web Search, Thinking) -->
+          <!-- Sanctuary Tool Chips (Deep Research, Web Search, Thinking) -->
           <div class="gemini-tools-chips-row">
             <button type="button" class="gemini-tool-chip" id="btn-tool-deep-research" title="Bật/Tắt chế độ Deep Research (Báo cáo nghiên cứu chuyên sâu đa nguồn)">
-              <span class="tool-icon">🧭</span>
+              <span class="tool-icon-svg">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                </svg>
+              </span>
               <span class="tool-name">Deep Research</span>
               <span class="tool-badge-status" id="badge-deep-research">Tắt</span>
             </button>
             <button type="button" class="gemini-tool-chip active" id="btn-tool-web-search" title="Tra cứu nguồn tin thực tế & Web Search">
-              <span class="tool-icon">🌐</span>
+              <span class="tool-icon-svg">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </span>
               <span class="tool-name">Tra cứu Web</span>
               <span class="tool-badge-status" id="badge-web-search">Bật</span>
             </button>
             <button type="button" class="gemini-tool-chip" id="btn-tool-thinking" title="Suy ngẫm từng bước (Step-by-step Thinking)">
-              <span class="tool-icon">💡</span>
+              <span class="tool-icon-svg">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a6 6 0 0 0-6 6c0 2.2 1.2 4.1 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.8-1.1 3-3 3-5.2a6 6 0 0 0-6-6z"/>
+                  <path d="M9 21h6"/>
+                  <path d="M10 18h4"/>
+                </svg>
+              </span>
               <span class="tool-name">Tư duy sâu</span>
             </button>
           </div>
 
-          <!-- Gemini Footer Disclaimer -->
-          <div class="gemini-disclaimer-text">
-            AISA v1 có thể đưa ra câu trả lời dựa trên tính cách song hành Harmony & Echo. Hãy kiểm tra các thông tin quan trọng.
+          <!-- MHEnt Sanctuary Signature Footer Disclaimer -->
+          <div class="gemini-disclaimer-text sanctuary-identity-text">
+            <span>✨ AISA Sanctuary • Song hành cùng Harmony 🌸 & Echo 😈 • Dự án độc quyền MHEnt Universe</span>
           </div>
         </div>
       </div>

@@ -1453,44 +1453,142 @@ window.AisaApp = {
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   },
 
+  getUserDisplayName() {
+    const custom = localStorage.getItem('aisa_user_display_name');
+    if (custom && custom.trim()) return custom.trim();
+    if (window.AisaAuth && window.AisaAuth.currentUser && window.AisaAuth.currentUser.name) {
+      return window.AisaAuth.currentUser.name.trim();
+    }
+    if (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) {
+      return window.AISA_CONFIG.USER.name.trim();
+    }
+    return "User";
+  },
+
+  async promptChangeUserName() {
+    const currentName = this.getUserDisplayName();
+    const newName = prompt("Nhập tên hiển thị cậu muốn AISA gọi nè:", currentName);
+    if (newName && newName.trim() && newName.trim() !== currentName) {
+      localStorage.setItem('aisa_user_display_name', newName.trim());
+      if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
+        window.AISA_CONFIG.USER.name = newName.trim();
+      }
+      if (window.AisaAuth && window.AisaAuth.currentUser) {
+        window.AisaAuth.currentUser.name = newName.trim();
+      }
+      this.renderMessages();
+      this.showToast(`Đã đổi tên xưng hô thành "${newName.trim()}" ✨`, '🌸');
+    }
+  },
+
   renderMessages() {
     const container = document.getElementById('chat-messages-wrap');
     if (!container) return;
 
     const hasUserMessages = Array.isArray(this.state.messages) && this.state.messages.some(m => m.role === 'user');
-    const masterName = (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) ? window.AISA_CONFIG.USER.name : "Sakura";
+    const userName = this.getUserDisplayName();
 
-    // 1. Trạng thái bắt đầu / mới tạo: Render Hero Greeting thoáng đãng chuẩn mực Google Gemini
+    // 1. Trạng thái bắt đầu / mới tạo: Render Hero Greeting với phong cách Sanctuary MHEnt Universe sang trọng
     if (!hasUserMessages) {
       container.innerHTML = `
-        <div class="gemini-hero-greeting-container">
+        <div class="gemini-hero-greeting-container sanctuary-hero-aura">
           <div class="gemini-hero-greeting" id="gemini-hero-greeting">
             <h1 class="gemini-gradient-headline">
-              <span class="gradient-text">Xin chào, ${this.escapeHtml(masterName)}</span>
+              <span class="gradient-text">Xin chào, <span id="hero-user-name" class="editable-user-tag" title="Nhấp để đổi tên xưng hô">${this.escapeHtml(userName)} <span class="edit-name-badge">✎</span></span></span>
             </h1>
-            <p class="gemini-sub-headline">Hôm nay tớ có thể giúp gì cho cậu?</p>
+            <p class="gemini-sub-headline">AISA Sanctuary luôn sẵn sàng lắng nghe và đồng hành cùng cậu hôm nay ✨</p>
             
-            <div class="gemini-prompt-cards-grid">
-              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
+            <div class="gemini-prompt-cards-grid sanctuary-cards-grid">
+              <!-- Card 1: Harmony Chữa lành -->
+              <div class="gemini-prompt-card sanctuary-card card-harmony quick-prompt-btn" data-prompt="Cậu ơi hôm nay em thấy hơi mệt mỏi và áp lực bài vở...">
                 <div class="gemini-card-text">Tâm sự cùng Harmony khi thấy mệt mỏi hay áp lực bài vở...</div>
-                <div class="gemini-card-icon">🌸</div>
+                <div class="sanctuary-card-icon-box icon-box-harmony">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="url(#lotusPinkGrad)"/>
+                    <circle cx="12" cy="12" r="2.5" fill="#ffffff"/>
+                    <defs>
+                      <linearGradient id="lotusPinkGrad" x1="2" y1="2" x2="22" y2="21" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#f472b6"/>
+                        <stop offset="1" stop-color="#fb7185"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
               </div>
-              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
+
+              <!-- Card 2: Echo Cà khịa & Bóc phốt deadline -->
+              <div class="gemini-prompt-card sanctuary-card card-echo quick-prompt-btn" data-prompt="Echo ơi, kiểm tra lỗi code và lên dây cót deadline cho tớ!">
                 <div class="gemini-card-text">Nhờ Echo bóc mẽ lỗi code hoặc cà khịa deadline sấp mặt...</div>
-                <div class="gemini-card-icon">😈</div>
+                <div class="sanctuary-card-icon-box icon-box-echo">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4L7 9C9 7.2 10.5 6.8 12 6.8C13.5 6.8 15 7.2 17 9L20 4C18 1.5 15.5 0.8 12 0.8C8.5 0.8 6 1.5 4 4Z" fill="#a78bfa"/>
+                    <rect x="4" y="8" width="16" height="13" rx="6.5" fill="url(#echoImpGrad)" stroke="#c084fc" stroke-width="1.2"/>
+                    <circle cx="9" cy="14" r="1.6" fill="#ffffff"/>
+                    <circle cx="15" cy="14" r="1.6" fill="#ffffff"/>
+                    <path d="M9.5 17.5C10.5 19 13.5 19 14.5 17.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+                    <defs>
+                      <linearGradient id="echoImpGrad" x1="4" y1="8" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#7c3aed"/>
+                        <stop offset="1" stop-color="#a855f7"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
               </div>
-              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
+
+              <!-- Card 3: Yume Tsukai Precure & Phối beat -->
+              <div class="gemini-prompt-card sanctuary-card card-music quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
                 <div class="gemini-card-text">Phối beat và thảo luận kịch bản Yume Tsukai Precure!...</div>
-                <div class="gemini-card-icon">🎼</div>
+                <div class="sanctuary-card-icon-box icon-box-music">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18V5L20 3V16" stroke="url(#musicAmberGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="6" cy="18" r="3" fill="#f59e0b"/>
+                    <circle cx="17" cy="16" r="3" fill="#ec4899"/>
+                    <path d="M9 9L20 7" stroke="#ffffff" stroke-width="1.5"/>
+                    <defs>
+                      <linearGradient id="musicAmberGrad" x1="9" y1="3" x2="20" y2="18" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#f59e0b"/>
+                        <stop offset="1" stop-color="#ec4899"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
               </div>
-              <div class="gemini-prompt-card quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
+
+              <!-- Card 4: Ký ức dài hạn Edge D1 -->
+              <div class="gemini-prompt-card sanctuary-card card-memory quick-prompt-btn" data-prompt="Hãy liệt kê lại những sở thích, dự án và ký ức của tớ mà cậu đã ghi nhớ.">
                 <div class="gemini-card-text">Xem lại những gì AISA đã ghi nhớ dài hạn về tớ...</div>
-                <div class="gemini-card-icon">🧠</div>
+                <div class="sanctuary-card-icon-box icon-box-memory">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="9" stroke="url(#memoryCyanGrad)" stroke-width="1.8"/>
+                    <circle cx="12" cy="12" r="3" fill="#06b6d4"/>
+                    <path d="M12 3V9M12 15V21M3 12H9M15 12H21" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="3" r="1.5" fill="#ffffff"/>
+                    <circle cx="21" cy="12" r="1.5" fill="#ffffff"/>
+                    <circle cx="12" cy="21" r="1.5" fill="#ffffff"/>
+                    <circle cx="3" cy="12" r="1.5" fill="#ffffff"/>
+                    <defs>
+                      <linearGradient id="memoryCyanGrad" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#06b6d4"/>
+                        <stop offset="1" stop-color="#3b82f6"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
         </div>
       `;
+
+      // Gắn sự kiện đổi tên khi click vào tên user
+      const nameTag = container.querySelector('#hero-user-name');
+      if (nameTag) {
+        nameTag.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.promptChangeUserName();
+        });
+      }
 
       // Gắn sự kiện click cho các gợi ý thẻ câu hỏi
       container.querySelectorAll('.quick-prompt-btn').forEach(btn => {
@@ -1515,7 +1613,7 @@ window.AisaApp = {
               <div class="message-row user-row" id="${m.id}">
                 <div class="message-bubble user-bubble">
                   <div class="bubble-meta">
-                    <span class="sender-name">👑 ${window.AISA_CONFIG.USER.name}</span>
+                    <span class="sender-name">👑 ${this.escapeHtml(userName)}</span>
                     <span class="message-time">${m.time}</span>
                   </div>
                   ${m.file && !m.image ? `

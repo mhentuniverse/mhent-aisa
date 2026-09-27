@@ -24,15 +24,13 @@ window.AISA_CONFIG = {
     ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0emtnY2hqaGVpcnh3ZWpjdHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjA0MTgsImV4cCI6MjA5MTgzNjQxOH0.Wl-sBpH1VvcR6-Y4D4UAVm1f5_brGK3cVIHRJBEhOJ0"
   },
 
-  // Default User / Companion Master Profile (Sakura)
+  // Default User Profile (Dynamically loaded from Auth or Custom Storage)
   USER: {
-    id: "user-master-sakura",
-    name: "Sakura",
-    realName: "Phạm Huỳnh Lam Chi",
-    alias: "Tokugawa Sakura / Yorutsuki Yurika",
-    role: "Co-Founder MHEnt. & Creator",
-    birthday: "06/12/2006",
-    avatar: "🌸"
+    id: "user-current",
+    name: localStorage.getItem("aisa_user_display_name") || "User",
+    realName: "User",
+    role: "User",
+    avatar: "👑"
   },
 
   // Firebase Configuration (Matching MHEnt Universe & Workspace)
