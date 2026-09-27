@@ -12,9 +12,20 @@ function setDialogIcon(el, icon) {
   if (!el) return;
   if (typeof icon === 'string' && icon.trim().startsWith('<')) {
     el.innerHTML = icon;
-  } else {
-    el.textContent = icon;
+    return;
   }
+  const emojiMap = {
+    '🗑️': `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
+    '⭐': `<svg width="28" height="28" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    '✏️': `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+    '⚠️': `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    '✨': `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>`
+  };
+  if (typeof icon === 'string' && emojiMap[icon.trim()]) {
+    el.innerHTML = emojiMap[icon.trim()];
+    return;
+  }
+  el.textContent = icon;
 }
 
 window.AisaDialog = {
@@ -541,17 +552,63 @@ window.AisaApp = {
     this.renderMessages();
   },
 
+  openMediaGalleryModal() {
+    const modal = document.getElementById('modal-media-gallery');
+    const grid = document.getElementById('media-gallery-grid');
+    if (!modal || !grid) return;
+
+    const mediaItems = [];
+    (this.state.sessions || []).forEach(session => {
+      (session.messages || []).forEach(msg => {
+        if (msg.file && (msg.file.dataUrl || msg.file.type || msg.file.name)) {
+          mediaItems.push({
+            sessionId: session.id,
+            sessionTitle: session.title,
+            file: msg.file,
+            timestamp: msg.timestamp || session.updatedAt
+          });
+        }
+      });
+    });
+
+    if (mediaItems.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.86rem; line-height: 1.6;">
+          Chưa có hình ảnh hoặc tài liệu nào được gửi.<br>Khi cậu chia sẻ ảnh trong chat, tất cả sẽ tự động quy tụ tại đây! 🖼️
+        </div>
+      `;
+    } else {
+      grid.innerHTML = mediaItems.map(item => {
+        const isImg = item.file.type && item.file.type.startsWith('image/');
+        const preview = isImg && item.file.dataUrl
+          ? `<img src="${item.file.dataUrl}" alt="${this.escapeHtml(item.file.name || 'Ảnh')}" class="media-gallery-thumb">`
+          : `<div class="media-gallery-thumb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>`;
+        return `
+          <div class="media-gallery-card" onclick="window.AisaApp.switchSession('${item.sessionId}'); document.getElementById('modal-media-gallery').style.display='none'; document.getElementById('modal-media-gallery').classList.remove('active');" title="Mở phiên: ${this.escapeQuotes(item.sessionTitle)}">
+            ${preview}
+            <div class="media-gallery-name">${this.escapeHtml(item.file.name || 'Tệp đính kèm')}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  },
+
   async deleteSession(sessionId, e) {
     if (e) e.stopPropagation();
 
     const target = this.state.sessions.find(s => s.id === sessionId);
     if (!target) return;
 
+    this.closeSessionContextMenu();
+
     const confirmed = await window.AisaDialog.confirm({
       title: 'Xóa Phiên Trò Chuyện',
       message: `Cậu có chắc muốn xóa phiên "${target.title}" không nè?`,
       submessage: 'Toàn bộ nội dung của phiên này sẽ được dọn sạch khỏi tất cả thiết bị đồng bộ.',
-      icon: '🗑️',
+      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
       confirmText: 'Xóa Phiên',
       cancelText: 'Giữ Lại',
       danger: true
@@ -579,34 +636,230 @@ window.AisaApp = {
     this.renderMessages();
   },
 
-  renderSessionsList() {
-    const container = document.getElementById('sidebar-sessions-list');
-    const badge = document.getElementById('sessions-count-badge');
-    if (badge) badge.textContent = this.state.sessions.length;
+  toggleSessionFavorite(sessionId, e) {
+    if (e) e.stopPropagation();
+    const target = this.state.sessions.find(s => s.id === sessionId);
+    if (!target) return;
+
+    target.favorite = !target.favorite;
+    target.updatedAt = Date.now();
+    this.closeSessionContextMenu();
+    this.saveState();
+    this.renderSessionsList();
+
+    if (window.AisaToast) {
+      window.AisaToast.show(target.favorite ? 'Đã ghim cuộc trò chuyện vào mục Yêu thích ⭐' : 'Đã bỏ ghim Yêu thích');
+    }
+  },
+
+  async promptRenameSession(sessionId, e) {
+    if (e) e.stopPropagation();
+    const target = this.state.sessions.find(s => s.id === sessionId);
+    if (!target) return;
+
+    this.closeSessionContextMenu();
+
+    const newTitle = await window.AisaDialog.prompt({
+      title: 'Đổi Tên Cuộc Trò Chuyện',
+      message: 'Đặt tên gợi nhớ cho cuộc trò chuyện này:',
+      defaultValue: target.title,
+      placeholder: 'Tên cuộc trò chuyện...',
+      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+      confirmText: 'Lưu Lại',
+      cancelText: 'Hủy Bỏ'
+    });
+
+    if (newTitle && newTitle.trim() && newTitle.trim() !== target.title) {
+      target.title = newTitle.trim();
+      target.updatedAt = Date.now();
+      this.saveState();
+      this.renderSessionsList();
+      if (window.AisaToast) {
+        window.AisaToast.show('Đã cập nhật tên cuộc trò chuyện ✨');
+      }
+    }
+  },
+
+  openSessionContextMenu(sessionId, targetElement, clientX, clientY) {
+    const menu = document.getElementById('session-context-menu');
+    if (!menu) return;
+
+    const session = this.state.sessions.find(s => s.id === sessionId);
+    if (!session) return;
+
+    const favLabel = document.getElementById('ctx-fav-label');
+    if (favLabel) {
+      favLabel.textContent = session.favorite ? 'Bỏ ghim Yêu thích' : 'Ghim vào Yêu thích';
+    }
+
+    const btnFav = document.getElementById('ctx-item-favorite');
+    const btnRename = document.getElementById('ctx-item-rename');
+    const btnDelete = document.getElementById('ctx-item-delete');
+
+    if (btnFav) btnFav.onclick = (e) => this.toggleSessionFavorite(sessionId, e);
+    if (btnRename) btnRename.onclick = (e) => this.promptRenameSession(sessionId, e);
+    if (btnDelete) btnDelete.onclick = (e) => this.deleteSession(sessionId, e);
+
+    menu.style.display = 'flex';
+
+    // Position menu near touch point or target button
+    const menuWidth = 210;
+    const menuHeight = 135;
+    let posX = clientX != null ? clientX : 0;
+    let posY = clientY != null ? clientY : 0;
+
+    if (clientX == null && targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      posX = rect.right - menuWidth;
+      posY = rect.bottom + 4;
+    }
+
+    // Viewport bounds checking
+    if (posX + menuWidth > window.innerWidth - 10) {
+      posX = window.innerWidth - menuWidth - 10;
+    }
+    if (posX < 10) posX = 10;
+
+    if (posY + menuHeight > window.innerHeight - 10) {
+      posY = window.innerHeight - menuHeight - 10;
+    }
+    if (posY < 10) posY = 10;
+
+    menu.style.left = `${posX}px`;
+    menu.style.top = `${posY}px`;
+
+    // Click outside listener
+    const onOutside = (e) => {
+      if (!menu.contains(e.target) && e.target !== targetElement && !targetElement.contains(e.target)) {
+        this.closeSessionContextMenu();
+        document.removeEventListener('pointerdown', onOutside);
+      }
+    };
+    setTimeout(() => {
+      document.addEventListener('pointerdown', onOutside);
+    }, 50);
+  },
+
+  closeSessionContextMenu() {
+    const menu = document.getElementById('session-context-menu');
+    if (menu) {
+      menu.style.display = 'none';
+    }
+  },
+
+  initTouchContextMenu(container) {
     if (!container) return;
 
-    if (this.state.sessions.length === 0) {
-      container.innerHTML = `<div class="sessions-empty-tip">Chưa có phiên chat nào. Bấm nút phía trên để tạo nhé! ✨</div>`;
+    container.querySelectorAll('.session-item').forEach(item => {
+      const sId = item.getAttribute('data-session-id');
+      if (!sId) return;
+
+      // 1. Right click for Desktop
+      item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openSessionContextMenu(sId, item, e.clientX, e.clientY);
+      });
+
+      // 2. Touch Hold for Mobile (700ms with haptic vibration)
+      let touchTimer = null;
+      let startX = 0;
+      let startY = 0;
+
+      item.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+
+        touchTimer = setTimeout(() => {
+          if (navigator.vibrate) {
+            try { navigator.vibrate(40); } catch(err) {}
+          }
+          item.classList.add('holding');
+          const t = e.touches[0] || e.changedTouches[0];
+          this.openSessionContextMenu(sId, item, t ? t.clientX : null, t ? t.clientY : null);
+          touchTimer = null;
+        }, 700);
+      }, { passive: true });
+
+      item.addEventListener('touchmove', (e) => {
+        if (!touchTimer) return;
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 10 || dy > 10) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+          item.classList.remove('holding');
+        }
+      }, { passive: true });
+
+      item.addEventListener('touchend', () => {
+        if (touchTimer) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+        }
+        item.classList.remove('holding');
+      });
+
+      item.addEventListener('touchcancel', () => {
+        if (touchTimer) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+        }
+        item.classList.remove('holding');
+      });
+    });
+  },
+
+  renderSessionsList(searchQuery = '') {
+    const container = document.getElementById('sidebar-sessions-list');
+    const badge = document.getElementById('sessions-count-badge');
+    if (!container) return;
+
+    let sessions = [...this.state.sessions];
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (q) {
+      sessions = sessions.filter(s => {
+        const titleMatch = (s.title || '').toLowerCase().includes(q);
+        const msgMatch = (s.messages || []).some(m => (m.content || '').toLowerCase().includes(q));
+        return titleMatch || msgMatch;
+      });
+    }
+
+    if (badge) badge.textContent = sessions.length;
+
+    if (sessions.length === 0) {
+      if (q) {
+        container.innerHTML = `<div class="sessions-empty-tip">Không tìm thấy cuộc trò chuyện nào khớp với "${this.escapeHtml(searchQuery)}". 🔍</div>`;
+      } else {
+        container.innerHTML = `<div class="sessions-empty-tip">Chưa có phiên chat nào. Bấm nút phía trên để tạo nhé! ✨</div>`;
+      }
       return;
     }
 
-    const getSessionSvg = (mode) => {
+    const getSessionSvg = (mode, isFav) => {
+      if (isFav) {
+        return `<svg width="15" height="15" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+      }
       if (mode === 'harmony') {
         return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/><circle cx="12" cy="12" r="2.2" fill="#ffffff"/></svg>`;
       }
       if (mode === 'echo') {
         return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/><circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/><circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/><circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/></svg>`;
       }
-      return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradSessionDuo)"/><circle cx="12" cy="11" r="2" fill="#ffffff"/><defs><linearGradient id="gradSessionDuo" x1="3" y1="2" x2="21" y2="20"><stop stop-color="#f472b6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg>`;
+      return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     };
 
-    container.innerHTML = this.state.sessions.map(s => {
+    const renderCard = (s, isFav) => {
       const isActive = s.id === this.state.currentSessionId;
       const timeStr = this.formatSessionTime(s.updatedAt || s.createdAt);
-      const iconSvg = getSessionSvg(s.mode);
+      const iconSvg = getSessionSvg(s.mode, isFav);
 
       return `
-        <div class="session-item ${isActive ? 'active' : ''}" onclick="window.AisaApp.switchSession('${s.id}')" title="${this.escapeQuotes(s.title)}">
+        <div class="session-item ${isActive ? 'active' : ''} ${isFav ? 'is-favorite' : ''}" 
+             data-session-id="${s.id}" 
+             onclick="window.AisaApp.switchSession('${s.id}')" 
+             title="${this.escapeQuotes(s.title)} (Giữ để mở menu)">
           <div class="session-item-main">
             <span class="session-item-icon">${iconSvg}</span>
             <div class="session-item-texts">
@@ -614,15 +867,82 @@ window.AisaApp = {
               <div class="session-item-meta">${timeStr} • ${(s.messages || []).length} tin</div>
             </div>
           </div>
-          <button type="button" class="btn-delete-session" onclick="window.AisaApp.deleteSession('${s.id}', event)" title="Xóa phiên này">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+          <button type="button" class="btn-session-options" data-session-id="${s.id}" title="Tùy chọn phiên">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="12" cy="19" r="2"/>
             </svg>
           </button>
         </div>
       `;
-    }).join('');
+    };
+
+    const favorites = sessions.filter(s => !!s.favorite);
+    const recents = sessions.filter(s => !s.favorite);
+
+    let html = '';
+
+    // Favorites section: Divider -> Header -> Items
+    if (favorites.length > 0) {
+      html += `
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-title favorites-header">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span>Yêu thích</span>
+            <span class="sessions-count-badge fav-badge">${favorites.length}</span>
+          </div>
+        </div>
+        <div class="sessions-group group-favorites">
+          ${favorites.map(s => renderCard(s, true)).join('')}
+        </div>
+      `;
+    }
+
+    // Recents section: Divider -> Header -> Items
+    if (recents.length > 0 || favorites.length > 0) {
+      html += `
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-title sessions-header">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Gần đây</span>
+            <span class="sessions-count-badge" id="sessions-count-badge">${recents.length}</span>
+          </div>
+          <button type="button" class="btn-sync-cloud-icon" id="btn-sync-cloud" onclick="window.AisaApp.syncWithCloud()" title="Làm mới & Đồng bộ đám mây ngay">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+              <path d="M12 13v6m-3-3 3 3 3-3" />
+            </svg>
+          </button>
+        </div>
+        <div class="sessions-group group-recents">
+          ${recents.map(s => renderCard(s, false)).join('')}
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+
+    // Attach click listener for options button
+    container.querySelectorAll('.btn-session-options').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const sId = btn.getAttribute('data-session-id');
+        this.openSessionContextMenu(sId, btn);
+      });
+    });
+
+    // Attach touch & long press listeners
+    this.initTouchContextMenu(container);
   },
 
   formatSessionTime(timestamp) {
@@ -1410,6 +1730,11 @@ window.AisaApp = {
       btnToggleSidebar.addEventListener('click', () => toggleMobileLeftDrawer());
     }
 
+    const btnCloseSidebarMobile = document.getElementById('btn-close-sidebar-mobile');
+    if (btnCloseSidebarMobile) {
+      btnCloseSidebarMobile.addEventListener('click', () => toggleMobileLeftDrawer(false));
+    }
+
     if (mobileOverlay) {
       mobileOverlay.addEventListener('click', () => {
         toggleMobileLeftDrawer(false);
@@ -1420,10 +1745,90 @@ window.AisaApp = {
     if (sidebarLeft) {
       sidebarLeft.addEventListener('click', (e) => {
         if (window.innerWidth <= 900) {
+          if (e.target.closest('.btn-session-options, .btn-delete-session, .btn-clear-search, .sidebar-search-box, .session-context-menu')) {
+            return;
+          }
           if (e.target.closest('.sidebar-session-item, .session-item, .btn-new-session, .sidebar-prompt-item')) {
             setTimeout(() => toggleMobileLeftDrawer(false), 200);
           }
         }
+      });
+    }
+
+    // 1. Sidebar Session Search Filter
+    const searchInput = document.getElementById('sidebar-session-search');
+    const btnClearSearch = document.getElementById('btn-clear-session-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (btnClearSearch) btnClearSearch.style.display = val ? 'inline-block' : 'none';
+        this.renderSessionsList(val);
+      });
+    }
+    if (btnClearSearch) {
+      btnClearSearch.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = '';
+          btnClearSearch.style.display = 'none';
+          this.renderSessionsList('');
+          searchInput.focus();
+        }
+      });
+    }
+
+    // 2. Sidebar Quick Nav: Media & Vision Hub
+    const btnNavMedia = document.getElementById('btn-nav-media');
+    if (btnNavMedia) {
+      btnNavMedia.addEventListener('click', () => {
+        this.openMediaGalleryModal();
+      });
+    }
+    const btnCloseMedia = document.getElementById('btn-close-media-gallery');
+    const modalMedia = document.getElementById('modal-media-gallery');
+    if (btnCloseMedia && modalMedia) {
+      btnCloseMedia.addEventListener('click', () => {
+        modalMedia.style.display = 'none';
+        modalMedia.classList.remove('active');
+      });
+      modalMedia.addEventListener('click', (e) => {
+        if (e.target === modalMedia) {
+          modalMedia.style.display = 'none';
+          modalMedia.classList.remove('active');
+        }
+      });
+    }
+
+    // 3. Sidebar Quick Nav: Memory Bank
+    const btnNavMemory = document.getElementById('btn-nav-memory');
+    if (btnNavMemory) {
+      btnNavMemory.addEventListener('click', () => {
+        const memBtn = document.getElementById('btn-open-memory');
+        if (memBtn) memBtn.click();
+      });
+    }
+
+    // 4. Sidebar Bottom Tools: Gear & Cloud & User Footer
+    const btnSidebarGear = document.getElementById('btn-sidebar-gear');
+    if (btnSidebarGear) {
+      btnSidebarGear.addEventListener('click', () => {
+        const setBtn = document.getElementById('btn-open-settings');
+        if (setBtn) setBtn.click();
+      });
+    }
+
+    const btnSidebarCloudSync = document.getElementById('btn-sidebar-cloud-sync');
+    if (btnSidebarCloudSync) {
+      btnSidebarCloudSync.addEventListener('click', () => {
+        const syncBtn = document.getElementById('btn-cloud-sync');
+        if (syncBtn) syncBtn.click();
+      });
+    }
+
+    const sfooterUserBtn = document.getElementById('sfooter-user-btn');
+    if (sfooterUserBtn) {
+      sfooterUserBtn.addEventListener('click', () => {
+        const userBadge = document.getElementById('user-badge-inner');
+        if (userBadge) userBadge.click();
       });
     }
 
