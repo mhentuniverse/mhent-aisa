@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AISA – Personal Companion AI Sanctuary | MHEnt Universe</title>
-  
+
   <!-- Meta & SEO -->
-  <meta name="description" content="AISA Companion Sanctuary – Không gian AI đồng hành cá nhân đa nhiệm với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
+  <meta name="description"
+    content="AISA Companion Sanctuary – Không gian AI đồng hành cá nhân đa nhiệm với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
   <meta name="theme-color" content="#131314">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" type="image/png" href="assets/icon-logo.png">
+  <link rel="icon" type="image/png" href="assets/logo-design.png">
   <link rel="manifest" href="manifest.json">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Firebase SDK Compat (Matches MHEnt Universe & Workspace) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -29,6 +33,7 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/mhent-mobile.css">
 </head>
+
 <body>
 
   <!-- ========================================================================
@@ -37,8 +42,10 @@
   <header class="sanctuary-header">
     <div class="header-left">
       <!-- Sidebar Toggle (Gemini style) -->
-      <button type="button" class="btn-sidebar-toggle" id="btn-toggle-sidebar" title="Đóng/Mở thanh điều khiển (Ctrl+B)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button type="button" class="btn-sidebar-toggle" id="btn-toggle-sidebar"
+        title="Đóng/Mở thanh điều khiển (Ctrl+B)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -47,7 +54,7 @@
 
       <!-- Brand -->
       <a href="https://mhentuniverse.com" class="brand-badge" title="MHEnt Universe Portal">
-        <img src="assets/icon-logo.png" alt="AISA Logo" class="brand-logo-img">
+        <img src="assets/logo-design.png" alt="AISA Logo" class="brand-logo-img">
         <div class="brand-info">
           <h1>AISA</h1>
         </div>
@@ -55,10 +62,11 @@
 
       <!-- Gemini-style Model Selector Dropdown -->
       <div class="model-selector-container" id="model-selector-container">
-        <button type="button" class="btn-model-selector" id="btn-model-selector" aria-haspopup="true" aria-expanded="false" title="Chọn mô hình AISA Multiverse">
+        <button type="button" class="btn-model-selector" id="btn-model-selector" aria-haspopup="true"
+          aria-expanded="false" title="Chọn mô hình AISA Multiverse">
           <span class="model-sparkle">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/>
+              <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z" />
             </svg>
           </span>
           <span class="model-name" id="current-model-name">AISA v1</span>
@@ -100,15 +108,17 @@
 
     <!-- Central Persona Mode Pill (Spacious Luxury Segmented Style) -->
     <div class="header-mode-pill" aria-label="AISA Persona Selector">
-      <button type="button" class="mode-btn active" data-mode="duo" title="Cả Harmony và Echo cùng trò chuyện song hành">
+      <button type="button" class="mode-btn active" data-mode="duo"
+        title="Cả Harmony và Echo cùng trò chuyện song hành">
         <span class="mode-icon-svg">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradDuoSpark)" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/>
-            <circle cx="12" cy="11" r="2.2" fill="#ffffff"/>
+            <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradDuoSpark)"
+              stroke="rgba(255,255,255,0.6)" stroke-width="0.8" />
+            <circle cx="12" cy="11" r="2.2" fill="#ffffff" />
             <defs>
               <linearGradient id="gradDuoSpark" x1="3" y1="2" x2="21" y2="20" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#f472b6"/>
-                <stop offset="1" stop-color="#a78bfa"/>
+                <stop stop-color="#f472b6" />
+                <stop offset="1" stop-color="#a78bfa" />
               </linearGradient>
             </defs>
           </svg>
@@ -118,8 +128,10 @@
       <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào & vỗ về">
         <span class="mode-icon-svg">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 6.5C11.5 4 9.5 2.5 7.5 3.5C5.5 4.5 6 7 7.5 8.5C6 7.5 4 8.5 4 11C4 13.5 6.5 13.5 8 12.5C7 14 8 16.5 10.5 16C13 15.5 12.5 13 11.5 11.5C13 12.5 15 11.5 15 9C15 6.5 12.5 6.5 12 6.5Z" fill="#f472b6"/>
-            <circle cx="10" cy="10" r="2.2" fill="#ffffff"/>
+            <path
+              d="M12 6.5C11.5 4 9.5 2.5 7.5 3.5C5.5 4.5 6 7 7.5 8.5C6 7.5 4 8.5 4 11C4 13.5 6.5 13.5 8 12.5C7 14 8 16.5 10.5 16C13 15.5 12.5 13 11.5 11.5C13 12.5 15 11.5 15 9C15 6.5 12.5 6.5 12 6.5Z"
+              fill="#f472b6" />
+            <circle cx="10" cy="10" r="2.2" fill="#ffffff" />
           </svg>
         </span>
         <span class="mode-label">Harmony</span>
@@ -127,11 +139,12 @@
       <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo & cà khịa">
         <span class="mode-icon-svg">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/>
-            <circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/>
-            <circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/>
-            <circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/>
-            <path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z"
+              fill="#a78bfa" />
+            <circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4" />
+            <circle cx="9.8" cy="13" r="1.3" fill="#ffffff" />
+            <circle cx="14.2" cy="13" r="1.3" fill="#ffffff" />
+            <path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round" />
           </svg>
         </span>
         <span class="mode-label">Echo</span>
@@ -149,9 +162,11 @@
     <!-- Header Right Controls (Gemini clean action bar with Vector Icons) -->
     <div class="header-actions">
       <!-- Ambient Synthesizer Button -->
-      <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
+      <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient"
+        title="Bật âm thanh môi trường thư giãn 432Hz">
         <span class="ambient-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18V5l12-2v13"></path>
             <circle cx="6" cy="18" r="3"></circle>
             <circle cx="18" cy="16" r="3"></circle>
@@ -162,31 +177,40 @@
       <!-- Memory Vault Trigger -->
       <button type="button" class="btn-header-action" id="btn-open-memory" title="Mở Ngân hàng Ký ức">
         <span class="nav-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/>
-            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z" />
+            <path
+              d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z" />
           </svg>
         </span>
         <span class="badge-counter" id="memory-count-badge">3</span>
       </button>
 
       <!-- Cloud Sync Trigger (Đồng bộ đa thiết bị) -->
-      <button type="button" class="btn-header-action" id="btn-cloud-sync" title="Đồng bộ Đám mây Đa Thiết Bị (Điện thoại ⇋ Máy tính)">
+      <button type="button" class="btn-header-action" id="btn-cloud-sync"
+        title="Đồng bộ Đám mây Đa Thiết Bị (Điện thoại ⇋ Máy tính)">
         <span id="cloud-sync-icon" class="sync-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-            <path d="M12 13v6m-3-3 3 3 3-3"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+            <path d="M12 13v6m-3-3 3 3 3-3" />
           </svg>
         </span>
         <span id="cloud-sync-text" style="display: none;">Đồng bộ</span>
       </button>
 
       <!-- Settings Trigger -->
-      <button type="button" class="btn-header-action" id="btn-open-settings" title="Cài đặt hệ thống & Cấu hình Gemini Key">
+      <button type="button" class="btn-header-action" id="btn-open-settings"
+        title="Cài đặt hệ thống & Cấu hình Gemini Key">
         <span class="nav-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
           </svg>
         </span>
       </button>
@@ -195,7 +219,8 @@
       <div class="header-user-badge" id="header-user-badge" style="display: none;">
         <div class="user-badge-inner" id="user-badge-inner" title="Master Profile">
           <span class="user-badge-avatar" id="header-user-avatar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -204,7 +229,8 @@
           <span class="user-badge-status-dot"></span>
         </div>
         <button type="button" class="btn-header-logout" id="btn-header-logout" title="Đăng xuất khỏi Sanctuary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -223,7 +249,8 @@
     <aside class="sanctuary-sidebar-left" id="sanctuary-sidebar-left">
       <!-- Gemini New Chat Button -->
       <button type="button" class="btn-new-session" id="btn-new-session">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -237,9 +264,10 @@
           <span class="sessions-count-badge" id="sessions-count-badge">0</span>
         </div>
         <button type="button" class="btn-sync-cloud-icon" id="btn-sync-cloud" title="Làm mới & Đồng bộ đám mây ngay">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-            <path d="M12 13v6m-3-3 3 3 3-3"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+            <path d="M12 13v6m-3-3 3 3 3-3" />
           </svg>
         </button>
       </div>
@@ -252,18 +280,23 @@
       <!-- Gemini Minimal Bottom Drawer Utilities -->
       <div class="sidebar-bottom-tools">
         <div class="sidebar-nav-links">
-          <button type="button" class="sidebar-nav-btn" id="btn-sidebar-memory" onclick="document.getElementById('btn-open-memory')?.click()">
+          <button type="button" class="sidebar-nav-btn" id="btn-sidebar-memory"
+            onclick="document.getElementById('btn-open-memory')?.click()">
             <span class="nav-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/>
-                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z" />
+                <path
+                  d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z" />
               </svg>
             </span>
             <span class="nav-label">Ngân hàng Ký ức</span>
           </button>
           <button type="button" class="sidebar-nav-btn btn-ambient-toggle" id="btn-sidebar-ambient">
             <span class="nav-icon ambient-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 18V5l12-2v13"></path>
                 <circle cx="6" cy="18" r="3"></circle>
                 <circle cx="18" cy="16" r="3"></circle>
@@ -274,11 +307,15 @@
               <span></span><span></span><span></span><span></span><span></span>
             </div>
           </button>
-          <button type="button" class="sidebar-nav-btn" id="btn-sidebar-settings" onclick="document.getElementById('btn-open-settings')?.click()">
+          <button type="button" class="sidebar-nav-btn" id="btn-sidebar-settings"
+            onclick="document.getElementById('btn-open-settings')?.click()">
             <span class="nav-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
               </svg>
             </span>
             <span class="nav-label">Cài đặt Sanctuary</span>
@@ -288,7 +325,7 @@
         <div class="sidebar-footer-badge">
           <span style="display: inline-flex; align-items: center; gap: 4px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
             </svg>
             Cloudflare D1 • SQLite Edge
           </span>
@@ -341,45 +378,49 @@
                 <span class="attached-img-name" id="attached-img-name">tài_liệu.pdf</span>
                 <span class="attached-img-size" id="attached-img-size">120 KB</span>
               </div>
-              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment" title="Gỡ tệp đính kèm">&times;</button>
+              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment"
+                title="Gỡ tệp đính kèm">&times;</button>
             </div>
           </div>
 
           <!-- Capsule Pill Wrapper (Google Gemini Signature) -->
           <div class="gemini-input-capsule" id="gemini-input-capsule">
             <!-- Multi-format File Input (Images, Documents, Code, PDF, Sheets) -->
-            <input type="file" id="chat-file-input" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.html,.css,.sql" style="display: none;">
+            <input type="file" id="chat-file-input"
+              accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.html,.css,.sql" style="display: none;">
 
             <!-- Attachment Button (Paperclip) -->
-            <button type="button" class="btn-capsule-tool" id="btn-attach-image" title="Đính kèm tệp tin hoặc ảnh (Ảnh, PDF, TXT, Code, Docx...)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            <button type="button" class="btn-capsule-tool" id="btn-attach-image"
+              title="Đính kèm tệp tin hoặc ảnh (Ảnh, PDF, TXT, Code, Docx...)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
               </svg>
             </button>
 
             <!-- Textarea -->
-            <textarea 
-              id="chat-input" 
-              class="gemini-textarea" 
-              placeholder="Nhập câu hỏi hoặc tâm sự cùng AISA..."
-              rows="1"
-            ></textarea>
+            <textarea id="chat-input" class="gemini-textarea" placeholder="Nhập câu hỏi hoặc tâm sự cùng AISA..."
+              rows="1"></textarea>
 
             <div class="capsule-right-tools">
               <!-- Voice Input Button (STT) -->
-              <button type="button" class="btn-capsule-tool btn-voice-capsule" id="btn-voice-input" title="Nói bằng giọng nói (Microphone)">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
+              <button type="button" class="btn-capsule-tool btn-voice-capsule" id="btn-voice-input"
+                title="Nói bằng giọng nói (Microphone)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" x2="12" y1="19" y2="22" />
                 </svg>
               </button>
 
               <!-- Send Button -->
               <button type="button" class="btn-capsule-send" id="btn-send" title="Gửi tin nhắn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="19" x2="12" y2="5"/>
-                  <polyline points="5 12 12 5 19 12"/>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5" />
+                  <polyline points="5 12 12 5 19 12" />
                 </svg>
               </button>
             </div>
@@ -387,33 +428,41 @@
 
           <!-- Sanctuary Tool Chips (Deep Research, Web Search, Thinking) -->
           <div class="gemini-tools-chips-row">
-            <button type="button" class="gemini-tool-chip" id="btn-tool-deep-research" title="Bật/Tắt chế độ Deep Research (Báo cáo nghiên cứu chuyên sâu đa nguồn)">
+            <button type="button" class="gemini-tool-chip" id="btn-tool-deep-research"
+              title="Bật/Tắt chế độ Deep Research (Báo cáo nghiên cứu chuyên sâu đa nguồn)">
               <span class="tool-icon-svg">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
                 </svg>
               </span>
               <span class="tool-name">Deep Research</span>
               <span class="tool-badge-status" id="badge-deep-research">Tắt</span>
             </button>
-            <button type="button" class="gemini-tool-chip" id="btn-tool-web-search" title="Tra cứu nguồn tin thực tế & Web Search">
+            <button type="button" class="gemini-tool-chip" id="btn-tool-web-search"
+              title="Tra cứu nguồn tin thực tế & Web Search">
               <span class="tool-icon-svg">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path
+                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
               </span>
               <span class="tool-name">Tra cứu Web</span>
               <span class="tool-badge-status" id="badge-web-search">Tắt</span>
             </button>
-            <button type="button" class="gemini-tool-chip" id="btn-tool-thinking" title="Suy ngẫm từng bước (Step-by-step Thinking)">
+            <button type="button" class="gemini-tool-chip" id="btn-tool-thinking"
+              title="Suy ngẫm từng bước (Step-by-step Thinking)">
               <span class="tool-icon-svg">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2a6 6 0 0 0-6 6c0 2.2 1.2 4.1 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.8-1.1 3-3 3-5.2a6 6 0 0 0-6-6z"/>
-                  <path d="M9 21h6"/>
-                  <path d="M10 18h4"/>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M12 2a6 6 0 0 0-6 6c0 2.2 1.2 4.1 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.8-1.1 3-3 3-5.2a6 6 0 0 0-6-6z" />
+                  <path d="M9 21h6" />
+                  <path d="M10 18h4" />
                 </svg>
               </span>
               <span class="tool-name">Tư duy sâu</span>
@@ -447,7 +496,8 @@
           <button type="button" class="btn-slim-link" id="btn-quick-open-vault">Mở kho ↗</button>
         </div>
         <form id="form-quick-add-fact" class="quick-add-fact-row">
-          <input type="text" id="input-sidebar-fact" class="input-sidebar-fact" placeholder="Ghim điều AISA cần nhớ..." required>
+          <input type="text" id="input-sidebar-fact" class="input-sidebar-fact" placeholder="Ghim điều AISA cần nhớ..."
+            required>
           <button type="submit" class="btn-sidebar-add-fact">+</button>
         </form>
         <div style="font-size: 0.72rem; color: var(--text-muted);">
@@ -505,13 +555,8 @@
             <span>➕</span> Ghim Ký Ức / Thói Quen Mới Cho AISA Nhớ
           </div>
           <form id="form-add-fact" class="memory-input-row">
-            <input 
-              type="text" 
-              id="input-new-fact" 
-              class="memory-text-input" 
-              placeholder="Ví dụ: Tớ thích uống cà phê ít đường vào buổi sáng..." 
-              required
-            >
+            <input type="text" id="input-new-fact" class="memory-text-input"
+              placeholder="Ví dụ: Tớ thích uống cà phê ít đường vào buổi sáng..." required>
             <select id="select-fact-category" class="memory-select" aria-label="Phân loại ký ức">
               <option value="identity">Cá nhân</option>
               <option value="preference">Sở thích</option>
@@ -547,7 +592,8 @@
   <!-- ========================================================================
        MODAL 2: SETTINGS & SYSTEM CONFIGURATION (GEMINI KEY CONFIG)
        ======================================================================== -->
-  <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+  <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true"
+    aria-labelledby="settings-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-title" id="settings-modal-title">
@@ -560,7 +606,9 @@
         <div class="memory-card" style="margin-bottom: 16px;">
           <div class="sidebar-section-title"><span>🔑</span> Google Gemini API Key (Đa Nhiệm & Siêu Tốc Độ)</div>
           <div style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.45;">
-            Nhập Gemini API Key của cậu để AISA chạy thẳng mô hình <strong>Gemini 2.0 / 1.5 Flash Multimodal</strong>, xử lý hình ảnh và trò chuyện với tốc độ ánh sáng! (Nếu để trống, AISA sẽ sử dụng Cloudflare Backend mặc định).
+            Nhập Gemini API Key của cậu để AISA chạy thẳng mô hình <strong>Gemini 2.0 / 1.5 Flash Multimodal</strong>,
+            xử lý hình ảnh và trò chuyện với tốc độ ánh sáng! (Nếu để trống, AISA sẽ sử dụng Cloudflare Backend mặc
+            định).
           </div>
           <div style="display: flex; gap: 8px;">
             <input type="password" id="input-gemini-key" class="memory-text-input" placeholder="AIzaSy...">
@@ -587,7 +635,8 @@
         </div>
 
         <div style="text-align: right; margin-top: 20px;">
-          <button type="button" class="btn-stream-tool" id="btn-reset-all-data" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+          <button type="button" class="btn-stream-tool" id="btn-reset-all-data"
+            style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
             ⚠️ Đặt lại toàn bộ dữ liệu máy khách
           </button>
         </div>
@@ -598,13 +647,16 @@
   <!-- ========================================================================
        MODAL 3: MHENT UNIVERSE LUXURY CONFIRM & ALERT DIALOG
        ======================================================================== -->
-  <div class="modal-backdrop" id="modal-custom-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title-text">
+  <div class="modal-backdrop" id="modal-custom-dialog" role="dialog" aria-modal="true"
+    aria-labelledby="dialog-title-text">
     <div class="modal-dialog modal-dialog-confirm">
       <div class="modal-header dialog-header">
         <div class="modal-title" id="dialog-header-title">
           <span id="dialog-icon-badge" class="dialog-icon-svg-wrap">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/>
+              <path
+                d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z"
+                fill="#f472b6" />
             </svg>
           </span>
           <span id="dialog-title-text">Xác Nhận</span>
@@ -614,22 +666,19 @@
       <div class="modal-body dialog-body">
         <div class="dialog-icon-circle" id="dialog-icon-circle">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/>
+            <path
+              d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z"
+              fill="#f472b6" />
           </svg>
         </div>
         <h3 class="dialog-prompt-heading" id="dialog-prompt-heading">Cậu có chắc chắn không nè?</h3>
         <p class="dialog-prompt-sub" id="dialog-prompt-sub"></p>
-        
+
         <!-- Prompt Input Wrapper for custom prompt modal -->
-        <div class="dialog-input-container" id="dialog-input-container" style="display: none; width: 100%; margin-top: 14px;">
-          <input 
-            type="text" 
-            id="dialog-prompt-input" 
-            class="dialog-prompt-input" 
-            placeholder="Nhập tại đây..." 
-            autocomplete="off" 
-            spellcheck="false"
-          >
+        <div class="dialog-input-container" id="dialog-input-container"
+          style="display: none; width: 100%; margin-top: 14px;">
+          <input type="text" id="dialog-prompt-input" class="dialog-prompt-input" placeholder="Nhập tại đây..."
+            autocomplete="off" spellcheck="false">
         </div>
       </div>
       <div class="dialog-actions-row">
@@ -664,7 +713,8 @@
           <label class="gate-label" for="gate-login-user">Tên Định Danh / Email Tổ Chức</label>
           <div class="gate-input-wrapper">
             <span class="gate-input-icon">👤</span>
-            <input type="text" class="gate-input" id="gate-login-user" placeholder="yurika (hoặc yurika@mhentuniverse.internal)" autocomplete="username" required>
+            <input type="text" class="gate-input" id="gate-login-user"
+              placeholder="yurika (hoặc yurika@mhentuniverse.internal)" autocomplete="username" required>
           </div>
           <span class="gate-input-hint">* Tự động gắn đuôi @mhentuniverse.internal nếu chỉ gõ tên</span>
         </div>
@@ -673,7 +723,8 @@
           <label class="gate-label" for="gate-login-pass">Mật Khẩu</label>
           <div class="gate-input-wrapper">
             <span class="gate-input-icon">🔒</span>
-            <input type="password" class="gate-input" id="gate-login-pass" placeholder="••••••••" autocomplete="current-password" required>
+            <input type="password" class="gate-input" id="gate-login-pass" placeholder="••••••••"
+              autocomplete="current-password" required>
           </div>
         </div>
 
@@ -688,16 +739,21 @@
 
       <button type="button" class="btn-gate-google" id="btn-gate-google">
         <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+          <path fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+          <path fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
         </svg>
         Đăng nhập nhanh bằng Google
       </button>
 
       <div class="gate-security-notice">
-        🔒 Không gian riêng tư bảo mật. Chỉ tài khoản <strong>Master Yurika</strong> mới có thẩm quyền giải mã và trò chuyện cùng Harmony & Echo.
+        🔒 Không gian riêng tư bảo mật. Chỉ tài khoản <strong>Master Yurika</strong> mới có thẩm quyền giải mã và trò
+        chuyện cùng Harmony & Echo.
       </div>
     </div>
   </div>
@@ -722,7 +778,8 @@
         <span>💼</span>
         <div>
           <div>Workspace</div>
-          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Công việc, Mail, Task & Lịch</div>
+          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Công việc, Mail, Task & Lịch
+          </div>
         </div>
       </div>
       <div class="scope-picker-option" data-scope="study">
@@ -739,7 +796,9 @@
           <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Vũ trụ MHEnt Universe</div>
         </div>
       </div>
-      <button type="button" class="btn-tool-outline" style="margin-top: 6px; padding: 10px; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-muted);" id="btn-close-scope-picker">
+      <button type="button" class="btn-tool-outline"
+        style="margin-top: 6px; padding: 10px; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-muted);"
+        id="btn-close-scope-picker">
         Đóng
       </button>
     </div>
@@ -782,4 +841,5 @@
   <script src="js/app.js"></script>
 
 </body>
+
 </html>
