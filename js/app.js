@@ -367,12 +367,17 @@ window.AisaApp = {
       this.state.currentSessionId = current.id;
       this.state.messages = current.messages || [];
 
-      // Nạp mode và scope
+      // Nạp mode, scope và model
       const savedMode = localStorage.getItem(config.STORAGE.ACTIVE_MODE);
       if (savedMode) this.state.mode = savedMode;
 
       const savedScope = localStorage.getItem(config.STORAGE.ACTIVE_SCOPE);
       if (savedScope) this.state.scope = savedScope;
+
+      const savedModel = localStorage.getItem('aisa_selected_model');
+      if (savedModel && window.AISA_CONFIG) {
+        window.AISA_CONFIG.MODEL = savedModel;
+      }
 
     } catch (e) {
       console.warn('Could not load saved state:', e);
@@ -938,46 +943,77 @@ window.AisaApp = {
   },
 
   bindEvents() {
-    // Gemini Model Selector Dropdown
+    // Gemini Companion & Model Selector Modal (Tương tác chuẩn Google Gemini)
     const btnModelSelector = document.getElementById('btn-model-selector');
-    const modelDropdown = document.getElementById('model-dropdown-menu');
-    const currentModelName = document.getElementById('current-model-name');
+    const modalCompanion = document.getElementById('modal-companion-model');
+    const btnCloseCompanion = document.getElementById('btn-close-companion-modal');
+    const btnConfirmCompanion = document.getElementById('btn-confirm-companion');
 
-    if (btnModelSelector && modelDropdown) {
-      const activeModel = window.AISA_CONFIG.MODEL || 'aisa-v1';
-      if (currentModelName) currentModelName.textContent = activeModel;
-      document.querySelectorAll('.model-option').forEach(opt => {
-        const isMatch = opt.getAttribute('data-model') === activeModel;
-        opt.classList.toggle('active', isMatch);
-        const check = opt.querySelector('.model-check');
-        if (check) check.textContent = isMatch ? '✓' : '';
-      });
+    if (btnModelSelector && modalCompanion) {
+      const syncCompanionModalState = () => {
+        const activeModel = window.AISA_CONFIG.MODEL || 'aisa-v1';
+        const activeMode = this.state.mode || 'duo';
+
+        document.querySelectorAll('.companion-persona-card').forEach(card => {
+          const isMatch = card.getAttribute('data-companion') === activeMode;
+          card.classList.toggle('active', isMatch);
+          const check = card.querySelector('.companion-check');
+          if (check) check.textContent = isMatch ? '✓' : '';
+        });
+
+        document.querySelectorAll('.companion-model-item').forEach(item => {
+          const isMatch = item.getAttribute('data-engine-model') === activeModel;
+          item.classList.toggle('active', isMatch);
+          const check = item.querySelector('.cmodel-check');
+          if (check) check.textContent = isMatch ? '✓' : '';
+        });
+
+        this.updateModelBadge();
+      };
 
       btnModelSelector.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isOpen = modelDropdown.classList.toggle('active');
-        btnModelSelector.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        syncCompanionModalState();
+        modalCompanion.classList.add('show');
       });
 
-      document.querySelectorAll('.model-option').forEach(opt => {
-        opt.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const modelId = opt.getAttribute('data-model');
+      // Chọn người đồng hành (Persona Mode)
+      document.querySelectorAll('.companion-persona-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const companionId = card.getAttribute('data-companion');
+          if (!companionId) return;
+
+          document.querySelectorAll('.companion-persona-card').forEach(c => {
+            c.classList.remove('active');
+            const check = c.querySelector('.companion-check');
+            if (check) check.textContent = '';
+          });
+          card.classList.add('active');
+          const myCheck = card.querySelector('.companion-check');
+          if (myCheck) myCheck.textContent = '✓';
+
+          this.setMode(companionId);
+        });
+      });
+
+      // Chọn mô hình AI Engine
+      document.querySelectorAll('.companion-model-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const modelId = item.getAttribute('data-engine-model');
           if (!modelId) return;
+
+          document.querySelectorAll('.companion-model-item').forEach(i => {
+            i.classList.remove('active');
+            const check = i.querySelector('.cmodel-check');
+            if (check) check.textContent = '';
+          });
+          item.classList.add('active');
+          const myCheck = item.querySelector('.cmodel-check');
+          if (myCheck) myCheck.textContent = '✓';
 
           window.AISA_CONFIG.MODEL = modelId;
           localStorage.setItem('aisa_selected_model', modelId);
-
-          if (currentModelName) currentModelName.textContent = modelId;
-          document.querySelectorAll('.model-option').forEach(o => {
-            const isMatch = o.getAttribute('data-model') === modelId;
-            o.classList.toggle('active', isMatch);
-            const check = o.querySelector('.model-check');
-            if (check) check.textContent = isMatch ? '✓' : '';
-          });
-
-          modelDropdown.classList.remove('active');
-          btnModelSelector.setAttribute('aria-expanded', 'false');
+          this.updateModelBadge();
 
           const scopeBadge = document.getElementById('current-scope-label');
           if (scopeBadge) {
@@ -986,10 +1022,100 @@ window.AisaApp = {
         });
       });
 
+      // Đóng cửa sổ chọn Model & Companion
+      if (btnCloseCompanion) {
+        btnCloseCompanion.addEventListener('click', () => modalCompanion.classList.remove('show'));
+      }
+      if (btnConfirmCompanion) {
+        btnConfirmCompanion.addEventListener('click', () => modalCompanion.classList.remove('show'));
+      }
+      modalCompanion.addEventListener('click', (e) => {
+        if (e.target === modalCompanion) modalCompanion.classList.remove('show');
+      });
+    }
+
+    // Nút Tạo Chat Mới Trên Topbar (Gemini Standard New Chat Pen)
+    const btnNewChatTop = document.getElementById('btn-new-chat-top');
+    if (btnNewChatTop) {
+      btnNewChatTop.addEventListener('click', () => {
+        const btnNewSession = document.getElementById('btn-new-session');
+        if (btnNewSession) btnNewSession.click();
+      });
+    }
+
+    // Menu 3 Chấm Đa Tiện Ích Chuẩn Gemini (Âm hưởng, Ký ức, Đồng bộ, Dọn dẹp...)
+    const btnHeaderMore = document.getElementById('btn-header-more');
+    const headerMoreDropdown = document.getElementById('header-more-dropdown');
+
+    if (btnHeaderMore && headerMoreDropdown) {
+      btnHeaderMore.addEventListener('click', (e) => {
+        e.stopPropagation();
+        headerMoreDropdown.classList.toggle('active');
+      });
+
+      // 1. Âm hưởng thư giãn 432Hz
+      const itemAmbient = document.getElementById('more-item-ambient');
+      const badgeAmbient = document.getElementById('more-badge-ambient');
+      if (itemAmbient) {
+        itemAmbient.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const btnAmbient = document.getElementById('btn-toggle-ambient');
+          if (btnAmbient) btnAmbient.click();
+
+          setTimeout(() => {
+            const isPlaying = document.body.classList.contains('ambient-playing') || (btnAmbient && btnAmbient.classList.contains('active'));
+            if (badgeAmbient) {
+              badgeAmbient.textContent = isPlaying ? 'Bật' : 'Tắt';
+              badgeAmbient.classList.toggle('active', isPlaying);
+            }
+          }, 150);
+        });
+      }
+
+      // 2. Đồng bộ Đám mây
+      const itemCloud = document.getElementById('more-item-cloud');
+      if (itemCloud) {
+        itemCloud.addEventListener('click', () => {
+          headerMoreDropdown.classList.remove('active');
+          const btnCloud = document.getElementById('btn-cloud-sync');
+          if (btnCloud) btnCloud.click();
+        });
+      }
+
+      // 3. Ngân hàng Ký ức
+      const itemMemory = document.getElementById('more-item-memory');
+      if (itemMemory) {
+        itemMemory.addEventListener('click', () => {
+          headerMoreDropdown.classList.remove('active');
+          const btnMemory = document.getElementById('btn-open-memory');
+          if (btnMemory) btnMemory.click();
+        });
+      }
+
+      // 4. Dọn dẹp phiên chat
+      const itemClear = document.getElementById('more-item-clear');
+      if (itemClear) {
+        itemClear.addEventListener('click', () => {
+          headerMoreDropdown.classList.remove('active');
+          const btnClear = document.getElementById('btn-clear-chat');
+          if (btnClear) btnClear.click();
+        });
+      }
+
+      // 5. Cài đặt Sanctuary
+      const itemSettings = document.getElementById('more-item-settings');
+      if (itemSettings) {
+        itemSettings.addEventListener('click', () => {
+          headerMoreDropdown.classList.remove('active');
+          const btnSettings = document.getElementById('btn-open-settings');
+          if (btnSettings) btnSettings.click();
+        });
+      }
+
+      // Đóng menu khi click ra ngoài
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('#model-selector-container')) {
-          modelDropdown.classList.remove('active');
-          btnModelSelector.setAttribute('aria-expanded', 'false');
+        if (!e.target.closest('#header-more-container')) {
+          headerMoreDropdown.classList.remove('active');
         }
       });
     }
@@ -1538,6 +1664,29 @@ window.AisaApp = {
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
     });
+
+    // Synchronize companion persona cards inside modal
+    document.querySelectorAll('.companion-persona-card').forEach(card => {
+      const isMatch = card.getAttribute('data-companion') === mode;
+      card.classList.toggle('active', isMatch);
+      const check = card.querySelector('.companion-check');
+      if (check) check.textContent = isMatch ? '✓' : '';
+    });
+
+    this.updateModelBadge();
+  },
+
+  updateModelBadge() {
+    const currentModelName = document.getElementById('current-model-name');
+    if (!currentModelName) return;
+    const modelId = window.AISA_CONFIG.MODEL || 'aisa-v1';
+    const mode = this.state.mode || 'duo';
+    const modeNames = {
+      duo: 'Song Hành',
+      harmony: 'Harmony',
+      echo: 'Echo'
+    };
+    currentModelName.textContent = `${modelId} • ${modeNames[mode] || 'Song Hành'}`;
   },
 
   setScope(scope) {

@@ -33,109 +33,51 @@
 }
 
 /* ==============================================================
-   1. THANH ĐIỀU HƯỚNG ĐÁY CHUẨN APP (AISA BOTTOM NAV)
+   1. THANH ĐIỀU HƯỚNG ĐÁY (RETIRED FOR GOOGLE GEMINI CLEAN VIEW)
    ============================================================== */
 .aisa-bottom-nav {
-  display: none;
-}
-
-@media screen and (max-width: 768px) {
-  .aisa-bottom-nav {
-    display: flex !important;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 54px;
-    background: rgba(8, 12, 20, 0.94) !important;
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 99999;
-    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.5);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-sizing: content-box;
-  }
-
-  .aisa-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-muted, #64748b);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    gap: 3px;
-    height: 100%;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    user-select: none;
-  }
-
-  .aisa-nav-item .nav-icon {
-    font-size: 19px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  /* Active states */
-  .aisa-nav-item.active {
-    font-weight: 900;
-  }
-
-  .aisa-nav-item.active .nav-icon {
-    transform: scale(1.2) translateY(-2px);
-    animation: navIconBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  }
-
-  .aisa-nav-item.active::after {
-    content: '';
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 5px;
-  }
-
-  .aisa-nav-item[data-tab="chat"].active { color: #38bdf8; }
-  .aisa-nav-item[data-tab="chat"].active::after { background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
-
-  .aisa-nav-item[data-tab="harmony"].active { color: #f472b6; }
-  .aisa-nav-item[data-tab="harmony"].active::after { background: #f472b6; box-shadow: 0 0 6px #f472b6; }
-
-  .aisa-nav-item[data-tab="echo"].active { color: #a855f7; }
-  .aisa-nav-item[data-tab="echo"].active::after { background: #a855f7; box-shadow: 0 0 6px #a855f7; }
-
-  .aisa-nav-item[data-tab="scope"].active { color: #ec4899; }
-  .aisa-nav-item[data-tab="scope"].active::after { background: #ec4899; box-shadow: 0 0 6px #ec4899; }
-
-  .aisa-nav-item[data-tab="menu"].active { color: #cbd5e1; }
-  .aisa-nav-item[data-tab="menu"].active::after { background: #cbd5e1; box-shadow: 0 0 6px #cbd5e1; }
-
-  .aisa-nav-item:active {
-    transform: scale(0.88);
-  }
+  display: none !important;
 }
 
 /* ==============================================================
-   2. TINH CHỈNH HEADER SANCTUARY TRÊN MOBILE
+   2. TINH CHỈNH HEADER SANCTUARY CHUẨN GOOGLE GEMINI TRÊN MOBILE
    ============================================================== */
 @media screen and (max-width: 768px) {
   .sanctuary-header {
     height: 52px !important;
-    padding: 0 12px !important;
+    padding: 0 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: rgba(14, 14, 20, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-sizing: border-box !important;
+    z-index: 1000 !important;
+  }
+
+  .header-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .btn-toggle-sidebar {
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    color: var(--text-high) !important;
+  }
+
+  .brand-badge {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
   }
 
   .brand-logo-img {
@@ -143,50 +85,84 @@
     height: 24px !important;
   }
 
-  .brand-info h1 {
-    font-size: 14px !important;
-  }
-
-  .brand-info span {
+  .brand-info {
     display: none !important;
   }
 
-  /* Model Selector on Mobile */
+  /* Gemini Model Selector Pill on Mobile */
   .btn-model-selector {
-    padding: 4px 10px !important;
-    font-size: 0.78rem !important;
-    gap: 4px !important;
-  }
-  .model-dropdown-menu {
-    width: calc(100vw - 32px) !important;
-    left: -40px !important;
+    padding: 5px 12px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    color: #fff !important;
   }
 
-  /* Ẩn tabs phạm vi và pill chế độ trên topbar mobile */
+  .model-dropdown-menu {
+    display: none !important; /* Mobile triggers modal-companion-model */
+  }
+
+  /* Ẩn tabs phạm vi và pill chế độ trên topbar mobile (đã có trong popup model) */
   .header-scope-tabs,
   .header-mode-pill {
     display: none !important;
   }
 
+  /* Right Action Icons: New Chat, 3-dots, User Avatar */
   .header-actions {
+    display: flex !important;
+    align-items: center !important;
     gap: 4px !important;
   }
 
-  .btn-ambient-toggle span:not(.badge-counter),
-  #btn-open-memory span:not(.badge-counter),
-  #cloud-sync-text,
+  /* Ẩn các icon rời để đưa toàn bộ vào menu 3 chấm (Chuẩn Gemini) */
+  #btn-toggle-ambient,
+  #btn-open-memory,
+  #btn-cloud-sync,
+  #btn-open-settings,
   .hide-mobile {
     display: none !important;
   }
 
-  .btn-header-action {
-    padding: 4px 6px !important;
-    min-width: 32px !important;
-    height: 32px !important;
+  .btn-new-chat-top,
+  .btn-header-more {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    color: var(--text-high) !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .btn-new-chat-top:active,
+  .btn-header-more:active {
+    background: rgba(255, 255, 255, 0.12) !important;
+    transform: scale(0.92);
   }
 
-  .header-user-badge .user-badge-name {
+  .header-user-badge {
+    display: inline-flex !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .user-badge-inner {
+    padding: 0 !important;
+  }
+  .user-badge-name,
+  .btn-header-logout {
     display: none !important;
+  }
+  .user-badge-avatar {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.8rem !important;
   }
 }
 
@@ -264,9 +240,18 @@
     height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    padding-bottom: 54px !important; /* Chừa đúng 54px cho Bottom Nav */
+    padding-bottom: 0 !important; /* Không còn Bottom Nav */
     box-sizing: border-box !important;
     overflow: hidden !important;
+  }
+
+  /* Làm dịu hoàn toàn viền hào quang trên mobile để màn hình nhỏ không bị ngập màu */
+  .sanctuary-chat-center::after {
+    box-shadow: inset 0 0 16px rgba(244, 114, 182, 0.08), inset 0 -20px 40px rgba(168, 85, 247, 0.06) !important;
+    border-width: 1px !important;
+  }
+  .sanctuary-hero-aura::before {
+    display: none !important;
   }
 
   .chat-stream-header {
@@ -382,48 +367,108 @@
     font-size: 0.75rem !important;
   }
 
-  /* Khung Capsule Input Station sát Bottom Nav */
+  /* Khung Capsule Input Station chuẩn Google Gemini Mobile */
   .chat-input-station {
-    padding: 4px 8px 8px 8px !important;
+    padding: 4px 12px calc(max(10px, env(safe-area-inset-bottom, 10px))) 12px !important;
     background: transparent !important;
     border-top: none !important;
     flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 20 !important;
   }
 
   .gemini-input-capsule {
-    padding: 3px 8px 3px 10px !important;
-    border-radius: 24px !important;
-    gap: 6px !important;
+    min-height: 48px !important;
+    padding: 4px 8px 4px 12px !important;
+    border-radius: 26px !important;
+    background: rgba(22, 22, 30, 0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    gap: 8px !important;
   }
 
   .btn-capsule-tool {
-    width: 32px !important;
-    height: 32px !important;
+    width: 34px !important;
+    height: 34px !important;
   }
   .btn-capsule-tool svg {
-    width: 17px !important;
-    height: 17px !important;
+    width: 18px !important;
+    height: 18px !important;
   }
 
   .gemini-textarea {
-    font-size: 13.5px !important;
-    padding: 6px 2px !important;
+    font-size: 14px !important;
+    padding: 7px 0 !important;
     height: 32px !important;
-    max-height: 100px !important;
+    max-height: 110px !important;
   }
 
   .btn-capsule-send {
-    width: 32px !important;
-    height: 32px !important;
+    width: 34px !important;
+    height: 34px !important;
   }
   .btn-capsule-send svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .gemini-disclaimer-text {
-    font-size: 0.64rem !important;
-    margin-top: 3px !important;
+    font-size: 0.65rem !important;
+    margin-top: 4px !important;
+    color: var(--text-muted) !important;
+  }
+
+  /* Tool chips row trên mobile - trượt ngang mượt mà */
+  .gemini-tools-chips-row {
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    padding: 2px 2px 4px 2px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .gemini-tools-chips-row::-webkit-scrollbar {
+    display: none !important;
+  }
+  .gemini-tool-chip {
+    padding: 4px 10px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Companion & Model modal mobile adaptation */
+  .modal-companion-card {
+    width: calc(100vw - 20px) !important;
+    max-height: 86vh !important;
+    border-radius: 20px !important;
+  }
+  .companion-modal-body {
+    padding: 16px 14px !important;
+    max-height: 66vh !important;
+  }
+  .companion-persona-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .companion-persona-card {
+    min-height: auto !important;
+    padding: 12px 14px !important;
+  }
+  .companion-models-list {
+    gap: 6px !important;
+  }
+  .companion-model-item {
+    padding: 10px 12px !important;
+  }
+
+  /* 3-Dots dropdown menu on mobile */
+  .header-more-dropdown {
+    width: calc(100vw - 28px) !important;
+    max-width: 280px !important;
+    right: 4px !important;
   }
 }
 
