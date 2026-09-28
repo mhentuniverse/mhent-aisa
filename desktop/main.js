@@ -2,17 +2,101 @@ const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsPromises = fs.promises;
+const http = require('http');
+const url = require('url');
 
 let mainWindow = null;
+let localServer = null;
+let localServerPort = 0;
 
-function createWindow() {
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.webp': 'image/webp',
+  '.mp3': 'audio/mpeg'
+};
+
+function startLocalServer() {
+  return new Promise((resolve, reject) => {
+    localServer = http.createServer((req, res) => {
+      try {
+        const parsedUrl = url.parse(req.url);
+        let pathname = decodeURIComponent(parsedUrl.pathname);
+
+        // SPA routing: route / or /chat or clean paths to index.html
+        if (pathname === '/' || pathname === '/chat' || pathname.startsWith('/chat')) {
+          pathname = '/index.html';
+        }
+
+        const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
+        let filePath = path.join(__dirname, '..', safePath);
+
+        // If file doesn't exist or is a directory without index.html
+        if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+          filePath = path.join(__dirname, '..', 'index.html');
+        }
+
+        const ext = path.extname(filePath).toLowerCase();
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+        fs.readFile(filePath, (err, data) => {
+          if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('404 Not Found');
+            return;
+          }
+          res.writeHead(200, {
+            'Content-Type': contentType,
+            'Access-Control-Allow-Origin': '*'
+          });
+          res.end(data);
+        });
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Server Error');
+      }
+    });
+
+    localServer.listen(0, '127.0.0.1', () => {
+      localServerPort = localServer.address().port;
+      console.log(`[AISA Local Server] Listening on http://localhost:${localServerPort}`);
+      resolve(localServerPort);
+    });
+
+    localServer.on('error', (err) => {
+      console.warn('[AISA Local Server Error]:', err);
+      reject(err);
+    });
+  });
+}
+
+async function createWindow() {
+  if (!localServerPort) {
+    try {
+      await startLocalServer();
+    } catch (e) {
+      console.warn('Failed to start local server, fallback to file:', e);
+    }
+  }
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 840,
     minWidth: 420,
     minHeight: 600,
     backgroundColor: '#0a0a0f',
-    title: 'AISA — Personal Companion AI (MHEnt Universe)',
+    title: 'AISA — Personal Companion AI Sanctuary (MHEnt Universe)',
     icon: path.join(__dirname, '..', 'assets', 'logo-design.png'),
     autoHideMenuBar: true,
     webPreferences: {
@@ -24,8 +108,32 @@ function createWindow() {
     }
   });
 
-  // Load the web app
-  mainWindow.loadFile(path.join(__dirname, '..', 'index.html'));
+  // Handle OAuth popups (Firebase Google Sign-In)
+  mainWindow.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
+    if (targetUrl.includes('firebaseapp.com') || targetUrl.includes('accounts.google.com')) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 520,
+          height: 650,
+          autoHideMenuBar: true,
+          webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
+          }
+        }
+      };
+    }
+    shell.openExternal(targetUrl);
+    return { action: 'deny' };
+  });
+
+  // Load the web app via localhost to enable Firebase Auth & Google Sign-In
+  if (localServerPort) {
+    mainWindow.loadURL(`http://localhost:${localServerPort}/`);
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '..', 'index.html'));
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -44,16 +152,20 @@ if (!gotTheLock) {
     }
   });
 
-  app.whenReady().then(() => {
-    createWindow();
+  app.whenReady().then(async () => {
+    await createWindow();
 
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    app.on('activate', async () => {
+      if (BrowserWindow.getAllWindows().length === 0) await createWindow();
     });
   });
 }
 
 app.on('window-all-closed', () => {
+  if (localServer) {
+    try { localServer.close(); } catch (e) {}
+    localServer = null;
+  }
   if (process.platform !== 'darwin') {
     app.quit();
   }
