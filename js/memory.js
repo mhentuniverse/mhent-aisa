@@ -8,6 +8,7 @@ window.AisaMemory = {
 
   async init() {
     this.loadLocalFacts();
+    this.renderMemoryUI();
     await this.refreshMemories();
   },
 
@@ -180,11 +181,19 @@ window.AisaMemory = {
     const factsContainer = document.getElementById('memory-facts-list');
     const logsContainer = document.getElementById('memory-logs-list');
     const badgeCount = document.getElementById('memory-count-badge');
+    const sidebarMemoryBadge = document.getElementById('sidebar-memory-badge');
+    const moreBadgeMemory = document.getElementById('more-badge-memory');
     const sidebarVaultCount = document.getElementById('sidebar-vault-count');
 
     const totalCount = this.facts.length;
     if (badgeCount) {
       badgeCount.textContent = totalCount;
+    }
+    if (sidebarMemoryBadge) {
+      sidebarMemoryBadge.textContent = totalCount;
+    }
+    if (moreBadgeMemory) {
+      moreBadgeMemory.textContent = totalCount;
     }
     if (sidebarVaultCount) {
       sidebarVaultCount.textContent = totalCount;

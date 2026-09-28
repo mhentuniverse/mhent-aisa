@@ -80,8 +80,7 @@
   padding-bottom: 2px;
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
-  max-width: 520px;
+  gap: 8px;
   vertical-align: baseline;
 }
 .editable-user-tag:hover {
@@ -94,11 +93,7 @@
   background: linear-gradient(135deg, #f472b6 0%, #ec4899 50%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  display: inline-block;
-  max-width: 480px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: inline;
   vertical-align: baseline;
 }
 
