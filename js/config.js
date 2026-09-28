@@ -27,10 +27,10 @@ window.AISA_CONFIG = {
   // Default User Profile (Dynamically loaded from Auth or Custom Storage)
   USER: {
     id: "user-current",
-    name: localStorage.getItem("aisa_user_display_name") || "User",
-    realName: "User",
-    role: "User",
-    avatar: "👑"
+    name: localStorage.getItem("aisa_user_display_name") || "Master Yurika",
+    realName: "Master Yurika",
+    role: "Founder • MHEnt Universe",
+    avatar: "🌸"
   },
 
   // Firebase Configuration (Matching MHEnt Universe & Workspace)

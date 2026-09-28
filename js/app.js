@@ -996,9 +996,16 @@ window.AisaApp = {
 
   onUserAuthenticated(user) {
     if (!user) return;
+    const isOrgOrInvalid = (str) => {
+      if (!str || typeof str !== 'string') return true;
+      const s = str.trim();
+      return !s || s.includes('Entertainment') || s.includes('Co.,') || s.includes('Ltd') || s.length > 22;
+    };
+    const validName = (!isOrgOrInvalid(user.name)) ? user.name.trim() : "Master Yurika";
+
     if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
-      window.AISA_CONFIG.USER.name = user.name || "Master Yurika";
-      window.AISA_CONFIG.USER.avatar = user.avatar || "👑";
+      window.AISA_CONFIG.USER.name = validName;
+      window.AISA_CONFIG.USER.avatar = user.avatar || "🌸";
     }
     this.updateGreeting();
 
@@ -1006,8 +1013,8 @@ window.AisaApp = {
     this.initFirestoreRealtime();
     this.syncFromCloud(true);
 
-    // Nếu phiên hiện tại chỉ có các tin chào mẫu cũ mà chưa có câu hỏi của người dùng, làm sạch để hiển thị Hero Greeting chuẩn Gemini
-    if (this.state.messages.length <= 2 && !this.state.messages.some(m => m.role === 'user')) {
+    // Cập nhật lại Hero Greeting hiển thị chuẩn xác tên Master Yurika
+    if (!this.state.messages || this.state.messages.length <= 2 && !this.state.messages.some(m => m.role === 'user')) {
       this.state.messages = [];
       this.saveState();
       this.renderMessages();
@@ -2353,15 +2360,26 @@ window.AisaApp = {
   },
 
   getUserDisplayName() {
+    const isOrgOrInvalid = (str) => {
+      if (!str || typeof str !== 'string') return true;
+      const s = str.trim();
+      return !s || s.includes('Entertainment') || s.includes('Co.,') || s.includes('Ltd') || s.length > 22;
+    };
+
     const custom = localStorage.getItem('aisa_user_display_name');
-    if (custom && custom.trim()) return custom.trim();
+    if (custom && !isOrgOrInvalid(custom)) return custom.trim();
+
     if (window.AisaAuth && window.AisaAuth.currentUser && window.AisaAuth.currentUser.name) {
-      return window.AisaAuth.currentUser.name.trim();
+      const authName = window.AisaAuth.currentUser.name;
+      if (!isOrgOrInvalid(authName)) return authName.trim();
     }
+
     if (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) {
-      return window.AISA_CONFIG.USER.name.trim();
+      const cfgName = window.AISA_CONFIG.USER.name;
+      if (!isOrgOrInvalid(cfgName)) return cfgName.trim();
     }
-    return "User";
+
+    return "Master Yurika";
   },
 
   async promptChangeUserName() {
@@ -2377,8 +2395,11 @@ window.AisaApp = {
       cancelText: "Hủy Bỏ"
     });
 
-    if (newName && newName.trim() && newName.trim() !== currentName) {
-      const trimmed = newName.trim();
+    if (newName !== null && newName.trim() && newName.trim() !== currentName) {
+      let trimmed = newName.trim();
+      if (trimmed.length > 20) {
+        trimmed = trimmed.substring(0, 20);
+      }
       localStorage.setItem('aisa_user_display_name', trimmed);
       if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
         window.AISA_CONFIG.USER.name = trimmed;

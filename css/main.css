@@ -897,6 +897,11 @@ body {
   width: 100%;
 }
 
+/* Ensure obsolete 3rd column right sidebar is hidden globally across all devices */
+.sanctuary-sidebar-right {
+  display: none !important;
+}
+
 /* ==========================================================================
    LEFT SIDEBAR: GEMINI COLLAPSIBLE DRAWER
    ========================================================================== */

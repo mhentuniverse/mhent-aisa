@@ -21,7 +21,7 @@
 }
 
 .gemini-hero-greeting {
-  max-width: 820px;
+  max-width: 960px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -36,9 +36,9 @@
 
 .gemini-gradient-headline {
   font-family: var(--font-display);
-  font-size: 3.4rem;
+  font-size: 3.2rem;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: -0.8px;
   margin-bottom: 6px;
 }
@@ -72,21 +72,30 @@
   cursor: pointer;
   position: relative;
   transition: all 0.25s ease;
-  border-bottom: 2px dashed rgba(244, 114, 182, 0.45);
+  border-bottom: 2px dashed rgba(244, 114, 182, 0.55);
   padding-bottom: 2px;
+  display: inline-flex;
+  align-items: baseline;
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
 .editable-user-tag:hover {
-  color: #fbcfe8;
   border-bottom-color: #f472b6;
   text-shadow: 0 0 16px rgba(244, 114, 182, 0.6);
 }
 .edit-name-badge {
-  font-size: 0.55em;
-  opacity: 0.6;
+  font-size: 0.5em;
+  opacity: 0.75;
   margin-left: 6px;
   vertical-align: middle;
   transition: opacity 0.2s;
   color: #f472b6;
+  -webkit-text-fill-color: #f472b6;
+  display: inline-block;
+  flex-shrink: 0;
 }
 .editable-user-tag:hover .edit-name-badge {
   opacity: 1;
@@ -129,7 +138,7 @@
   -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 20px 18px 18px 18px;
-  min-height: 148px;
+  min-height: 136px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

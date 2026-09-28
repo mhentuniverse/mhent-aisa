@@ -145,14 +145,32 @@ window.AisaAuth = {
     this.showLoginLoading(false);
 
     if (check.authorized) {
-      // Ưu tiên tên hiển thị thực tế của User từ Google / Firebase Auth
-      let cleanName = localStorage.getItem('aisa_user_display_name') || user.displayName || (user.email ? user.email.split('@')[0] : "User");
+      // Ưu tiên tên hiển thị thực tế của User từ Google / Firebase Auth nhưng lọc bỏ tên công ty pháp nhân
+      const isOrgName = (str) => {
+        if (!str || typeof str !== 'string') return true;
+        const s = str.trim();
+        return !s || s.includes('Entertainment') || s.includes('Co.,') || s.includes('Ltd') || s.length > 22;
+      };
+
+      let storedName = localStorage.getItem('aisa_user_display_name');
+      let cleanName;
+      if (storedName && !isOrgName(storedName)) {
+        cleanName = storedName.trim();
+      } else {
+        const rawName = (user.displayName || '').trim();
+        if (rawName && !isOrgName(rawName)) {
+          cleanName = rawName;
+        } else {
+          cleanName = "Master Yurika";
+        }
+        localStorage.setItem('aisa_user_display_name', cleanName);
+      }
       
       this.currentUser = {
         uid: user.uid,
         email: user.email,
         name: cleanName,
-        avatar: user.photoURL || "👑",
+        avatar: user.photoURL || "🌸",
         role: check.role || "master"
       };
       this.isAuthorized = true;
