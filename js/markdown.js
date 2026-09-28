@@ -93,6 +93,11 @@ window.AisaMarkdown = {
       result += curr;
     }
 
+    // 13. Nếu đang chạy Desktop Edition, tự động gắn nút mở nhanh cho đường dẫn tệp Windows
+    if (window.AisaDesktopBridge && window.AisaDesktopBridge.enhanceMessageWithLocalPaths) {
+      result = window.AisaDesktopBridge.enhanceMessageWithLocalPaths(result);
+    }
+
     return result;
   },
 

@@ -1,0 +1,52 @@
+{
+  "name": "mhent-aisa",
+  "version": "1.0.0",
+  "description": "AISA — Personal Companion AI Desktop Edition (MHEnt Universe)",
+  "main": "desktop/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "aisa",
+    "ai",
+    "companion",
+    "desktop",
+    "gemini",
+    "mhent-universe"
+  ],
+  "author": "Miyazaki Haruto Entertainment Co., Ltd.",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.mhentuniverse.aisa",
+    "productName": "AISA Companion",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!functions/**",
+      "!.git/**"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AISA Sanctuary"
+    }
+  }
+}
