@@ -145,25 +145,19 @@ window.AisaAuth = {
     this.showLoginLoading(false);
 
     if (check.authorized) {
-      // Ưu tiên tên hiển thị thực tế của User từ Google / Firebase Auth nhưng lọc bỏ tên công ty pháp nhân
-      const isOrgName = (str) => {
-        if (!str || typeof str !== 'string') return true;
-        const s = str.trim();
-        return !s || s.includes('Entertainment') || s.includes('Co.,') || s.includes('Ltd') || s.length > 22;
-      };
-
+      // Lấy tên người dùng: ưu tiên tên tùy chỉnh đã lưu, rồi đến tên tài khoản Google, rồi đến email prefix
       let storedName = localStorage.getItem('aisa_user_display_name');
       let cleanName;
-      if (storedName && !isOrgName(storedName)) {
+      if (storedName && storedName.trim()) {
         cleanName = storedName.trim();
-      } else {
-        const rawName = (user.displayName || '').trim();
-        if (rawName && !isOrgName(rawName)) {
-          cleanName = rawName;
-        } else {
-          cleanName = "Master Yurika";
-        }
+      } else if (user.displayName && user.displayName.trim()) {
+        cleanName = user.displayName.trim();
         localStorage.setItem('aisa_user_display_name', cleanName);
+      } else if (user.email) {
+        cleanName = user.email.split('@')[0];
+        localStorage.setItem('aisa_user_display_name', cleanName);
+      } else {
+        cleanName = "Master Yurika";
       }
       
       this.currentUser = {
@@ -365,15 +359,18 @@ window.AisaAuth = {
     const nameEl = document.getElementById('header-user-name');
     const uprofAvatar = document.getElementById('uprof-avatar-badge');
     const uprofName = document.getElementById('uprof-display-name');
+    const sfooterAvatar = document.getElementById('sfooter-avatar') || document.querySelector('.sfooter-avatar');
+    const sfooterName = document.getElementById('sfooter-name') || document.querySelector('.sfooter-name');
 
     if (user && this.isAuthorized) {
       if (badge) badge.style.display = 'inline-flex';
       const displayName = user.name || "Master Yurika";
       const isImg = user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:'));
+      const imgTag = `<img src="${user.avatar}" alt="Avatar" class="user-avatar-img" referrerpolicy="no-referrer" onerror="this.onerror=null; this.parentElement.textContent='🌸';" />`;
 
       if (avatarEl) {
         if (isImg) {
-          avatarEl.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="user-avatar-img" />`;
+          avatarEl.innerHTML = imgTag;
         } else {
           avatarEl.textContent = user.avatar || "🌸";
         }
@@ -386,10 +383,20 @@ window.AisaAuth = {
       }
       if (uprofAvatar) {
         if (isImg) {
-          uprofAvatar.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="user-avatar-img" />`;
+          uprofAvatar.innerHTML = imgTag;
         } else {
           uprofAvatar.textContent = user.avatar || "🌸";
         }
+      }
+      if (sfooterAvatar) {
+        if (isImg) {
+          sfooterAvatar.innerHTML = imgTag;
+        } else {
+          sfooterAvatar.textContent = user.avatar || "🌸";
+        }
+      }
+      if (sfooterName) {
+        sfooterName.textContent = displayName;
       }
     } else {
       if (badge) badge.style.display = 'none';

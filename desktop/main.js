@@ -108,6 +108,16 @@ async function createWindow() {
     }
   });
 
+  // Strip Referer & Origin headers on Google user content (avatars) so CDN does not return 403 Forbidden
+  mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+    { urls: ['*://*.googleusercontent.com/*', '*://lh3.googleusercontent.com/*'] },
+    (details, callback) => {
+      delete details.requestHeaders['Referer'];
+      delete details.requestHeaders['Origin'];
+      callback({ requestHeaders: details.requestHeaders });
+    }
+  );
+
   // Handle OAuth popups (Firebase Google Sign-In)
   mainWindow.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
     if (targetUrl.includes('firebaseapp.com') || targetUrl.includes('accounts.google.com')) {

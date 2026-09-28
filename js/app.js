@@ -996,12 +996,7 @@ window.AisaApp = {
 
   onUserAuthenticated(user) {
     if (!user) return;
-    const isOrgOrInvalid = (str) => {
-      if (!str || typeof str !== 'string') return true;
-      const s = str.trim();
-      return !s || s.includes('Entertainment') || s.includes('Co.,') || s.includes('Ltd') || s.length > 22;
-    };
-    const validName = (!isOrgOrInvalid(user.name)) ? user.name.trim() : "Master Yurika";
+    const validName = (user.name && user.name.trim()) ? user.name.trim() : "Master Yurika";
 
     if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
       window.AISA_CONFIG.USER.name = validName;
@@ -1013,7 +1008,7 @@ window.AisaApp = {
     this.initFirestoreRealtime();
     this.syncFromCloud(true);
 
-    // Cập nhật lại Hero Greeting hiển thị chuẩn xác tên Master Yurika
+    // Cập nhật lại Hero Greeting hiển thị chuẩn xác tên người dùng
     if (!this.state.messages || this.state.messages.length <= 2 && !this.state.messages.some(m => m.role === 'user')) {
       this.state.messages = [];
       this.saveState();
@@ -2360,23 +2355,15 @@ window.AisaApp = {
   },
 
   getUserDisplayName() {
-    const isOrgOrInvalid = (str) => {
-      if (!str || typeof str !== 'string') return true;
-      const s = str.trim();
-      return !s || s.includes('Entertainment') || s.includes('Co.,') || s.includes('Ltd') || s.length > 22;
-    };
-
     const custom = localStorage.getItem('aisa_user_display_name');
-    if (custom && !isOrgOrInvalid(custom)) return custom.trim();
+    if (custom && custom.trim()) return custom.trim();
 
-    if (window.AisaAuth && window.AisaAuth.currentUser && window.AisaAuth.currentUser.name) {
-      const authName = window.AisaAuth.currentUser.name;
-      if (!isOrgOrInvalid(authName)) return authName.trim();
+    if (window.AisaAuth && window.AisaAuth.currentUser && window.AisaAuth.currentUser.name && window.AisaAuth.currentUser.name.trim()) {
+      return window.AisaAuth.currentUser.name.trim();
     }
 
-    if (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name) {
-      const cfgName = window.AISA_CONFIG.USER.name;
-      if (!isOrgOrInvalid(cfgName)) return cfgName.trim();
+    if (window.AISA_CONFIG && window.AISA_CONFIG.USER && window.AISA_CONFIG.USER.name && window.AISA_CONFIG.USER.name.trim()) {
+      return window.AISA_CONFIG.USER.name.trim();
     }
 
     return "Master Yurika";
@@ -2397,9 +2384,6 @@ window.AisaApp = {
 
     if (newName !== null && newName.trim() && newName.trim() !== currentName) {
       let trimmed = newName.trim();
-      if (trimmed.length > 20) {
-        trimmed = trimmed.substring(0, 20);
-      }
       localStorage.setItem('aisa_user_display_name', trimmed);
       if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
         window.AISA_CONFIG.USER.name = trimmed;
@@ -2425,7 +2409,11 @@ window.AisaApp = {
         <div class="gemini-hero-greeting-container sanctuary-hero-aura">
           <div class="gemini-hero-greeting" id="gemini-hero-greeting">
             <h1 class="gemini-gradient-headline">
-              <span class="gradient-text">Xin chào, <span id="hero-user-name" class="editable-user-tag" title="Nhấp để đổi tên xưng hô">${this.escapeHtml(userName)} <span class="edit-name-badge">✎</span></span></span>
+              <span class="gradient-text">Xin chào,</span>
+              <span id="hero-user-name" class="editable-user-tag" title="Nhấp để đổi tên xưng hô">
+                <span class="hero-user-name-text">${this.escapeHtml(userName)}</span>
+                <span class="edit-name-badge">✎</span>
+              </span>
             </h1>
             <p class="gemini-sub-headline">AISA Sanctuary luôn sẵn sàng lắng nghe và đồng hành cùng cậu hôm nay ✨</p>
             

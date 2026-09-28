@@ -41,6 +41,10 @@
   line-height: 1.2;
   letter-spacing: -0.8px;
   margin-bottom: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .gradient-text {
@@ -76,26 +80,37 @@
   padding-bottom: 2px;
   display: inline-flex;
   align-items: baseline;
-  max-width: 420px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  gap: 6px;
+  max-width: 520px;
   vertical-align: baseline;
 }
 .editable-user-tag:hover {
   border-bottom-color: #f472b6;
   text-shadow: 0 0 16px rgba(244, 114, 182, 0.6);
 }
+
+.hero-user-name-text {
+  color: #f472b6;
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  max-width: 480px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
 .edit-name-badge {
   font-size: 0.5em;
   opacity: 0.75;
-  margin-left: 6px;
-  vertical-align: middle;
-  transition: opacity 0.2s;
   color: #f472b6;
   -webkit-text-fill-color: #f472b6;
   display: inline-block;
   flex-shrink: 0;
+  vertical-align: middle;
+  transition: opacity 0.2s;
 }
 .editable-user-tag:hover .edit-name-badge {
   opacity: 1;
