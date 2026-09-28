@@ -388,15 +388,26 @@ window.AisaApp = {
       if (current) {
         this.state.currentSessionId = current.id;
         this.state.messages = current.messages || [];
+        this.state.mode = current.mode || 'duo';
       } else {
         // Màn hình ban đầu root (/): hiển thị Hero Greeting giới thiệu, chưa chọn phiên nào
         this.state.currentSessionId = null;
         this.state.messages = [];
+        this.state.mode = 'duo';
+        localStorage.removeItem(config.STORAGE.ACTIVE_SESSION);
+        localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify([]));
+        localStorage.setItem(config.STORAGE.ACTIVE_MODE, 'duo');
       }
 
       // Nạp mode, scope và model
-      const savedMode = localStorage.getItem(config.STORAGE.ACTIVE_MODE);
-      if (savedMode) this.state.mode = savedMode;
+      if (current && current.mode) {
+        this.state.mode = current.mode;
+      } else if (!urlSessionId) {
+        this.state.mode = 'duo';
+      } else {
+        const savedMode = localStorage.getItem(config.STORAGE.ACTIVE_MODE);
+        if (savedMode) this.state.mode = savedMode;
+      }
 
       const savedScope = localStorage.getItem(config.STORAGE.ACTIVE_SCOPE);
       if (savedScope) this.state.scope = savedScope;
@@ -410,6 +421,7 @@ window.AisaApp = {
       console.warn('Could not load saved state:', e);
       this.state.currentSessionId = null;
       this.state.messages = [];
+      this.state.mode = 'duo';
     }
   },
 
@@ -428,13 +440,20 @@ window.AisaApp = {
       }
 
       localStorage.setItem(config.STORAGE.SESSIONS, JSON.stringify(this.state.sessions));
-      localStorage.setItem(config.STORAGE.ACTIVE_SESSION, this.state.currentSessionId || '');
-      localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
+      if (this.state.currentSessionId) {
+        localStorage.setItem(config.STORAGE.ACTIVE_SESSION, this.state.currentSessionId);
+        localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
+      } else {
+        localStorage.removeItem(config.STORAGE.ACTIVE_SESSION);
+        localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify([]));
+      }
       localStorage.setItem(config.STORAGE.ACTIVE_MODE, this.state.mode);
       localStorage.setItem(config.STORAGE.ACTIVE_SCOPE, this.state.scope);
 
-      // Tự động đồng bộ lên Cloud (D1 & Firestore) trong nền
-      this.debounceSyncCloud();
+      // Tự động đồng bộ lên Cloud (D1 & Firestore) trong nền nếu có phiên đang mở
+      if (this.state.currentSessionId) {
+        this.debounceSyncCloud();
+      }
     } catch (e) {}
   },
 
@@ -488,6 +507,7 @@ window.AisaApp = {
     this.state.currentSessionId = null;
     this.state.messages = [];
     this.clearAttachedFile();
+    this.setMode('duo', true);
 
     const input = document.getElementById('chat-input');
     if (input) {
@@ -1052,14 +1072,14 @@ window.AisaApp = {
           });
 
           if (restored.length > 0) {
-            // Nạp trực tiếp vào phiên đầu tiên nếu phiên đó chỉ có tin chào mặc định
-            const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId);
+            // Nạp trực tiếp vào phiên đang hoạt động nếu người dùng đang ở trong phiên đó và phiên đó rỗng
+            const currentSession = this.state.currentSessionId ? this.state.sessions.find(s => s.id === this.state.currentSessionId) : null;
             if (currentSession && (currentSession.messages.length <= 2 && !currentSession.messages.some(m => m.role === 'user'))) {
               currentSession.messages = restored;
               currentSession.title = this.deriveSessionTitle(restored) || 'Ký ức Edge D1';
               this.state.messages = restored;
             } else {
-              // Hoặc tạo một phiên D1 riêng
+              // Hoặc tạo một phiên D1 riêng trong danh sách phiên
               let cloudSession = this.state.sessions.find(s => s.id === 'session-d1-vault');
               if (!cloudSession) {
                 cloudSession = {
@@ -1079,7 +1099,9 @@ window.AisaApp = {
 
             this.saveState();
             this.renderSessionsList();
-            this.renderMessages();
+            if (this.state.currentSessionId) {
+              this.renderMessages();
+            }
           }
         }
       }
@@ -1285,8 +1307,12 @@ window.AisaApp = {
           };
           hasChanges = true;
 
-          if (this.state.currentSessionId === cloudSess.id) {
+          // Chỉ cập nhật tin nhắn hiển thị nếu người dùng đang chủ động mở phiên này
+          if (this.state.currentSessionId && this.state.currentSessionId === cloudSess.id) {
             this.state.messages = cloudSess.messages || [];
+            if (cloudSess.mode && cloudSess.mode !== this.state.mode) {
+              this.setMode(cloudSess.mode, false);
+            }
             activeSessionUpdated = true;
           }
         }
@@ -1297,27 +1323,19 @@ window.AisaApp = {
       // Sắp xếp phiên chat mới nhất lên đầu
       this.state.sessions.sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0));
 
-      // Tự động chuyển sang phiên có tin nhắn thực tế nếu phiên hiện tại chỉ có lời chào mặc định
-      const current = this.state.sessions.find(s => s.id === this.state.currentSessionId);
-      const isDefaultWelcome = !current || !current.messages || !current.messages.some(m => m.role === 'user');
-      if (isDefaultWelcome && this.state.sessions.length > 0) {
-        const bestSession = this.state.sessions.find(s => s.messages && s.messages.some(m => m.role === 'user')) || this.state.sessions[0];
-        if (bestSession && bestSession.id !== this.state.currentSessionId) {
-          this.state.currentSessionId = bestSession.id;
-          this.state.messages = bestSession.messages || [];
-          if (bestSession.mode) this.setMode(bestSession.mode, false);
-          activeSessionUpdated = true;
-        }
-      }
-
       // Lưu lại vào localStorage
       const config = window.AISA_CONFIG;
       localStorage.setItem(config.STORAGE.SESSIONS, JSON.stringify(this.state.sessions));
-      localStorage.setItem(config.STORAGE.ACTIVE_SESSION, this.state.currentSessionId || '');
-      localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
+      if (this.state.currentSessionId) {
+        localStorage.setItem(config.STORAGE.ACTIVE_SESSION, this.state.currentSessionId);
+        localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify(this.state.messages));
+      } else {
+        localStorage.removeItem(config.STORAGE.ACTIVE_SESSION);
+        localStorage.setItem(config.STORAGE.HISTORY, JSON.stringify([]));
+      }
 
       this.renderSessionsList();
-      if (activeSessionUpdated) {
+      if (activeSessionUpdated && this.state.currentSessionId) {
         this.renderMessages();
       }
     }
@@ -2277,7 +2295,13 @@ window.AisaApp = {
       harmony: 'Harmony',
       echo: 'Echo'
     };
-    currentModelName.textContent = `${modelId} • ${modeNames[mode] || 'Song Hành'}`;
+    const modelLabels = {
+      'aisa-v1': 'AISA v1',
+      'aisa-scholar-v1': 'AISA Scholar v1',
+      'aisa-pro-v1': 'AISA Pro v1'
+    };
+    const modelLabel = modelLabels[modelId] || modelId;
+    currentModelName.textContent = `${modelLabel} • ${modeNames[mode] || 'Song Hành'}`;
   },
 
   setScope(scope) {
