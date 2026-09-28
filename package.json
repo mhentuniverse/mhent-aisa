@@ -39,7 +39,7 @@
         "nsis",
         "portable"
       ],
-      "icon": "assets/icon-logo.png"
+      "icon": "assets/logo-design.png"
     },
     "nsis": {
       "oneClick": false,

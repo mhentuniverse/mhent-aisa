@@ -13,7 +13,7 @@ function createWindow() {
     minHeight: 600,
     backgroundColor: '#0a0a0f',
     title: 'AISA — Personal Companion AI (MHEnt Universe)',
-    icon: path.join(__dirname, '..', 'assets', 'icon-logo.png'),
+    icon: path.join(__dirname, '..', 'assets', 'logo-design.png'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
