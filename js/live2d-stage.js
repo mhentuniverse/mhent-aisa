@@ -1,11 +1,14 @@
 /**
  * AISA COMPANION - LIVE2D MASCOT STAGE ENGINE (OPEN-LLM-VTUBER ARCHITECTURE)
  * Features:
- * 1. Dual Mascot Simultaneous Display (Harmony 🌸 & Echo 😈 in Song Hành Mode)
- * 2. Gemini Live Studio View (Full stage theater mode + chat sidebar)
- * 3. Interactive Pan & Zoom (Drag to move, scroll wheel to zoom, reset button)
- * 4. Speaker-aware 60FPS Harmonic Lip-Sync
- * 5. Emotion expression mapping & mouse cursor tracking
+ * 1. Dual Mascot Display (Harmony 🌸 & Echo 😈 in Song Hành Mode)
+ * 2. Strict Single-Instance Latch (Zero duplicate/ghost models)
+ * 3. Proportional Scaling: Matched anime heights for Harmony & Echo
+ * 4. Independent Dragging: Click & drag Harmony moves Harmony; click & drag Echo moves Echo
+ * 5. Interactive Tapping: Tap character triggers Vietnamese voice line & emotion
+ * 6. Gemini Live Studio View (Full stage theater mode + chat sidebar)
+ * 7. Interactive Pan & Zoom (Drag background to pan stage, scroll wheel to zoom, reset button)
+ * 8. Speaker-aware 60FPS Harmonic Lip-Sync
  * Miyazaki Haruto Entertainment Co., Ltd.
  */
 window.AisaLive2D = {
@@ -19,48 +22,62 @@ window.AisaLive2D = {
   lipSyncSpeaker: 'harmony',
   isVisible: true,
   isInitialized: false,
+  isInitializing: false,
   isLiveStudio: false,
   bubbleTimeout: null,
 
-  // Pan & Zoom Transform State
-  panOffset: { x: 0, y: 0 },
+  // Transform State
   zoomFactor: 1.0,
-  isDragging: false,
-  dragStart: { x: 0, y: 0 },
-  initialPan: { x: 0, y: 0 },
+  stagePan: { x: 0, y: 0 },
+  activeDragTarget: null, // 'harmony' | 'echo' | 'stage' | null
+  dragStartPointer: { x: 0, y: 0 },
+  dragStartModelPos: { x: 0, y: 0 },
+  hasDragged: false,
 
   mascots: {
     harmony: {
       name: 'Harmony 🌸',
       path: 'assets/live2d-models/shizuku/runtime/shizuku.model3.json',
-      baseScale: 0.20,
-      yOffset: 25,
+      miniScale: 0.18,
+      duoMiniScale: 0.13,
+      studioScale: 0.50,
+      duoStudioScale: 0.40,
+      yOffset: 30,
       badgeColor: '#f472b6'
     },
     echo: {
       name: 'Echo 😈',
       path: 'assets/live2d-models/mao_pro/runtime/mao_pro.model3.json',
-      baseScale: 0.16,
-      yOffset: 30,
+      miniScale: 0.058,
+      duoMiniScale: 0.042,
+      studioScale: 0.160,
+      duoStudioScale: 0.128,
+      yOffset: 35,
       badgeColor: '#a78bfa'
     }
   },
 
   async init() {
-    if (this.isInitialized) return;
+    // Strict Single-Instance Latch to prevent duplicate models
+    if (this.isInitialized || this.isInitializing) return;
+    this.isInitializing = true;
 
     const container = document.getElementById('live2d-stage-container');
     const canvas = document.getElementById('live2d-canvas');
-    if (!container || !canvas) return;
+    if (!container || !canvas) {
+      this.isInitializing = false;
+      return;
+    }
 
     if (typeof PIXI === 'undefined') {
       console.warn('[AISA Live2D] Pixi.js not loaded yet.');
+      this.isInitializing = false;
       return;
     }
 
     try {
-      const width = 260;
-      const height = 319;
+      const width = 280;
+      const height = 338;
       canvas.width = width;
       canvas.height = height;
       canvas.style.background = 'transparent';
@@ -94,7 +111,7 @@ window.AisaLive2D = {
       this.app.ticker.add(() => {
         if (!this.isLipSyncing) return;
 
-        // Dynamic harmonic vocal mouth wave (natural speaking rhythm)
+        // Dynamic harmonic vocal mouth wave (natural anime speaking rhythm)
         const mouthVal = 0.45 + 0.35 * Math.sin(Date.now() / 80) + 0.15 * Math.sin(Date.now() / 35);
         const clamped = Math.max(0, Math.min(0.95, mouthVal));
 
@@ -115,11 +132,11 @@ window.AisaLive2D = {
         }
       });
 
-      // Load both models
+      // Load both models strictly once
       await this.loadBothModels();
 
       // Bind Mouse / Touch Drag & Zoom
-      this.bindPanAndZoom(canvas);
+      this.bindInteractions(canvas);
 
       // Listen for window resize to adjust Live Studio
       window.addEventListener('resize', () => {
@@ -141,8 +158,10 @@ window.AisaLive2D = {
       });
 
       this.isInitialized = true;
-      console.log('🌸 [AISA Live2D] Stage initialized successfully with Duo & Live Studio support!');
+      this.isInitializing = false;
+      console.log('🌸 [AISA Live2D] Single-instance stage initialized successfully!');
     } catch (err) {
+      this.isInitializing = false;
       console.error('[AISA Live2D Error during init]:', err);
     }
   },
@@ -154,29 +173,38 @@ window.AisaLive2D = {
     }
 
     try {
-      // 1. Load Harmony 🌸 (Shizuku)
+      // 1. Destroy and clear any existing children on stage
+      if (this.app && this.app.stage) {
+        while (this.app.stage.children.length > 0) {
+          const child = this.app.stage.children[0];
+          this.app.stage.removeChild(child);
+          try { child.destroy({ children: true, texture: false, baseTexture: false }); } catch (e) {}
+        }
+      }
+      this.models.harmony = null;
+      this.models.echo = null;
+
+      // 2. Load Harmony 🌸 (Shizuku)
       console.log('🌸 [AISA Live2D] Loading Harmony (Shizuku)...');
-      const harmonyModel = await PIXI.live2d.Live2DModel.from(this.mascots.harmony.path, { autoInteract: true });
+      const harmonyModel = await PIXI.live2d.Live2DModel.from(this.mascots.harmony.path, { autoInteract: false });
       harmonyModel.anchor.set(0.5, 0.5);
-      harmonyModel.interactive = true;
-      harmonyModel.on('pointertap', () => this.onModelClick('harmony'));
+      harmonyModel.interactive = false;
       this.models.harmony = harmonyModel;
       this.app.stage.addChild(harmonyModel);
 
-      // 2. Load Echo 😈 (Mao Pro)
+      // 3. Load Echo 😈 (Mao Pro)
       console.log('😈 [AISA Live2D] Loading Echo (Mao Pro)...');
-      const echoModel = await PIXI.live2d.Live2DModel.from(this.mascots.echo.path, { autoInteract: true });
+      const echoModel = await PIXI.live2d.Live2DModel.from(this.mascots.echo.path, { autoInteract: false });
       echoModel.anchor.set(0.5, 0.5);
-      echoModel.interactive = true;
-      echoModel.on('pointertap', () => this.onModelClick('echo'));
+      echoModel.interactive = false;
       this.models.echo = echoModel;
       this.app.stage.addChild(echoModel);
 
-      // Initial layout alignment
-      this.updateModelsLayout();
-      console.log('🌸😈 [AISA Live2D] Both Harmony & Echo are now active on stage!');
+      // 4. Initial layout alignment
+      this.resetTransform(false);
+      console.log('🌸😈 [AISA Live2D] Exactly 1 Harmony and 1 Echo initialized on stage!');
     } catch (e) {
-      console.warn('[AISA Live2D] Failed loading both models:', e);
+      console.warn('[AISA Live2D] Failed loading models:', e);
     }
   },
 
@@ -204,92 +232,166 @@ window.AisaLive2D = {
       }
     }
 
-    if (isStudio) {
-      // 🌟 FULLSCREEN GEMINI LIVE STUDIO MODE:
-      // Spanning full center screen, beautiful large dual anime models
-      const baseMult = Math.min(rw / 1000, rh / 700);
-      const studioScale = Math.max(1.4, Math.min(2.8, baseMult * 1.85)) * this.zoomFactor;
+    // 1. Layout for Harmony 🌸
+    if (this.models.harmony) {
+      if (isDuo) {
+        this.models.harmony.visible = true;
+        const scaleVal = isStudio ? this.mascots.harmony.duoStudioScale : this.mascots.harmony.duoMiniScale;
+        this.models.harmony.scale.set(scaleVal * this.zoomFactor);
 
-      if (this.models.harmony) {
-        if (isDuo) {
-          this.models.harmony.visible = true;
-          this.models.harmony.position.set((rw * 0.35) + this.panOffset.x, (rh * 0.56 + 50) + this.panOffset.y);
-          this.models.harmony.scale.set(this.mascots.harmony.baseScale * studioScale);
-        } else if (this.currentMode === 'harmony') {
-          this.models.harmony.visible = true;
-          this.models.harmony.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.56 + 50) + this.panOffset.y);
-          this.models.harmony.scale.set(this.mascots.harmony.baseScale * studioScale * 1.15);
+        if (this.models.harmony.customX !== undefined && this.models.harmony.customY !== undefined) {
+          this.models.harmony.position.set(this.models.harmony.customX, this.models.harmony.customY);
         } else {
-          this.models.harmony.visible = false;
+          const defaultX = isStudio ? (rw * 0.34) : (rw * 0.30);
+          const defaultY = isStudio ? (rh * 0.56 + this.mascots.harmony.yOffset) : (rh * 0.52 + this.mascots.harmony.yOffset);
+          this.models.harmony.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
+      } else if (this.currentMode === 'harmony') {
+        this.models.harmony.visible = true;
+        const scaleVal = isStudio ? this.mascots.harmony.studioScale : this.mascots.harmony.miniScale;
+        this.models.harmony.scale.set(scaleVal * this.zoomFactor);
+
+        if (this.models.harmony.customX !== undefined && this.models.harmony.customY !== undefined) {
+          this.models.harmony.position.set(this.models.harmony.customX, this.models.harmony.customY);
+        } else {
+          const defaultX = rw * 0.5;
+          const defaultY = isStudio ? (rh * 0.56 + this.mascots.harmony.yOffset) : (rh * 0.52 + this.mascots.harmony.yOffset);
+          this.models.harmony.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
+        }
+      } else {
+        this.models.harmony.visible = false;
       }
+    }
 
-      if (this.models.echo) {
-        if (isDuo) {
-          this.models.echo.visible = true;
-          this.models.echo.position.set((rw * 0.65) + this.panOffset.x, (rh * 0.56 + 60) + this.panOffset.y);
-          this.models.echo.scale.set(this.mascots.echo.baseScale * studioScale);
-        } else if (this.currentMode === 'echo') {
-          this.models.echo.visible = true;
-          this.models.echo.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.56 + 60) + this.panOffset.y);
-          this.models.echo.scale.set(this.mascots.echo.baseScale * studioScale * 1.15);
+    // 2. Layout for Echo 😈
+    if (this.models.echo) {
+      if (isDuo) {
+        this.models.echo.visible = true;
+        const scaleVal = isStudio ? this.mascots.echo.duoStudioScale : this.mascots.echo.duoMiniScale;
+        this.models.echo.scale.set(scaleVal * this.zoomFactor);
+
+        if (this.models.echo.customX !== undefined && this.models.echo.customY !== undefined) {
+          this.models.echo.position.set(this.models.echo.customX, this.models.echo.customY);
         } else {
-          this.models.echo.visible = false;
+          const defaultX = isStudio ? (rw * 0.66) : (rw * 0.70);
+          const defaultY = isStudio ? (rh * 0.56 + this.mascots.echo.yOffset) : (rh * 0.52 + this.mascots.echo.yOffset);
+          this.models.echo.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
-      }
+      } else if (this.currentMode === 'echo') {
+        this.models.echo.visible = true;
+        const scaleVal = isStudio ? this.mascots.echo.studioScale : this.mascots.echo.miniScale;
+        this.models.echo.scale.set(scaleVal * this.zoomFactor);
 
-    } else {
-      // 📱 MINI FLOATING WIDGET (280x380):
-      const miniScale = this.zoomFactor;
-
-      if (this.models.harmony) {
-        if (isDuo) {
-          this.models.harmony.visible = true;
-          this.models.harmony.position.set((rw * 0.32) + this.panOffset.x, (rh * 0.52 + 25) + this.panOffset.y);
-          this.models.harmony.scale.set(this.mascots.harmony.baseScale * 0.72 * miniScale);
-        } else if (this.currentMode === 'harmony') {
-          this.models.harmony.visible = true;
-          this.models.harmony.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.52 + 25) + this.panOffset.y);
-          this.models.harmony.scale.set(this.mascots.harmony.baseScale * miniScale);
+        if (this.models.echo.customX !== undefined && this.models.echo.customY !== undefined) {
+          this.models.echo.position.set(this.models.echo.customX, this.models.echo.customY);
         } else {
-          this.models.harmony.visible = false;
+          const defaultX = rw * 0.5;
+          const defaultY = isStudio ? (rh * 0.56 + this.mascots.echo.yOffset) : (rh * 0.52 + this.mascots.echo.yOffset);
+          this.models.echo.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
-      }
-
-      if (this.models.echo) {
-        if (isDuo) {
-          this.models.echo.visible = true;
-          this.models.echo.position.set((rw * 0.68) + this.panOffset.x, (rh * 0.52 + 30) + this.panOffset.y);
-          this.models.echo.scale.set(this.mascots.echo.baseScale * 0.72 * miniScale);
-        } else if (this.currentMode === 'echo') {
-          this.models.echo.visible = true;
-          this.models.echo.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.52 + 30) + this.panOffset.y);
-          this.models.echo.scale.set(this.mascots.echo.baseScale * miniScale);
-        } else {
-          this.models.echo.visible = false;
-        }
+      } else {
+        this.models.echo.visible = false;
       }
     }
   },
 
-  bindPanAndZoom(canvas) {
-    // 1. Drag / Pan with Pointer Events
+  bindInteractions(canvas) {
+    // Distance-based model hit identification (immune to 4096px transparent bounding boxes)
+    const getHitModel = (pointerPos) => {
+      const isHarmonyVisible = this.models.harmony && this.models.harmony.visible;
+      const isEchoVisible = this.models.echo && this.models.echo.visible;
+
+      const rw = this.app.screen.width;
+      const rh = this.app.screen.height;
+
+      // Duo mode: determine closest active character within interaction threshold
+      if (isHarmonyVisible && isEchoVisible) {
+        const dH = Math.hypot(pointerPos.x - this.models.harmony.x, pointerPos.y - this.models.harmony.y);
+        const dE = Math.hypot(pointerPos.x - this.models.echo.x, pointerPos.y - this.models.echo.y);
+        const maxDist = Math.max(160, Math.min(rw, rh) * 0.52);
+
+        if (dH < dE && dH < maxDist) {
+          return 'harmony';
+        } else if (dE <= dH && dE < maxDist) {
+          return 'echo';
+        }
+        return 'stage';
+      }
+
+      // Single Harmony mode
+      if (isHarmonyVisible) {
+        const dH = Math.hypot(pointerPos.x - this.models.harmony.x, pointerPos.y - this.models.harmony.y);
+        const maxDist = Math.max(180, Math.min(rw, rh) * 0.60);
+        if (dH < maxDist) return 'harmony';
+        return 'stage';
+      }
+
+      // Single Echo mode
+      if (isEchoVisible) {
+        const dE = Math.hypot(pointerPos.x - this.models.echo.x, pointerPos.y - this.models.echo.y);
+        const maxDist = Math.max(180, Math.min(rw, rh) * 0.60);
+        if (dE < maxDist) return 'echo';
+        return 'stage';
+      }
+
+      return 'stage';
+    };
+
     canvas.addEventListener('pointerdown', (e) => {
-      this.isDragging = true;
-      this.dragStart = { x: e.clientX, y: e.clientY };
-      this.initialPan = { x: this.panOffset.x, y: this.panOffset.y };
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = this.app.screen.width / (rect.width || 1);
+      const scaleY = this.app.screen.height / (rect.height || 1);
+      const pointerPos = {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+
+      this.activeDragTarget = getHitModel(pointerPos);
+      this.dragStartPointer = { x: e.clientX, y: e.clientY };
+      this.hasDragged = false;
+
+      if (this.activeDragTarget === 'harmony' && this.models.harmony) {
+        // Bring active character to front
+        this.app.stage.addChild(this.models.harmony);
+        this.dragStartModelPos = { x: this.models.harmony.x, y: this.models.harmony.y };
+      } else if (this.activeDragTarget === 'echo' && this.models.echo) {
+        // Bring active character to front
+        this.app.stage.addChild(this.models.echo);
+        this.dragStartModelPos = { x: this.models.echo.x, y: this.models.echo.y };
+      } else {
+        this.dragStartModelPos = { x: this.stagePan.x, y: this.stagePan.y };
+      }
+
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     });
 
     canvas.addEventListener('pointermove', (e) => {
-      if (this.isDragging) {
-        const dx = e.clientX - this.dragStart.x;
-        const dy = e.clientY - this.dragStart.y;
-        this.panOffset.x = this.initialPan.x + dx;
-        this.panOffset.y = this.initialPan.y + dy;
-        this.updateModelsLayout();
+      if (this.activeDragTarget) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = this.app.screen.width / (rect.width || 1);
+        const scaleY = this.app.screen.height / (rect.height || 1);
+        const dx = (e.clientX - this.dragStartPointer.x) * scaleX;
+        const dy = (e.clientY - this.dragStartPointer.y) * scaleY;
+
+        if (Math.hypot(dx, dy) > 4) {
+          this.hasDragged = true;
+        }
+
+        if (this.activeDragTarget === 'harmony' && this.models.harmony) {
+          this.models.harmony.customX = this.dragStartModelPos.x + dx;
+          this.models.harmony.customY = this.dragStartModelPos.y + dy;
+          this.models.harmony.position.set(this.models.harmony.customX, this.models.harmony.customY);
+        } else if (this.activeDragTarget === 'echo' && this.models.echo) {
+          this.models.echo.customX = this.dragStartModelPos.x + dx;
+          this.models.echo.customY = this.dragStartModelPos.y + dy;
+          this.models.echo.position.set(this.models.echo.customX, this.models.echo.customY);
+        } else {
+          this.stagePan.x = this.dragStartModelPos.x + dx;
+          this.stagePan.y = this.dragStartModelPos.y + dy;
+          this.updateModelsLayout();
+        }
       } else {
-        // Look at mouse
+        // Natural eye tracking on hover
         if (this.models.harmony && this.models.harmony.visible && typeof this.models.harmony.focus === 'function') {
           this.models.harmony.focus(e.clientX, e.clientY);
         }
@@ -299,15 +401,22 @@ window.AisaLive2D = {
       }
     });
 
-    const endDrag = (e) => {
-      this.isDragging = false;
+    const onPointerUp = (e) => {
+      if (this.activeDragTarget && !this.hasDragged) {
+        // User clicked/tapped without dragging: trigger interactive voice dialogue & animation
+        if (this.activeDragTarget === 'harmony' || this.activeDragTarget === 'echo') {
+          this.onModelClick(this.activeDragTarget);
+        }
+      }
+      this.activeDragTarget = null;
+      this.hasDragged = false;
       try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
     };
 
-    canvas.addEventListener('pointerup', endDrag);
-    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
 
-    // 2. Scroll Wheel to Zoom
+    // Scroll Wheel to Zoom
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const zoomDelta = e.deltaY > 0 ? 0.92 : 1.08;
@@ -316,11 +425,59 @@ window.AisaLive2D = {
     }, { passive: false });
   },
 
-  resetTransform() {
-    this.panOffset = { x: 0, y: 0 };
+  resetTransform(notify = true) {
+    this.stagePan = { x: 0, y: 0 };
     this.zoomFactor = 1.0;
+    if (this.models.harmony) {
+      delete this.models.harmony.customX;
+      delete this.models.harmony.customY;
+    }
+    if (this.models.echo) {
+      delete this.models.echo.customX;
+      delete this.models.echo.customY;
+    }
     this.updateModelsLayout();
-    this.showSpeechBubble('Đã đặt lại góc nhìn mặc định! ✨', 2000);
+    if (notify) {
+      this.showSpeechBubble('Đã đặt lại góc nhìn mặc định! ✨', 2000);
+    }
+  },
+
+  setMode(mode) {
+    this.currentMode = mode || 'duo';
+    // Clear individual drag coordinates when switching modes so they align beautifully
+    if (this.models.harmony) {
+      delete this.models.harmony.customX;
+      delete this.models.harmony.customY;
+    }
+    if (this.models.echo) {
+      delete this.models.echo.customX;
+      delete this.models.echo.customY;
+    }
+    this.updateModelsLayout();
+
+    // Synchronize top pills in header if available
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === this.currentMode);
+    });
+    if (window.AisaApp && window.AisaApp.state && window.AisaApp.state.mode !== this.currentMode) {
+      window.AisaApp.state.mode = this.currentMode;
+      if (typeof window.AisaApp.saveState === 'function') window.AisaApp.saveState();
+      if (typeof window.AisaApp.updateModelBadge === 'function') window.AisaApp.updateModelBadge();
+    }
+  },
+
+  switchMascot() {
+    // Cycles: duo -> harmony -> echo -> duo
+    if (this.currentMode === 'duo') {
+      this.setMode('harmony');
+      this.showSpeechBubble('Chỉ riêng Harmony đồng hành cùng cậu nè! 🌸', 2500, 'harmony');
+    } else if (this.currentMode === 'harmony') {
+      this.setMode('echo');
+      this.showSpeechBubble('Tới lượt Echo chiếm trọn sân khấu rồi! 😈', 2500, 'echo');
+    } else {
+      this.setMode('duo');
+      this.showSpeechBubble('Cả hai em cùng Song Hành nhé Master! 🌸😈', 2500, 'duo');
+    }
   },
 
   toggleLiveStudio() {
@@ -349,7 +506,7 @@ window.AisaLive2D = {
         if (this.app && this.app.renderer) {
           this.app.renderer.resize(280, 338);
         }
-        this.updateModelsLayout();
+        this.resetTransform(false);
       }, 50);
     }
   },
@@ -362,22 +519,7 @@ window.AisaLive2D = {
     const targetHeight = wrap && wrap.clientHeight > 200 ? wrap.clientHeight : (isWide ? (window.innerHeight - 54) : Math.floor(window.innerHeight * 0.5));
 
     this.app.renderer.resize(targetWidth, targetHeight);
-    this.updateModelsLayout();
-  },
-
-  switchMascot() {
-    // Cycles: duo -> harmony -> echo -> duo
-    if (this.currentMode === 'duo') {
-      this.currentMode = 'harmony';
-      this.showSpeechBubble('Chỉ riêng Harmony đồng hành cùng cậu nè! 🌸', 2500, 'harmony');
-    } else if (this.currentMode === 'harmony') {
-      this.currentMode = 'echo';
-      this.showSpeechBubble('Tới lượt Echo chiếm sân khấu rồi! 😈', 2500, 'echo');
-    } else {
-      this.currentMode = 'duo';
-      this.showSpeechBubble('Cả hai em cùng Song Hành nhé Master! 🌸😈', 2500, 'duo');
-    }
-    this.updateModelsLayout();
+    this.resetTransform(false);
   },
 
   toggleVisibility() {
@@ -470,10 +612,25 @@ window.AisaLive2D = {
 
   onModelClick(speaker) {
     const cheers = speaker === 'harmony'
-      ? ['Cậu cần em hỗ trợ gì nè? 🌸', 'Sakura ngoan, giữ gìn sức khỏe nha! ✨', 'Em luôn ở bên cạnh cậu nè! 💖']
-      : ['Ê, chọc tớ hoài coi chừng bị chê deadline nha! 😈', 'Bớt bấm lung tung đi nào! 😏', 'Cần Echo ra tay vặn vẹo ai hong? ⚔️'];
+      ? [
+          'Cậu cần em hỗ trợ gì nè? 🌸',
+          'Sakura ngoan, giữ gìn sức khỏe nha! ✨',
+          'Em luôn ở bên cạnh lắng nghe cậu nè! 💖',
+          'Đừng quên uống nước và nghỉ ngơi một chút nhé! 🍵'
+        ]
+      : [
+          'Ê, chọc tớ hoài coi chừng bị chê deadline nha! 😈',
+          'Bớt bấm lung tung đi nào, tập trung vào việc đi! 😏',
+          'Cần Echo ra tay vặn vẹo ai hong? Cứ nói một tiếng! ⚔️',
+          'Lại kiếm chuyện với tớ hả? Thích thì chiều nha! ⚡'
+        ];
     const randomMsg = cheers[Math.floor(Math.random() * cheers.length)];
     this.showSpeechBubble(randomMsg, 3000, speaker);
+
+    // Speak with Vietnamese female voice
+    if (window.AisaVoice && typeof window.AisaVoice.speak === 'function') {
+      window.AisaVoice.speak(randomMsg, speaker);
+    }
 
     const targetModel = this.models[speaker];
     if (targetModel && typeof targetModel.expression === 'function') {
@@ -485,10 +642,10 @@ window.AisaLive2D = {
   }
 };
 
-// Auto initialize on DOM ready
+// Safe fallback auto-initialize on DOM ready strictly once
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    if (window.AisaLive2D && !window.AisaLive2D.isInitialized) {
+    if (window.AisaLive2D && !window.AisaLive2D.isInitialized && !window.AisaLive2D.isInitializing) {
       window.AisaLive2D.init();
     }
   }, 350);
