@@ -27,15 +27,7 @@
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-              height 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-              top 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-              left 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-              bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-              right 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-radius 0.35s ease,
-              transform 0.35s ease, 
-              opacity 0.35s ease !important;
+  transition: opacity 0.22s ease, border-radius 0.22s ease, box-shadow 0.22s ease !important;
   user-select: none !important;
   pointer-events: auto !important;
 }
@@ -123,6 +115,7 @@
 #live2d-canvas {
   width: 100% !important;
   height: 100% !important;
+  object-fit: contain !important;
   display: block !important;
   background: transparent !important;
   cursor: grab !important;
