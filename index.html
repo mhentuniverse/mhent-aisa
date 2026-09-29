@@ -32,10 +32,11 @@
   <link rel="stylesheet" href="css/katex.min.css">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/chat.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/mhent-mobile.css">
+  <link rel="stylesheet" href="css/main.css?v=2.2">
+  <link rel="stylesheet" href="css/chat.css?v=2.2">
+  <link rel="stylesheet" href="css/components.css?v=2.2">
+  <link rel="stylesheet" href="css/mhent-mobile.css?v=2.2">
+  <link rel="stylesheet" href="css/live2d.css?v=2.2">
 </head>
 
 <body>
@@ -677,23 +678,24 @@
   <!-- ========================================================================
        LIVE2D MASCOT STAGE (OPEN-LLM-VTUBER COMPANION EDITION)
        ======================================================================== -->
-  <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot">
-    <div class="live2d-stage-header">
-      <div class="live2d-stage-title">
-        <span class="live2d-status-dot"></span>
+  <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot"
+    style="position: fixed !important; bottom: 24px !important; right: 24px !important; width: 260px !important; height: 360px !important; z-index: 99999 !important; display: flex !important; flex-direction: column !important; background: rgba(19, 19, 20, 0.85) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; border-radius: 20px !important; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(244, 114, 182, 0.2) !important; overflow: hidden !important;">
+    <div class="live2d-stage-header" style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 8px 12px !important; background: rgba(255, 255, 255, 0.05) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;">
+      <div class="live2d-stage-title" style="display: flex !important; align-items: center !important; gap: 7px !important; font-size: 0.82rem !important; font-weight: 600 !important; color: #f472b6 !important;">
+        <span class="live2d-status-dot" style="width: 7px !important; height: 7px !important; border-radius: 50% !important; background: #10b981 !important; box-shadow: 0 0 8px #10b981 !important;"></span>
         <span id="live2d-speaker-name">Harmony 🌸</span>
       </div>
-      <div class="live2d-stage-controls">
-        <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi Mascot (Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">
+      <div class="live2d-stage-controls" style="display: flex !important; align-items: center !important; gap: 4px !important;">
+        <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi Mascot (Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()" style="background: transparent !important; border: none !important; color: #8e918f !important; width: 24px !important; height: 24px !important; border-radius: 6px !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 0.8rem !important; cursor: pointer !important;">
           🔄
         </button>
-        <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Ẩn Mascot" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">
+        <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Ẩn Mascot" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()" style="background: transparent !important; border: none !important; color: #8e918f !important; width: 24px !important; height: 24px !important; border-radius: 6px !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 0.8rem !important; cursor: pointer !important;">
           ✕
         </button>
       </div>
     </div>
-    <div class="live2d-canvas-wrap">
-      <canvas id="live2d-canvas" width="280" height="360"></canvas>
+    <div class="live2d-canvas-wrap" style="position: relative !important; flex: 1 !important; width: 100% !important; height: calc(100% - 41px) !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: transparent !important;">
+      <canvas id="live2d-canvas" width="260" height="319" style="width: 260px !important; height: 319px !important; display: block !important; background: transparent !important; cursor: pointer !important;"></canvas>
       <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
     </div>
   </aside>
@@ -1218,7 +1220,7 @@
   <script src="js/live2d/live2d.min.js"></script>
   <script src="js/live2d/pixi.min.js"></script>
   <script src="js/live2d/pixi-live2d-display.min.js"></script>
-  <script src="js/live2d-stage.js"></script>
+  <script src="js/live2d-stage.js?v=2.2"></script>
 
   <script src="js/app.js"></script>
   <script src="js/desktop-bridge.js"></script>

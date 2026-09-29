@@ -12,19 +12,20 @@ window.AisaLive2D = {
   lipSyncTimer: null,
   isVisible: true,
   isInitialized: false,
+  bubbleTimeout: null,
 
   mascots: {
     harmony: {
       name: 'Harmony 🌸',
       path: 'assets/live2d-models/shizuku/runtime/shizuku.model3.json',
-      scale: 0.22,
-      yOffset: 20,
+      scale: 0.20,
+      yOffset: 25,
       badgeColor: '#f472b6'
     },
     echo: {
       name: 'Echo 😈',
       path: 'assets/live2d-models/mao_pro/runtime/mao_pro.model3.json',
-      scale: 0.17,
+      scale: 0.16,
       yOffset: 30,
       badgeColor: '#a78bfa'
     }
@@ -37,26 +38,44 @@ window.AisaLive2D = {
     const canvas = document.getElementById('live2d-canvas');
     if (!container || !canvas) return;
 
-    // Check if PIXI & Live2D library are available
-    if (typeof PIXI === 'undefined' || !PIXI.live2d) {
-      console.warn('[AISA Live2D] Pixi.js or pixi-live2d-display not loaded yet.');
+    // Check if PIXI is available
+    if (typeof PIXI === 'undefined') {
+      console.warn('[AISA Live2D] Pixi.js not loaded yet.');
       return;
     }
 
     try {
-      const width = 280;
-      const height = 360;
+      const width = 260;
+      const height = 319;
+      canvas.width = width;
+      canvas.height = height;
+      canvas.style.background = 'transparent';
+
+      // Register Ticker with Live2DModel if available (Crucial for Live2D rendering & motions)
+      if (PIXI.live2d && PIXI.live2d.Live2DModel && PIXI.Ticker) {
+        try {
+          PIXI.live2d.Live2DModel.registerTicker(PIXI.Ticker);
+        } catch (e) {
+          console.warn('[AISA Live2D] registerTicker notice:', e);
+        }
+      }
 
       this.app = new PIXI.Application({
         view: canvas,
         width: width,
         height: height,
-        transparent: true,
         backgroundAlpha: 0,
+        backgroundColor: 0x000000,
+        clearBeforeRender: true,
         antialias: true,
         autoDensity: true,
         resolution: window.devicePixelRatio || 1
       });
+
+      // Force transparent renderer
+      if (this.app.renderer && this.app.renderer.background) {
+        this.app.renderer.background.alpha = 0;
+      }
 
       // Load default mascot (Harmony)
       await this.loadModel('harmony');
@@ -64,16 +83,12 @@ window.AisaLive2D = {
       // Bind interactive cursor tracking
       window.addEventListener('mousemove', (e) => {
         if (!this.model || !this.isVisible) return;
-        const rect = canvas.getBoundingClientRect();
-        // Calculate relative mouse position
-        const targetX = e.clientX - (rect.left + rect.width / 2);
-        const targetY = e.clientY - (rect.top + rect.height / 2);
         if (typeof this.model.focus === 'function') {
           this.model.focus(e.clientX, e.clientY);
         }
       });
 
-      // Bind Voice Events for Lip-sync & Interruption
+      // Bind Voice Events for Lip-sync & Emotion Reaction
       window.addEventListener('aisa-emotion', (e) => {
         const { speaker, emotion } = e.detail || {};
         if (speaker) {
@@ -95,7 +110,7 @@ window.AisaLive2D = {
       this.isInitialized = true;
       console.log('🌸 [AISA Live2D] Stage initialized successfully!');
     } catch (err) {
-      console.error('[AISA Live2D Error]:', err);
+      console.error('[AISA Live2D Error during init]:', err);
     }
   },
 
@@ -109,10 +124,15 @@ window.AisaLive2D = {
       titleEl.style.color = mascotInfo.badgeColor;
     }
 
+    if (!PIXI.live2d || !PIXI.live2d.Live2DModel) {
+      console.warn('[AISA Live2D] Live2DModel not available in PIXI namespace.');
+      return;
+    }
+
     try {
       if (this.model) {
         this.app.stage.removeChild(this.model);
-        this.model.destroy();
+        try { this.model.destroy(); } catch (e) {}
         this.model = null;
       }
 
@@ -126,8 +146,8 @@ window.AisaLive2D = {
 
       // Positioning & scale
       model.anchor.set(0.5, 0.5);
-      model.x = this.app.renderer.width / 2;
-      model.y = this.app.renderer.height / 2 + mascotInfo.yOffset;
+      model.x = (this.app.renderer.width || 260) / (2 * (this.app.renderer.resolution || 1));
+      model.y = ((this.app.renderer.height || 319) / (2 * (this.app.renderer.resolution || 1))) + mascotInfo.yOffset;
       model.scale.set(mascotInfo.scale);
 
       // Interactive click: Trigger random expression / motion
@@ -157,7 +177,9 @@ window.AisaLive2D = {
       if (this.isVisible) {
         container.classList.remove('hidden');
         if (toggleBtn) toggleBtn.classList.add('active');
-        if (!this.isInitialized) this.init();
+        if (!this.isInitialized) {
+          this.init();
+        }
       } else {
         container.classList.add('hidden');
         if (toggleBtn) toggleBtn.classList.remove('active');
@@ -170,7 +192,7 @@ window.AisaLive2D = {
     if (!this.model) return;
     const emo = (emotionKey || '').toLowerCase();
 
-    // Emotion to expression mapping (for Mao Pro Cubism 4 expressions)
+    // Emotion to expression mapping
     const emotionMap = {
       joy: 0,
       smile: 0,
@@ -263,12 +285,10 @@ window.AisaLive2D = {
     if (!bubble) return;
     bubble.textContent = text;
     bubble.style.display = 'block';
-    bubble.classList.add('bubble-show');
 
     if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
     this.bubbleTimeout = setTimeout(() => {
       bubble.style.display = 'none';
-      bubble.classList.remove('bubble-show');
     }, duration);
   },
 
@@ -289,3 +309,12 @@ window.AisaLive2D = {
     } catch (e) {}
   }
 };
+
+// Auto initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (window.AisaLive2D && !window.AisaLive2D.isInitialized) {
+      window.AisaLive2D.init();
+    }
+  }, 300);
+});
