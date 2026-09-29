@@ -268,7 +268,8 @@ window.AisaApp = {
     isGenerating: false,
     pendingImage: null,
     pendingImageName: '',
-    pendingFile: null,      // Tệp tài liệu/code/PDF đính kèm { name, size, sizeStr, type, isImage, isText, isPdf, icon, textContent, base64 }
+    pendingFile: null,      // Tệp tài liệu/code/PDF đính kèm { name, size, sizeStr, type, isImage, isText, isPdf, icon, textContent, pages, base64 }
+    extractingPromise: null, // Promise theo dõi quá trình bóc tách văn bản tệp PDF/tài liệu
     isDeepResearch: false,  // Chế độ Deep Research đa tầng
     isWebSearch: false,     // Chế độ Tra cứu Web (Mặc định tắt, người dùng chủ động bật khi cần)
     isThinking: false       // Chế độ Tư duy sâu (Step-by-step thinking)
@@ -282,6 +283,19 @@ window.AisaApp = {
   },
 
   init() {
+    // Khởi tạo và cấu hình PDF.js worker
+    if (window.pdfjsLib) {
+      try {
+        if (!window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = (window.location.protocol === 'file:')
+            ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+            : 'js/pdf.worker.min.js';
+        }
+      } catch (pdfInitErr) {
+        console.warn('[PDF Worker init note]:', pdfInitErr);
+      }
+    }
+
     this.loadState();
     this.setMode(this.state.mode || 'duo', false);
     this.bindEvents();
@@ -2036,6 +2050,81 @@ window.AisaApp = {
     }
   },
 
+  // Trích xuất toàn bộ nội dung văn bản từ tệp PDF bằng PDF.js
+  async extractPdfText(file) {
+    if (typeof window.pdfjsLib === 'undefined') {
+      console.warn('[PDF.js not loaded, cannot parse PDF directly]');
+      return { text: '', pages: 0, scannedPageImage: null };
+    }
+
+    try {
+      if (!window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = (window.location.protocol === 'file:')
+          ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+          : 'js/pdf.worker.min.js';
+      }
+
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = window.pdfjsLib.getDocument({
+        data: new Uint8Array(arrayBuffer),
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true
+      });
+
+      const pdf = await loadingTask.promise;
+      const totalPages = pdf.numPages;
+      const maxPages = Math.min(totalPages, 50);
+      let fullText = '';
+      let scannedPageImage = null;
+
+      for (let i = 1; i <= maxPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        let lastY, pageText = '';
+        for (const item of textContent.items) {
+          if (!item.str) continue;
+          if (lastY !== undefined && Math.abs(item.transform[5] - lastY) > 5) {
+            pageText += '\n';
+          } else if (pageText.length > 0 && !pageText.endsWith(' ') && !pageText.endsWith('\n')) {
+            pageText += ' ';
+          }
+          pageText += item.str;
+          lastY = item.transform[5];
+        }
+
+        const trimmed = pageText.trim();
+        if (trimmed) {
+          fullText += `--- [TRANG ${i}/${totalPages}] ---\n${trimmed}\n\n`;
+        }
+
+        // Nếu trang 1 không có text (scanned PDF), thử render trang 1 thành ảnh
+        if (i === 1 && !trimmed) {
+          try {
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            scannedPageImage = canvas.toDataURL('image/jpeg', 0.85);
+          } catch (canvasErr) {
+            console.warn('[Render scanned PDF page 1 note]:', canvasErr.message);
+          }
+        }
+      }
+
+      return {
+        text: fullText.trim(),
+        pages: totalPages,
+        scannedPageImage: scannedPageImage
+      };
+    } catch (err) {
+      console.warn('[PDF.js extract exception]:', err);
+      return { text: '', pages: 0, error: err.message };
+    }
+  },
+
   async attachFile(file) {
     if (!file) return;
 
@@ -2118,8 +2207,58 @@ window.AisaApp = {
           if (previewBox) previewBox.style.display = 'flex';
         };
         textReader.readAsText(file);
+      } else if (lowerName.endsWith('.pdf')) {
+        // Tệp tài liệu PDF: Đọc base64 đồng thời bóc tách toàn bộ văn bản bằng PDF.js
+        if (sizeEl) sizeEl.textContent = `${fileSizeStr} • Đang đọc và trích xuất tài liệu...`;
+        if (previewBox) previewBox.style.display = 'flex';
+
+        this.state.extractingPromise = new Promise((resolve) => {
+          const dataReader = new FileReader();
+          dataReader.onload = async (e) => {
+            const base64Data = e.target.result;
+            let pdfText = '';
+            let pageCount = 0;
+            let scannedImg = null;
+
+            try {
+              const extractRes = await this.extractPdfText(file);
+              pdfText = extractRes.text || '';
+              pageCount = extractRes.pages || 0;
+              scannedImg = extractRes.scannedPageImage || null;
+            } catch (pdfErr) {
+              console.warn('[PDF Extract Warning]:', pdfErr);
+            }
+
+            this.state.pendingFile = {
+              name: fileName,
+              size: file.size,
+              sizeStr: fileSizeStr,
+              type: 'application/pdf',
+              isImage: false,
+              isPdf: true,
+              icon: '📕',
+              base64: base64Data,
+              textContent: pdfText,
+              pages: pageCount,
+              scannedImage: scannedImg
+            };
+
+            if (scannedImg && (!pdfText || pdfText.length < 50)) {
+              this.state.pendingImage = scannedImg;
+            }
+
+            if (sizeEl) {
+              sizeEl.textContent = pageCount > 0
+                ? `${fileSizeStr} • ${pageCount} trang (Đã trích xuất nội dung)`
+                : fileSizeStr;
+            }
+            if (previewBox) previewBox.style.display = 'flex';
+            resolve(this.state.pendingFile);
+          };
+          dataReader.readAsDataURL(file);
+        });
       } else {
-        // Tệp nhị phân như PDF
+        // Tệp nhị phân khác
         const dataReader = new FileReader();
         dataReader.onload = (e) => {
           this.state.pendingFile = {
@@ -2128,7 +2267,7 @@ window.AisaApp = {
             sizeStr: fileSizeStr,
             type: file.type || 'application/octet-stream',
             isImage: false,
-            isPdf: lowerName.endsWith('.pdf'),
+            isPdf: false,
             icon: icon,
             base64: e.target.result
           };
@@ -2143,6 +2282,7 @@ window.AisaApp = {
     this.state.pendingImage = null;
     this.state.pendingImageName = '';
     this.state.pendingFile = null;
+    this.state.extractingPromise = null;
     const previewBox = document.getElementById('chat-attached-preview');
     if (previewBox) previewBox.style.display = 'none';
     const thumb = document.getElementById('attached-img-thumb');
@@ -2550,7 +2690,7 @@ window.AisaApp = {
                       </div>
                       <div class="bubble-file-details">
                         <div class="bubble-file-name">${this.escapeHtml(m.file.name)}</div>
-                        <div class="bubble-file-size">${m.file.sizeStr || 'Tệp đính kèm'}</div>
+                        <div class="bubble-file-size">${m.file.pages ? `${m.file.sizeStr} • ${m.file.pages} trang` : (m.file.sizeStr || 'Tệp đính kèm')}</div>
                       </div>
                     </div>
                   ` : ''}
@@ -2655,6 +2795,16 @@ window.AisaApp = {
   async handleSendMessage() {
     if (this.state.isGenerating) return;
 
+    // Chờ hoàn tất trích xuất tệp PDF/tài liệu nếu người dùng nhấn Gửi ngay lập tức
+    if (this.state.extractingPromise) {
+      try {
+        await this.state.extractingPromise;
+      } catch (e) {
+        console.warn('[Wait extractingPromise note]:', e);
+      }
+      this.state.extractingPromise = null;
+    }
+
     const input = document.getElementById('chat-input');
     const userText = input ? input.value.trim() : '';
     const attachedFile = this.state.pendingFile;
@@ -2701,7 +2851,8 @@ window.AisaApp = {
         name: attachedFile.name,
         sizeStr: attachedFile.sizeStr,
         icon: attachedFile.icon,
-        isImage: attachedFile.isImage
+        isImage: attachedFile.isImage,
+        pages: attachedFile.pages || 0
       } : null,
       isDeepResearch: isDeepResearch
     };
@@ -2733,7 +2884,17 @@ window.AisaApp = {
       }
       messageForAi = `[TỆP ĐÍNH KÈM: ${attachedFile.name} (${attachedFile.sizeStr})]\n--- BẮT ĐẦU NỘI DUNG TỆP ---\n${textSnippet}\n--- KẾT THÚC NỘI DUNG TỆP ---\n\n${userText || 'Hãy phân tích, tóm tắt hoặc giải quyết bài toán/trả lời câu hỏi dựa trên tệp tài liệu này giúp tớ nhé!'}`;
     } else if (attachedFile && attachedFile.isPdf) {
-      messageForAi = `[TỆP ĐÍNH KÈM PDF: ${attachedFile.name} (${attachedFile.sizeStr})]\n${userText || 'Hãy đọc và phân tích tệp tài liệu PDF này giúp tớ nhé!'}`;
+      if (attachedFile.textContent && attachedFile.textContent.trim().length > 0) {
+        const maxLen = 45000;
+        let pdfSnippet = attachedFile.textContent;
+        if (pdfSnippet.length > maxLen) {
+          pdfSnippet = pdfSnippet.slice(0, maxLen) + '\n... [Nội dung tài liệu PDF dài đã được trích xuất tối đa phần đầu] ...';
+        }
+        const pagesInfo = attachedFile.pages ? `, ${attachedFile.pages} trang` : '';
+        messageForAi = `[TÀI LIỆU HỌC TẬP PDF ĐÍNH KÈM: ${attachedFile.name} (${attachedFile.sizeStr}${pagesInfo})]\n--- BẮT ĐẦU TOÀN BỘ NỘI DUNG TÀI LIỆU PDF ---\n${pdfSnippet}\n--- KẾT THÚC TOÀN BỘ NỘI DUNG TÀI LIỆU PDF ---\n\n${userText || 'Hãy đọc kỹ toàn bộ nội dung PDF này, tổng hợp, tóm tắt và giải thích chi tiết giúp tớ nhé!'}`;
+      } else {
+        messageForAi = `[TÀI LIỆU PDF ĐÍNH KÈM: ${attachedFile.name} (${attachedFile.sizeStr})]\n${userText || 'Hãy đọc và phân tích tệp tài liệu PDF này giúp tớ nhé!'}`;
+      }
     }
 
     try {
