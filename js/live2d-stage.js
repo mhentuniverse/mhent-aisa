@@ -1,31 +1,46 @@
 /**
  * AISA COMPANION - LIVE2D MASCOT STAGE ENGINE (OPEN-LLM-VTUBER ARCHITECTURE)
- * Integrates PixiJS + Pixi-Live2D-Display + Cubism 4 Runtime
- * Characters: Harmony 🌸 (Shizuku) & Echo 😈 (Mao Pro)
- * Features: Cursor focus tracking, speech lip-sync, emotion expression mapping, touch interactions
+ * Features:
+ * 1. Dual Mascot Simultaneous Display (Harmony 🌸 & Echo 😈 in Song Hành Mode)
+ * 2. Gemini Live Studio View (Full stage theater mode + chat sidebar)
+ * 3. Interactive Pan & Zoom (Drag to move, scroll wheel to zoom, reset button)
+ * 4. Speaker-aware 60FPS Harmonic Lip-Sync
+ * 5. Emotion expression mapping & mouse cursor tracking
+ * Miyazaki Haruto Entertainment Co., Ltd.
  */
 window.AisaLive2D = {
   app: null,
-  model: null,
-  currentSpeaker: 'harmony', // 'harmony' | 'echo'
+  models: {
+    harmony: null,
+    echo: null
+  },
+  currentMode: 'duo', // 'duo' | 'harmony' | 'echo'
   isLipSyncing: false,
-  lipSyncTimer: null,
+  lipSyncSpeaker: 'harmony',
   isVisible: true,
   isInitialized: false,
+  isLiveStudio: false,
   bubbleTimeout: null,
+
+  // Pan & Zoom Transform State
+  panOffset: { x: 0, y: 0 },
+  zoomFactor: 1.0,
+  isDragging: false,
+  dragStart: { x: 0, y: 0 },
+  initialPan: { x: 0, y: 0 },
 
   mascots: {
     harmony: {
       name: 'Harmony 🌸',
       path: 'assets/live2d-models/shizuku/runtime/shizuku.model3.json',
-      scale: 0.20,
+      baseScale: 0.20,
       yOffset: 25,
       badgeColor: '#f472b6'
     },
     echo: {
       name: 'Echo 😈',
       path: 'assets/live2d-models/mao_pro/runtime/mao_pro.model3.json',
-      scale: 0.16,
+      baseScale: 0.16,
       yOffset: 30,
       badgeColor: '#a78bfa'
     }
@@ -38,7 +53,6 @@ window.AisaLive2D = {
     const canvas = document.getElementById('live2d-canvas');
     if (!container || !canvas) return;
 
-    // Check if PIXI is available
     if (typeof PIXI === 'undefined') {
       console.warn('[AISA Live2D] Pixi.js not loaded yet.');
       return;
@@ -51,7 +65,7 @@ window.AisaLive2D = {
       canvas.height = height;
       canvas.style.background = 'transparent';
 
-      // Register Ticker with Live2DModel if available (Crucial for Live2D rendering & motions)
+      // Register Ticker with Live2DModel if available
       if (PIXI.live2d && PIXI.live2d.Live2DModel && PIXI.Ticker) {
         try {
           PIXI.live2d.Live2DModel.registerTicker(PIXI.Ticker);
@@ -72,121 +86,263 @@ window.AisaLive2D = {
         resolution: window.devicePixelRatio || 1
       });
 
-      // Force transparent renderer
       if (this.app.renderer && this.app.renderer.background) {
         this.app.renderer.background.alpha = 0;
       }
 
-      // Load default mascot (Harmony)
-      await this.loadModel('harmony');
-
-      // 60FPS Harmonic Lip-Sync Ticker
+      // 60FPS Harmonic Lip-Sync Ticker for both Harmony & Echo
       this.app.ticker.add(() => {
-        if (!this.model || !this.model.internalModel) return;
-        const core = this.model.internalModel.coreModel;
-        if (!core) return;
+        if (!this.isLipSyncing) return;
 
-        if (this.isLipSyncing) {
-          // Dynamic harmonic vocal mouth wave (natural anime speaking rhythm)
-          const mouthVal = 0.45 + 0.35 * Math.sin(Date.now() / 80) + 0.15 * Math.sin(Date.now() / 35);
-          const clamped = Math.max(0, Math.min(0.95, mouthVal));
+        // Dynamic harmonic vocal mouth wave (natural speaking rhythm)
+        const mouthVal = 0.45 + 0.35 * Math.sin(Date.now() / 80) + 0.15 * Math.sin(Date.now() / 35);
+        const clamped = Math.max(0, Math.min(0.95, mouthVal));
 
-          if (typeof core.setParameterValueById === 'function') {
-            core.setParameterValueById('ParamMouthOpenY', clamped);
-            core.setParameterValueById('PARAM_MOUTH_OPEN_Y', clamped);
-          } else if (typeof core.setParamFloat === 'function') {
-            core.setParamFloat('PARAM_MOUTH_OPEN_Y', clamped);
+        const targetModel = this.lipSyncSpeaker === 'echo' 
+          ? (this.models.echo || this.models.harmony) 
+          : (this.models.harmony || this.models.echo);
+
+        if (targetModel && targetModel.internalModel) {
+          const core = targetModel.internalModel.coreModel;
+          if (core) {
+            if (typeof core.setParameterValueById === 'function') {
+              core.setParameterValueById('ParamMouthOpenY', clamped);
+              core.setParameterValueById('PARAM_MOUTH_OPEN_Y', clamped);
+            } else if (typeof core.setParamFloat === 'function') {
+              core.setParamFloat('PARAM_MOUTH_OPEN_Y', clamped);
+            }
           }
         }
       });
 
-      // Bind interactive cursor tracking
-      window.addEventListener('mousemove', (e) => {
-        if (!this.model || !this.isVisible) return;
-        if (typeof this.model.focus === 'function') {
-          this.model.focus(e.clientX, e.clientY);
+      // Load both models
+      await this.loadBothModels();
+
+      // Bind Mouse / Touch Drag & Zoom
+      this.bindPanAndZoom(canvas);
+
+      // Listen for window resize to adjust Live Studio
+      window.addEventListener('resize', () => {
+        if (this.isLiveStudio) {
+          this.resizeForLiveStudio();
         }
       });
 
       // Bind Voice Events for Lip-sync & Emotion Reaction
       window.addEventListener('aisa-emotion', (e) => {
         const { speaker, emotion } = e.detail || {};
-        if (speaker) {
-          const spk = speaker.toLowerCase().includes('echo') ? 'echo' : 'harmony';
-          if (spk !== this.currentSpeaker) {
-            this.switchMascot(spk);
-          }
-        }
-        if (emotion) {
-          this.setEmotion(emotion);
-        }
+        const spk = (speaker || '').toLowerCase().includes('echo') ? 'echo' : 'harmony';
+        this.setEmotion(emotion, spk);
       });
 
       window.addEventListener('aisa-interrupted', () => {
         this.stopLipSync();
-        this.showSpeechBubble('🛑 Đã ngắt lời!', 2000);
+        this.showSpeechBubble('🛑 Đã ngắt lời!', 2000, this.lipSyncSpeaker);
       });
 
       this.isInitialized = true;
-      console.log('🌸 [AISA Live2D] Stage initialized successfully!');
+      console.log('🌸 [AISA Live2D] Stage initialized successfully with Duo & Live Studio support!');
     } catch (err) {
       console.error('[AISA Live2D Error during init]:', err);
     }
   },
 
-  async loadModel(mascotKey) {
-    const mascotInfo = this.mascots[mascotKey] || this.mascots.harmony;
-    this.currentSpeaker = mascotKey;
-
-    const titleEl = document.getElementById('live2d-speaker-name');
-    if (titleEl) {
-      titleEl.textContent = mascotInfo.name;
-      titleEl.style.color = mascotInfo.badgeColor;
-    }
-
+  async loadBothModels() {
     if (!PIXI.live2d || !PIXI.live2d.Live2DModel) {
-      console.warn('[AISA Live2D] Live2DModel not available in PIXI namespace.');
+      console.warn('[AISA Live2D] Live2DModel not available in PIXI.');
       return;
     }
 
     try {
-      if (this.model) {
-        this.app.stage.removeChild(this.model);
-        try { this.model.destroy(); } catch (e) {}
-        this.model = null;
-      }
+      // 1. Load Harmony 🌸 (Shizuku)
+      console.log('🌸 [AISA Live2D] Loading Harmony (Shizuku)...');
+      const harmonyModel = await PIXI.live2d.Live2DModel.from(this.mascots.harmony.path, { autoInteract: true });
+      harmonyModel.anchor.set(0.5, 0.5);
+      harmonyModel.interactive = true;
+      harmonyModel.on('pointertap', () => this.onModelClick('harmony'));
+      this.models.harmony = harmonyModel;
+      this.app.stage.addChild(harmonyModel);
 
-      console.log(`🌸 [AISA Live2D] Loading ${mascotInfo.name} from: ${mascotInfo.path}`);
-      const model = await PIXI.live2d.Live2DModel.from(mascotInfo.path, {
-        autoInteract: true
-      });
+      // 2. Load Echo 😈 (Mao Pro)
+      console.log('😈 [AISA Live2D] Loading Echo (Mao Pro)...');
+      const echoModel = await PIXI.live2d.Live2DModel.from(this.mascots.echo.path, { autoInteract: true });
+      echoModel.anchor.set(0.5, 0.5);
+      echoModel.interactive = true;
+      echoModel.on('pointertap', () => this.onModelClick('echo'));
+      this.models.echo = echoModel;
+      this.app.stage.addChild(echoModel);
 
-      this.model = model;
-      this.app.stage.addChild(model);
-
-      // Positioning & scale
-      model.anchor.set(0.5, 0.5);
-      model.x = (this.app.renderer.width || 260) / (2 * (this.app.renderer.resolution || 1));
-      model.y = ((this.app.renderer.height || 319) / (2 * (this.app.renderer.resolution || 1))) + mascotInfo.yOffset;
-      model.scale.set(mascotInfo.scale);
-
-      // Interactive click: Trigger random expression / motion
-      model.interactive = true;
-      model.on('pointertap', () => {
-        this.onModelClick();
-      });
-
-      console.log(`🌸 [AISA Live2D] ${mascotInfo.name} is now active on stage!`);
+      // Initial layout alignment
+      this.updateModelsLayout();
+      console.log('🌸😈 [AISA Live2D] Both Harmony & Echo are now active on stage!');
     } catch (e) {
-      console.warn(`[AISA Live2D] Failed to load ${mascotInfo.name}:`, e);
+      console.warn('[AISA Live2D] Failed loading both models:', e);
     }
   },
 
-  async switchMascot(targetKey = null) {
-    const nextKey = targetKey || (this.currentSpeaker === 'harmony' ? 'echo' : 'harmony');
-    await this.loadModel(nextKey);
-    const bubbleMsg = nextKey === 'harmony' ? 'Em là Harmony đây ạ! 🌸' : 'Echo tới đây! Cà khịa mode on! 😈';
-    this.showSpeechBubble(bubbleMsg, 2500);
+  updateModelsLayout() {
+    if (!this.app || !this.app.renderer) return;
+
+    const rw = (this.app.renderer.width || 260) / (this.app.renderer.resolution || 1);
+    const rh = (this.app.renderer.height || 319) / (this.app.renderer.resolution || 1);
+
+    const isDuo = this.currentMode === 'duo';
+    const isStudio = this.isLiveStudio;
+
+    // Scale multipliers
+    const studioScaleMult = isStudio ? 1.75 : 1.0;
+    const duoScaleMult = isDuo ? (isStudio ? 1.45 : 0.82) : 1.0;
+
+    // Title update
+    const titleEl = document.getElementById('live2d-speaker-name');
+    if (titleEl) {
+      if (isDuo) {
+        titleEl.textContent = 'Song Hành 🌸😈';
+        titleEl.style.color = '#f472b6';
+      } else if (this.currentMode === 'harmony') {
+        titleEl.textContent = 'Harmony 🌸';
+        titleEl.style.color = '#f472b6';
+      } else {
+        titleEl.textContent = 'Echo 😈';
+        titleEl.style.color = '#a78bfa';
+      }
+    }
+
+    // Harmony layout
+    if (this.models.harmony) {
+      if (this.currentMode === 'duo') {
+        this.models.harmony.visible = true;
+        const targetX = (rw * 0.32) + this.panOffset.x;
+        const targetY = (rh * 0.5 + this.mascots.harmony.yOffset) + this.panOffset.y;
+        this.models.harmony.position.set(targetX, targetY);
+        this.models.harmony.scale.set(this.mascots.harmony.baseScale * this.zoomFactor * duoScaleMult * studioScaleMult);
+      } else if (this.currentMode === 'harmony') {
+        this.models.harmony.visible = true;
+        const targetX = (rw * 0.5) + this.panOffset.x;
+        const targetY = (rh * 0.5 + this.mascots.harmony.yOffset) + this.panOffset.y;
+        this.models.harmony.position.set(targetX, targetY);
+        this.models.harmony.scale.set(this.mascots.harmony.baseScale * this.zoomFactor * studioScaleMult);
+      } else {
+        this.models.harmony.visible = false;
+      }
+    }
+
+    // Echo layout
+    if (this.models.echo) {
+      if (this.currentMode === 'duo') {
+        this.models.echo.visible = true;
+        const targetX = (rw * 0.68) + this.panOffset.x;
+        const targetY = (rh * 0.5 + this.mascots.echo.yOffset) + this.panOffset.y;
+        this.models.echo.position.set(targetX, targetY);
+        this.models.echo.scale.set(this.mascots.echo.baseScale * this.zoomFactor * duoScaleMult * studioScaleMult);
+      } else if (this.currentMode === 'echo') {
+        this.models.echo.visible = true;
+        const targetX = (rw * 0.5) + this.panOffset.x;
+        const targetY = (rh * 0.5 + this.mascots.echo.yOffset) + this.panOffset.y;
+        this.models.echo.position.set(targetX, targetY);
+        this.models.echo.scale.set(this.mascots.echo.baseScale * this.zoomFactor * studioScaleMult);
+      } else {
+        this.models.echo.visible = false;
+      }
+    }
+  },
+
+  bindPanAndZoom(canvas) {
+    // 1. Drag / Pan with Pointer Events
+    canvas.addEventListener('pointerdown', (e) => {
+      this.isDragging = true;
+      this.dragStart = { x: e.clientX, y: e.clientY };
+      this.initialPan = { x: this.panOffset.x, y: this.panOffset.y };
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (this.isDragging) {
+        const dx = e.clientX - this.dragStart.x;
+        const dy = e.clientY - this.dragStart.y;
+        this.panOffset.x = this.initialPan.x + dx;
+        this.panOffset.y = this.initialPan.y + dy;
+        this.updateModelsLayout();
+      } else {
+        // Look at mouse
+        if (this.models.harmony && this.models.harmony.visible && typeof this.models.harmony.focus === 'function') {
+          this.models.harmony.focus(e.clientX, e.clientY);
+        }
+        if (this.models.echo && this.models.echo.visible && typeof this.models.echo.focus === 'function') {
+          this.models.echo.focus(e.clientX, e.clientY);
+        }
+      }
+    });
+
+    const endDrag = (e) => {
+      this.isDragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+    };
+
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+
+    // 2. Scroll Wheel to Zoom
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomDelta = e.deltaY > 0 ? 0.92 : 1.08;
+      this.zoomFactor = Math.max(0.4, Math.min(3.5, this.zoomFactor * zoomDelta));
+      this.updateModelsLayout();
+    }, { passive: false });
+  },
+
+  resetTransform() {
+    this.panOffset = { x: 0, y: 0 };
+    this.zoomFactor = 1.0;
+    this.updateModelsLayout();
+    this.showSpeechBubble('Đã đặt lại góc nhìn mặc định! ✨', 2000);
+  },
+
+  toggleLiveStudio() {
+    this.isLiveStudio = !this.isLiveStudio;
+    const container = document.getElementById('live2d-stage-container');
+    const headerBtn = document.getElementById('btn-toggle-live-studio');
+
+    if (this.isLiveStudio) {
+      if (container) container.classList.add('live-studio-mode');
+      document.body.classList.add('live-studio-active');
+      if (headerBtn) headerBtn.classList.add('active');
+      this.resizeForLiveStudio();
+      this.showSpeechBubble('Chào mừng đến với Gemini Live Studio! 🌸😈', 3000);
+    } else {
+      if (container) container.classList.remove('live-studio-mode');
+      document.body.classList.remove('live-studio-active');
+      if (headerBtn) headerBtn.classList.remove('active');
+      if (this.app && this.app.renderer) {
+        this.app.renderer.resize(260, 319);
+      }
+      this.updateModelsLayout();
+    }
+  },
+
+  resizeForLiveStudio() {
+    if (!this.app || !this.app.renderer) return;
+    const isWide = window.innerWidth > 900;
+    const targetWidth = isWide ? (window.innerWidth - 420) : window.innerWidth;
+    const targetHeight = isWide ? (window.innerHeight - 54) : (window.innerHeight * 0.5);
+
+    this.app.renderer.resize(targetWidth, targetHeight);
+    this.updateModelsLayout();
+  },
+
+  switchMascot() {
+    // Cycles: duo -> harmony -> echo -> duo
+    if (this.currentMode === 'duo') {
+      this.currentMode = 'harmony';
+      this.showSpeechBubble('Chỉ riêng Harmony đồng hành cùng cậu nè! 🌸', 2500, 'harmony');
+    } else if (this.currentMode === 'harmony') {
+      this.currentMode = 'echo';
+      this.showSpeechBubble('Tới lượt Echo chiếm sân khấu rồi! 😈', 2500, 'echo');
+    } else {
+      this.currentMode = 'duo';
+      this.showSpeechBubble('Cả hai em cùng Song Hành nhé Master! 🌸😈', 2500, 'duo');
+    }
+    this.updateModelsLayout();
   },
 
   toggleVisibility() {
@@ -197,9 +353,7 @@ window.AisaLive2D = {
       if (this.isVisible) {
         container.classList.remove('hidden');
         if (toggleBtn) toggleBtn.classList.add('active');
-        if (!this.isInitialized) {
-          this.init();
-        }
+        if (!this.isInitialized) this.init();
       } else {
         container.classList.add('hidden');
         if (toggleBtn) toggleBtn.classList.remove('active');
@@ -208,75 +362,69 @@ window.AisaLive2D = {
     }
   },
 
-  setEmotion(emotionKey) {
-    if (!this.model) return;
-    const emo = (emotionKey || '').toLowerCase();
+  setEmotion(emotionKey, targetSpeaker = 'harmony') {
+    const targetModel = targetSpeaker === 'echo' ? this.models.echo : this.models.harmony;
+    if (!targetModel) return;
 
-    // Emotion to expression mapping
+    const emo = (emotionKey || '').toLowerCase();
     const emotionMap = {
-      joy: 0,
-      smile: 0,
-      blush: 1,
-      smirk: 2,
-      grin: 2,
-      anger: 3,
-      pout: 3,
-      surprised: 4,
-      think: 5,
-      crying: 6,
-      gentle: 7,
-      caring: 7
+      joy: 0, smile: 0, blush: 1, smirk: 2, grin: 2,
+      anger: 3, pout: 3, surprised: 4, think: 5,
+      crying: 6, gentle: 7, caring: 7
     };
 
     const expIndex = emotionMap[emo];
     try {
-      if (expIndex !== undefined && typeof this.model.expression === 'function') {
-        this.model.expression(expIndex);
+      if (expIndex !== undefined && typeof targetModel.expression === 'function') {
+        targetModel.expression(expIndex);
       }
     } catch (e) {}
 
-    // Show mini status icon above head
     const emojiMap = {
-      joy: '✨ Vui vẻ',
-      smile: '😊 Mỉm cười',
-      blush: '😳 Ngại ngùng',
-      smirk: '😏 Đắc ý',
-      pout: '😤 Bĩu môi',
-      anger: '💢 Hờn dỗi',
-      surprised: '😲 Bất ngờ',
-      think: '🤔 Suy nghĩ',
-      crying: '😭 Cảm động',
-      gentle: '💖 Dịu dàng',
-      caring: '🌸 Ân cần'
+      joy: '✨ Vui vẻ', smile: '😊 Mỉm cười', blush: '😳 Ngại ngùng',
+      smirk: '😏 Đắc ý', pout: '😤 Bĩu môi', anger: '💢 Hờn dỗi',
+      surprised: '😲 Bất ngờ', think: '🤔 Suy nghĩ', crying: '😭 Cảm động',
+      gentle: '💖 Dịu dàng', caring: '🌸 Ân cần'
     };
     if (emojiMap[emo]) {
-      this.showSpeechBubble(emojiMap[emo], 2500);
+      this.showSpeechBubble(emojiMap[emo], 2500, targetSpeaker);
     }
   },
 
-  startLipSync() {
+  startLipSync(speaker = 'harmony') {
     this.isLipSyncing = true;
+    this.lipSyncSpeaker = (speaker || 'harmony').toLowerCase().includes('echo') ? 'echo' : 'harmony';
   },
 
   stopLipSync() {
     this.isLipSyncing = false;
-    if (this.model && this.model.internalModel && this.model.internalModel.coreModel) {
-      const core = this.model.internalModel.coreModel;
-      try {
-        if (typeof core.setParameterValueById === 'function') {
-          core.setParameterValueById('ParamMouthOpenY', 0);
-          core.setParameterValueById('PARAM_MOUTH_OPEN_Y', 0);
-        } else if (typeof core.setParamFloat === 'function') {
-          core.setParamFloat('PARAM_MOUTH_OPEN_Y', 0);
-        }
-      } catch (e) {}
-    }
+    ['harmony', 'echo'].forEach(spk => {
+      const mdl = this.models[spk];
+      if (mdl && mdl.internalModel && mdl.internalModel.coreModel) {
+        const core = mdl.internalModel.coreModel;
+        try {
+          if (typeof core.setParameterValueById === 'function') {
+            core.setParameterValueById('ParamMouthOpenY', 0);
+            core.setParameterValueById('PARAM_MOUTH_OPEN_Y', 0);
+          } else if (typeof core.setParamFloat === 'function') {
+            core.setParamFloat('PARAM_MOUTH_OPEN_Y', 0);
+          }
+        } catch (e) {}
+      }
+    });
   },
 
-  showSpeechBubble(text, duration = 3000) {
+  showSpeechBubble(text, duration = 3000, speaker = 'harmony') {
     const bubble = document.getElementById('live2d-speech-bubble');
     if (!bubble) return;
+
     bubble.textContent = text;
+    bubble.className = 'live2d-speech-bubble';
+    if (speaker === 'echo') {
+      bubble.classList.add('bubble-echo');
+    } else {
+      bubble.classList.add('bubble-harmony');
+    }
     bubble.style.display = 'block';
 
     if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
@@ -285,21 +433,20 @@ window.AisaLive2D = {
     }, duration);
   },
 
-  onModelClick() {
-    if (!this.model) return;
-    const cheers = this.currentSpeaker === 'harmony'
+  onModelClick(speaker) {
+    const cheers = speaker === 'harmony'
       ? ['Cậu cần em hỗ trợ gì nè? 🌸', 'Sakura ngoan, giữ gìn sức khỏe nha! ✨', 'Em luôn ở bên cạnh cậu nè! 💖']
       : ['Ê, chọc tớ hoài coi chừng bị chê deadline nha! 😈', 'Bớt bấm lung tung đi nào! 😏', 'Cần Echo ra tay vặn vẹo ai hong? ⚔️'];
     const randomMsg = cheers[Math.floor(Math.random() * cheers.length)];
-    this.showSpeechBubble(randomMsg, 3000);
+    this.showSpeechBubble(randomMsg, 3000, speaker);
 
-    // Random expression
-    try {
-      if (typeof this.model.expression === 'function') {
+    const targetModel = this.models[speaker];
+    if (targetModel && typeof targetModel.expression === 'function') {
+      try {
         const randExp = Math.floor(Math.random() * 6);
-        this.model.expression(randExp);
-      }
-    } catch (e) {}
+        targetModel.expression(randExp);
+      } catch (e) {}
+    }
   }
 };
 
@@ -309,5 +456,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.AisaLive2D && !window.AisaLive2D.isInitialized) {
       window.AisaLive2D.init();
     }
-  }, 300);
+  }, 350);
 });

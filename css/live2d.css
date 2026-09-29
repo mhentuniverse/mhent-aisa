@@ -1,9 +1,13 @@
 /* ==========================================================================
    AISA SANCTUARY - LIVE2D MASCOT STAGE STYLESHEET
    Open-LLM-VTuber Companion Edition for Harmony 🌸 & Echo 😈
+   Features: Dual Model Stage, Gemini Live Studio View, Drag & Zoom, Speech Bubbles
    Miyazaki Haruto Entertainment Co., Ltd.
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   1. STANDARD FLOATING MINI WIDGET (DEFAULT)
+   -------------------------------------------------------------------------- */
 #live2d-stage-container {
   position: fixed !important;
   bottom: 24px !important;
@@ -23,7 +27,7 @@
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, width 0.35s ease, height 0.35s ease, top 0.35s ease, left 0.35s ease !important;
   user-select: none !important;
   pointer-events: auto !important;
 }
@@ -42,6 +46,7 @@
   background: rgba(255, 255, 255, 0.05) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   flex-shrink: 0 !important;
+  z-index: 20 !important;
 }
 
 .live2d-stage-title {
@@ -78,13 +83,13 @@
   background: transparent !important;
   border: none !important;
   color: #8e918f !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 26px !important;
+  height: 26px !important;
   border-radius: 6px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 0.8rem !important;
+  font-size: 0.82rem !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
 }
@@ -92,6 +97,7 @@
 .btn-live2d-ctrl:hover {
   background: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
+  transform: scale(1.08) !important;
 }
 
 .live2d-canvas-wrap {
@@ -110,10 +116,18 @@
   width: 260px !important;
   height: 319px !important;
   display: block !important;
-  cursor: pointer !important;
   background: transparent !important;
+  cursor: grab !important;
+  touch-action: none !important;
 }
 
+#live2d-canvas:active {
+  cursor: grabbing !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. SPEECH BUBBLES
+   -------------------------------------------------------------------------- */
 .live2d-speech-bubble {
   position: absolute !important;
   top: 10px !important;
@@ -135,20 +149,142 @@
   z-index: 10 !important;
 }
 
+.live2d-speech-bubble.bubble-echo {
+  border-color: rgba(167, 139, 250, 0.55) !important;
+  color: #ddd6fe !important;
+}
+
 @keyframes bubblePopIn {
   0% { transform: translateY(-8px) scale(0.9); opacity: 0; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-@media (max-width: 768px) {
-  #live2d-stage-container {
-    width: 200px !important;
-    height: 270px !important;
-    bottom: 84px !important;
-    right: 12px !important;
+/* --------------------------------------------------------------------------
+   3. GEMINI LIVE STUDIO FULLSCREEN STAGE MODE
+   -------------------------------------------------------------------------- */
+#live2d-stage-container.live-studio-mode {
+  position: fixed !important;
+  top: 54px !important;
+  left: 0 !important;
+  right: 420px !important;
+  bottom: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: radial-gradient(circle at 50% 60%, rgba(35, 20, 42, 0.9) 0%, rgba(16, 15, 22, 0.98) 100%) !important;
+  backdrop-filter: blur(30px) !important;
+  -webkit-backdrop-filter: blur(30px) !important;
+  box-shadow: none !important;
+  z-index: 90 !important;
+}
+
+#live2d-stage-container.live-studio-mode .live2d-canvas-wrap {
+  width: 100% !important;
+  height: calc(100% - 46px) !important;
+}
+
+#live2d-stage-container.live-studio-mode #live2d-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Chat center transforms into the right sidebar */
+body.live-studio-active .sanctuary-chat-center {
+  position: fixed !important;
+  top: 54px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 420px !important;
+  height: calc(100vh - 54px) !important;
+  background: rgba(18, 18, 22, 0.94) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+  z-index: 95 !important;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.live-studio-active .sanctuary-sidebar {
+  display: none !important;
+}
+
+/* Studio Floating Hints for Pan & Zoom */
+.live-studio-hints {
+  position: absolute !important;
+  bottom: 20px !important;
+  left: 24px !important;
+  display: none !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 20px !important;
+  padding: 6px 16px !important;
+  font-size: 0.76rem !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  pointer-events: none !important;
+  z-index: 15 !important;
+  animation: fadeIn 0.4s ease !important;
+}
+
+#live2d-stage-container.live-studio-mode .live-studio-hints {
+  display: flex !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. GEMINI LIVE STUDIO TOP HEADER PILL
+   -------------------------------------------------------------------------- */
+.btn-gemini-live-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 5px 13px !important;
+  border-radius: 9999px !important;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.18), rgba(139, 92, 246, 0.18)) !important;
+  border: 1px solid rgba(244, 114, 182, 0.4) !important;
+  color: #ffffff !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+}
+
+.btn-gemini-live-pill:hover,
+.btn-gemini-live-pill.active {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(139, 92, 246, 0.35)) !important;
+  border-color: rgba(244, 114, 182, 0.75) !important;
+  box-shadow: 0 0 16px rgba(244, 114, 182, 0.35) !important;
+}
+
+.live-studio-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #ec4899 !important;
+  box-shadow: 0 0 8px #ec4899 !important;
+  animation: liveStudioPulse 1.5s infinite ease-in-out !important;
+}
+
+@keyframes liveStudioPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); box-shadow: 0 0 12px #ec4899; }
+}
+
+@media (max-width: 900px) {
+  #live2d-stage-container.live-studio-mode {
+    right: 0 !important;
+    bottom: 50% !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
   }
-  #live2d-canvas {
-    width: 200px !important;
-    height: 228px !important;
+  body.live-studio-active .sanctuary-chat-center {
+    top: 50% !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 50% !important;
   }
 }

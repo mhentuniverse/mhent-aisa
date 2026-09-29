@@ -15,8 +15,61 @@ window.AisaVoice = {
   ambientGain: null,
   isAmbientPlaying: false,
 
+  voices: [],
+
   init() {
     this.initSpeechRecognition();
+    this.loadVoices();
+    if (this.synth && typeof this.synth.onvoiceschanged !== 'undefined') {
+      this.synth.onvoiceschanged = () => this.loadVoices();
+    }
+  },
+
+  loadVoices() {
+    if (!this.synth) return;
+    this.voices = this.synth.getVoices() || [];
+    console.log(`🌸 [AISA Voice] Loaded ${this.voices.length} system voices.`);
+  },
+
+  getBestVoice(speaker = 'HARMONY') {
+    if (!this.voices || !this.voices.length) {
+      this.loadVoices();
+    }
+    const voices = this.voices || [];
+    if (!voices.length) return null;
+
+    // 1. Tìm giọng tiếng Việt (vi-VN)
+    const viVoices = voices.filter(v => 
+      (v.lang && (v.lang.toLowerCase().startsWith('vi') || v.lang.toLowerCase().includes('vi-vn'))) ||
+      v.name.toLowerCase().includes('vietnam') || 
+      v.name.toLowerCase().includes('tiếng việt')
+    );
+
+    if (viVoices.length > 0) {
+      // Ưu tiên giọng nữ ngọt ngào tự nhiên (Microsoft HoaiMy, Google tiếng Việt, v.v.)
+      const femaleVi = viVoices.find(v => {
+        const n = v.name.toLowerCase();
+        return n.includes('hoaimy') || n.includes('female') || n.includes('google') || n.includes('linh') || n.includes('mai');
+      });
+
+      if (speaker.toUpperCase() === 'HARMONY') {
+        return femaleVi || viVoices[0];
+      } else {
+        // Echo: nếu có giọng khác thì chọn, hoặc cùng giọng nhưng tăng cao độ
+        const otherVi = viVoices.find(v => v !== femaleVi) || femaleVi || viVoices[0];
+        return otherVi;
+      }
+    }
+
+    // 2. Dự phòng: Nếu Windows chưa cài gói tiếng Việt, TUYỆT ĐỐI chọn giọng NỮ (Natural / Female / Jenny / Zira)
+    // Không bao giờ để rơi vào giọng nam tiếng Anh trầm (David / Mark)
+    const femaleFallback = voices.find(v => {
+      const n = v.name.toLowerCase();
+      return (n.includes('female') || n.includes('natural') || n.includes('jenny') || n.includes('aria') || n.includes('zira') || n.includes('ayumi')) &&
+             !n.includes('male') && !n.includes('david') && !n.includes('mark') && !n.includes('george');
+    });
+
+    return femaleFallback || voices[0];
   },
 
   initSpeechRecognition() {
@@ -137,9 +190,10 @@ window.AisaVoice = {
       }));
     }
 
-    // 2. Kích hoạt Lip-sync trên Live2D Mascot
+    // 2. Kích hoạt Lip-sync trên Live2D Mascot (truyền rõ nhân vật đang nói)
+    const speakerKey = (speaker || '').toLowerCase().includes('echo') ? 'echo' : 'harmony';
     if (window.AisaLive2D && typeof window.AisaLive2D.startLipSync === 'function') {
-      window.AisaLive2D.startLipSync();
+      window.AisaLive2D.startLipSync(speakerKey);
     }
 
     // 3. Lọc bỏ hoàn toàn các thẻ suy nghĩ nội tâm <think>...</think>
@@ -166,15 +220,22 @@ window.AisaVoice = {
     }
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'vi-VN';
+    const chosenVoice = this.getBestVoice(speaker);
 
-    // Điều chỉnh cao độ và tốc độ theo nhân cách
-    if (speaker === 'HARMONY') {
-      utterance.pitch = 1.15; // Giọng trong, ngọt ngào, ấm áp
-      utterance.rate = 0.95;
+    if (chosenVoice) {
+      utterance.voice = chosenVoice;
+      utterance.lang = chosenVoice.lang || 'vi-VN';
     } else {
-      utterance.pitch = 0.9;  // Giọng cá tính, hơi tinh nghịch
-      utterance.rate = 1.05;
+      utterance.lang = 'vi-VN';
+    }
+
+    // Điều chỉnh cao độ và tốc độ theo chất giọng anime nữ
+    if (speaker.toUpperCase() === 'HARMONY') {
+      utterance.pitch = 1.22; // Nữ tính, trong trẻo, ngọt ngào
+      utterance.rate = 1.0;
+    } else {
+      utterance.pitch = 1.12; // Tiểu quỷ cá tính, lém lỉnh, hơi nhanh
+      utterance.rate = 1.06;
     }
 
     utterance.onend = () => {

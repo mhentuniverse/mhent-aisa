@@ -2441,6 +2441,12 @@ window.AisaApp = {
       if (check) check.textContent = isMatch ? '✓' : '';
     });
 
+    // Synchronize with Live2D Mascot Stage
+    if (window.AisaLive2D && typeof window.AisaLive2D.updateModelsLayout === 'function') {
+      window.AisaLive2D.currentMode = mode;
+      window.AisaLive2D.updateModelsLayout();
+    }
+
     this.updateModelBadge();
   },
 
