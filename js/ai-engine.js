@@ -173,7 +173,7 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
       let mimeType = 'image/jpeg';
       if (imageBase64.startsWith('data:image/png')) mimeType = 'image/png';
       if (imageBase64.startsWith('data:image/webp')) mimeType = 'image/webp';
-      
+
       parts.push({
         inlineData: {
           mimeType: mimeType,
@@ -197,9 +197,9 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
       text: userText || 'Hãy nhìn hình ảnh/tệp tài liệu này và cho nhận xét/hỗ trợ tớ nhé!'
     });
 
-    const isComplexTask = (options && options.deepResearch) || 
+    const isComplexTask = (options && options.deepResearch) ||
       (userText && (
-        userText.length > 200 || 
+        userText.length > 200 ||
         /tổng hợp|công thức|phân tích|nghiên cứu|chi tiết|bài toán|giải|chứng minh|tóm tắt|tài liệu|giải thích|pdf|toán|thống kê|định lý|ước lượng/i.test(userText)
       )) || (options && options.attachedFile);
     const maxTokens = isComplexTask ? 4096 : 1500;

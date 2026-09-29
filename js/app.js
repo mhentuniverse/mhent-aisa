@@ -368,7 +368,7 @@ window.AisaApp = {
                 return m;
               });
             }
-          } catch (e) {}
+          } catch (e) { }
         }
 
         const initialMsgs = oldMsgs.some(m => m.role === 'user') ? oldMsgs : [];
@@ -468,7 +468,7 @@ window.AisaApp = {
       if (this.state.currentSessionId) {
         this.debounceSyncCloud();
       }
-    } catch (e) {}
+    } catch (e) { }
   },
 
   // --------------------------------------------------------------------------
@@ -657,7 +657,7 @@ window.AisaApp = {
       window.AisaEngine.deleteCloudSession(sessionId);
     }
     if (window.AisaAuth && window.AisaAuth.db) {
-      window.AisaAuth.db.collection('aisa_sessions').doc(sessionId).delete().catch(() => {});
+      window.AisaAuth.db.collection('aisa_sessions').doc(sessionId).delete().catch(() => { });
     }
 
     if (this.state.sessions.length === 0 || this.state.currentSessionId === sessionId) {
@@ -807,7 +807,7 @@ window.AisaApp = {
 
         touchTimer = setTimeout(() => {
           if (navigator.vibrate) {
-            try { navigator.vibrate(40); } catch(err) {}
+            try { navigator.vibrate(40); } catch (err) { }
           }
           item.classList.add('holding');
           const t = e.touches[0] || e.changedTouches[0];
@@ -2130,7 +2130,7 @@ window.AisaApp = {
 
     const isImg = file.type.startsWith('image/');
     const fileName = file.name || (isImg ? 'image.png' : 'document.txt');
-    const fileSizeStr = file.size > 1024 * 1024 
+    const fileSizeStr = file.size > 1024 * 1024
       ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
       : Math.round(file.size / 1024) + ' KB';
 
@@ -2188,7 +2188,7 @@ window.AisaApp = {
       }
 
       // Đọc nội dung tệp (nếu là văn bản/code/json/csv/markdown)
-      const isTextReadable = file.type.startsWith('text/') || 
+      const isTextReadable = file.type.startsWith('text/') ||
         ['.txt', '.md', '.json', '.csv', '.js', '.ts', '.py', '.html', '.css', '.sql', '.toml', '.yaml', '.yml'].some(ext => lowerName.endsWith(ext));
 
       if (isTextReadable) {
@@ -2666,9 +2666,9 @@ window.AisaApp = {
     container.innerHTML = `
       <div class="messages-inner-container">
         ${this.state.messages.map(m => {
-          const isUser = m.role === 'user';
-          if (isUser) {
-            return `
+      const isUser = m.role === 'user';
+      if (isUser) {
+        return `
               <div class="message-row user-row" id="${m.id}">
                 <div class="message-bubble user-bubble">
                   <div class="bubble-meta">
@@ -2703,21 +2703,21 @@ window.AisaApp = {
                 </div>
               </div>
             `;
-          }
+      }
 
-          const isHarmony = m.speaker === 'HARMONY';
-          const personaAvatarSvg = isHarmony
-            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/><circle cx="12" cy="12" r="2.4" fill="#ffffff"/></svg>`
-            : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/><circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/><circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/><circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/><path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+      const isHarmony = m.speaker === 'HARMONY';
+      const personaAvatarSvg = isHarmony
+        ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/><circle cx="12" cy="12" r="2.4" fill="#ffffff"/></svg>`
+        : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/><circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4"/><circle cx="9.8" cy="13" r="1.3" fill="#ffffff"/><circle cx="14.2" cy="13" r="1.3" fill="#ffffff"/><path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/></svg>`;
 
-          const speakerBadgeHtml = isHarmony
-            ? `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/></svg> Harmony</span>`
-            : `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/></svg> Echo</span>`;
+      const speakerBadgeHtml = isHarmony
+        ? `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z" fill="#f472b6"/></svg> Harmony</span>`
+        : `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z" fill="#a78bfa"/></svg> Echo</span>`;
 
-          const bubbleClass = isHarmony ? 'harmony-bubble' : 'echo-bubble';
-          const cleanText = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
+      const bubbleClass = isHarmony ? 'harmony-bubble' : 'echo-bubble';
+      const cleanText = window.AisaEngine ? window.AisaEngine.cleanReply(m.text) : m.text;
 
-          return `
+      return `
             <div class="message-row assistant-row ${isHarmony ? 'harmony-row' : 'echo-row'}" id="${m.id}">
               <div class="assistant-avatar ${isHarmony ? 'avt-harmony' : 'avt-echo'}">${personaAvatarSvg}</div>
               <div class="message-bubble ${bubbleClass}">
@@ -2755,7 +2755,7 @@ window.AisaApp = {
               </div>
             </div>
           `;
-        }).join('')}
+    }).join('')}
       </div>
     `;
 
@@ -2967,7 +2967,7 @@ window.AisaApp = {
     const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn');
 
     let avatar = '🌸😈';
-    let label = isDeepResearch 
+    let label = isDeepResearch
       ? '🧭 AISA đang tiến hành Deep Research, tổng hợp & phân tích đa tầng...'
       : 'Harmony & Echo đang cùng suy nghĩ...';
 
@@ -2992,7 +2992,7 @@ window.AisaApp = {
       </div>
     `;
     container.appendChild(typingEl);
-    
+
     const wrap = document.getElementById('chat-messages-wrap');
     if (wrap) wrap.scrollTop = wrap.scrollHeight;
   },

@@ -156,7 +156,7 @@ window.AisaVoice = {
             this.ambientOsc.disconnect();
           }
         }, 1000);
-      } catch (e) {}
+      } catch (e) { }
     }
     this.isAmbientPlaying = false;
   }

@@ -170,7 +170,7 @@ window.AisaMarkdown = {
           displayMode: isBlock,
           throwOnError: false
         });
-        return isBlock 
+        return isBlock
           ? `<div class="chat-math-block">${rendered}</div>`
           : `<span class="chat-math-inline">${rendered}</span>`;
       } catch (e) {
