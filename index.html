@@ -232,6 +232,19 @@
         </span>
       </button>
 
+      <!-- Live2D Mascot Toggle Button -->
+      <button type="button" class="btn-header-action active" id="btn-toggle-live2d"
+        title="Bật/Tắt Mascot Live2D (Harmony 🌸 / Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">
+        <span class="nav-icon-svg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a8 8 0 0 0-8 8c0 4.418 3.582 8 8 8s8-3.582 8-8a8 8 0 0 0-8-8z"/>
+            <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
+            <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
+            <path d="M10 14a2 2 0 0 0 4 0"/>
+          </svg>
+        </span>
+      </button>
+
       <!-- Gemini Mobile/Desktop New Chat Pen Trigger -->
       <button type="button" class="btn-header-action btn-new-chat-top" id="btn-new-chat-top" title="Cuộc trò chuyện mới">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -660,6 +673,30 @@
     </section>
 
   </main>
+
+  <!-- ========================================================================
+       LIVE2D MASCOT STAGE (OPEN-LLM-VTUBER COMPANION EDITION)
+       ======================================================================== -->
+  <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot">
+    <div class="live2d-stage-header">
+      <div class="live2d-stage-title">
+        <span class="live2d-status-dot"></span>
+        <span id="live2d-speaker-name">Harmony 🌸</span>
+      </div>
+      <div class="live2d-stage-controls">
+        <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi Mascot (Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">
+          🔄
+        </button>
+        <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Ẩn Mascot" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">
+          ✕
+        </button>
+      </div>
+    </div>
+    <div class="live2d-canvas-wrap">
+      <canvas id="live2d-canvas" width="280" height="360"></canvas>
+      <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
+    </div>
+  </aside>
 
   <!-- ========================================================================
        MODAL 1: MEMORY VAULT (LONG-TERM FACTS & EDGE D1 CHAT LOGS)
@@ -1176,6 +1213,13 @@
   <script src="js/voice.js"></script>
   <script src="js/memory.js"></script>
   <script src="js/vision.js"></script>
+  <!-- Live2D Cubism Core & PixiJS Display -->
+  <script src="js/live2d/live2dcubismcore.min.js"></script>
+  <script src="js/live2d/live2d.min.js"></script>
+  <script src="js/live2d/pixi.min.js"></script>
+  <script src="js/live2d/pixi-live2d-display.min.js"></script>
+  <script src="js/live2d-stage.js"></script>
+
   <script src="js/app.js"></script>
   <script src="js/desktop-bridge.js"></script>
 

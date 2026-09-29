@@ -1199,3 +1199,139 @@ body:not([data-aisa-mode]) .gemini-input-capsule {
   border-color: rgba(236, 72, 153, 0.3);
   box-shadow: 0 4px 20px rgba(236, 72, 153, 0.1);
 }
+
+/* ==========================================================================
+   LIVE2D MASCOT STAGE COMPANION (OPEN-LLM-VTUBER LUXURY GLASSMORPHISM)
+   ========================================================================== */
+.live2d-stage-container {
+  position: fixed;
+  bottom: 96px;
+  right: 28px;
+  width: 280px;
+  height: 380px;
+  background: rgba(19, 19, 20, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 48px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(244, 114, 182, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.live2d-stage-container.hidden {
+  opacity: 0;
+  transform: translateY(30px) scale(0.92);
+  pointer-events: none;
+}
+
+.live2d-stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.live2d-stage-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f472b6;
+}
+
+.live2d-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.live2d-stage-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-live2d-ctrl {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-live2d-ctrl:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.live2d-canvas-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#live2d-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  cursor: pointer;
+}
+
+.live2d-speech-bubble {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  right: 14px;
+  background: rgba(30, 31, 32, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(244, 114, 182, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: center;
+  pointer-events: none;
+  animation: bubblePopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+@keyframes bubblePopIn {
+  0% { transform: translateY(-8px) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .live2d-stage-container {
+    width: 200px;
+    height: 260px;
+    bottom: 84px;
+    right: 12px;
+  }
+}

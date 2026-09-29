@@ -314,6 +314,23 @@ window.AisaApp = {
     if (window.AisaVoice) window.AisaVoice.init();
     if (window.AisaMemory) window.AisaMemory.init();
     if (window.AisaVision) window.AisaVision.init();
+    if (window.AisaLive2D) window.AisaLive2D.init();
+
+    // Lắng nghe sự kiện cảm xúc từ Live2D / Voice để tạo hiệu ứng thị giác cho Avatar
+    window.addEventListener('aisa-emotion', (e) => {
+      const { emotion } = e.detail || {};
+      const activeRows = document.querySelectorAll('.assistant-row');
+      if (activeRows.length > 0) {
+        const lastRow = activeRows[activeRows.length - 1];
+        const avt = lastRow.querySelector('.assistant-avatar');
+        if (avt) {
+          avt.classList.add('avatar-reacting', `react-${emotion}`);
+          setTimeout(() => {
+            avt.classList.remove('avatar-reacting', `react-${emotion}`);
+          }, 3500);
+        }
+      }
+    });
 
     // Khởi tạo Bộ Điều Phối Đồng Bộ Đám Mây Đa Thiết Bị (Cloud Auto-Sync Engine)
     this.initCloudSync();
@@ -2739,7 +2756,7 @@ window.AisaApp = {
                 ` : ''}
                 <div class="bubble-text">${window.AisaMarkdown.format(cleanText)}</div>
                 <div class="bubble-actions">
-                  <button type="button" class="btn-bubble-action" onclick="window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}')" title="Nghe giọng nói">
+                  <button type="button" class="btn-bubble-action" onclick="if (window.AisaVoice && window.AisaVoice.isSpeaking) { window.AisaVoice.interruptSpeech(); } else { window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}', this.closest('.message-bubble')); }" title="Nghe giọng nói / Ngắt lời">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                       <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -2794,6 +2811,11 @@ window.AisaApp = {
 
   async handleSendMessage() {
     if (this.state.isGenerating) return;
+
+    // 🛑 Barge-in: Ngắt lời thoại AISA ngay lập tức khi user gửi tin nhắn mới
+    if (window.AisaVoice && window.AisaVoice.isSpeaking) {
+      window.AisaVoice.interruptSpeech();
+    }
 
     // Chờ hoàn tất trích xuất tệp PDF/tài liệu nếu người dùng nhấn Gửi ngay lập tức
     if (this.state.extractingPromise) {

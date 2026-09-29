@@ -1,0 +1,291 @@
+/**
+ * AISA COMPANION - LIVE2D MASCOT STAGE ENGINE (OPEN-LLM-VTUBER ARCHITECTURE)
+ * Integrates PixiJS + Pixi-Live2D-Display + Cubism 4 Runtime
+ * Characters: Harmony 🌸 (Shizuku) & Echo 😈 (Mao Pro)
+ * Features: Cursor focus tracking, speech lip-sync, emotion expression mapping, touch interactions
+ */
+window.AisaLive2D = {
+  app: null,
+  model: null,
+  currentSpeaker: 'harmony', // 'harmony' | 'echo'
+  isLipSyncing: false,
+  lipSyncTimer: null,
+  isVisible: true,
+  isInitialized: false,
+
+  mascots: {
+    harmony: {
+      name: 'Harmony 🌸',
+      path: 'assets/live2d-models/shizuku/runtime/shizuku.model3.json',
+      scale: 0.22,
+      yOffset: 20,
+      badgeColor: '#f472b6'
+    },
+    echo: {
+      name: 'Echo 😈',
+      path: 'assets/live2d-models/mao_pro/runtime/mao_pro.model3.json',
+      scale: 0.17,
+      yOffset: 30,
+      badgeColor: '#a78bfa'
+    }
+  },
+
+  async init() {
+    if (this.isInitialized) return;
+
+    const container = document.getElementById('live2d-stage-container');
+    const canvas = document.getElementById('live2d-canvas');
+    if (!container || !canvas) return;
+
+    // Check if PIXI & Live2D library are available
+    if (typeof PIXI === 'undefined' || !PIXI.live2d) {
+      console.warn('[AISA Live2D] Pixi.js or pixi-live2d-display not loaded yet.');
+      return;
+    }
+
+    try {
+      const width = 280;
+      const height = 360;
+
+      this.app = new PIXI.Application({
+        view: canvas,
+        width: width,
+        height: height,
+        transparent: true,
+        backgroundAlpha: 0,
+        antialias: true,
+        autoDensity: true,
+        resolution: window.devicePixelRatio || 1
+      });
+
+      // Load default mascot (Harmony)
+      await this.loadModel('harmony');
+
+      // Bind interactive cursor tracking
+      window.addEventListener('mousemove', (e) => {
+        if (!this.model || !this.isVisible) return;
+        const rect = canvas.getBoundingClientRect();
+        // Calculate relative mouse position
+        const targetX = e.clientX - (rect.left + rect.width / 2);
+        const targetY = e.clientY - (rect.top + rect.height / 2);
+        if (typeof this.model.focus === 'function') {
+          this.model.focus(e.clientX, e.clientY);
+        }
+      });
+
+      // Bind Voice Events for Lip-sync & Interruption
+      window.addEventListener('aisa-emotion', (e) => {
+        const { speaker, emotion } = e.detail || {};
+        if (speaker) {
+          const spk = speaker.toLowerCase().includes('echo') ? 'echo' : 'harmony';
+          if (spk !== this.currentSpeaker) {
+            this.switchMascot(spk);
+          }
+        }
+        if (emotion) {
+          this.setEmotion(emotion);
+        }
+      });
+
+      window.addEventListener('aisa-interrupted', () => {
+        this.stopLipSync();
+        this.showSpeechBubble('🛑 Đã ngắt lời!', 2000);
+      });
+
+      this.isInitialized = true;
+      console.log('🌸 [AISA Live2D] Stage initialized successfully!');
+    } catch (err) {
+      console.error('[AISA Live2D Error]:', err);
+    }
+  },
+
+  async loadModel(mascotKey) {
+    const mascotInfo = this.mascots[mascotKey] || this.mascots.harmony;
+    this.currentSpeaker = mascotKey;
+
+    const titleEl = document.getElementById('live2d-speaker-name');
+    if (titleEl) {
+      titleEl.textContent = mascotInfo.name;
+      titleEl.style.color = mascotInfo.badgeColor;
+    }
+
+    try {
+      if (this.model) {
+        this.app.stage.removeChild(this.model);
+        this.model.destroy();
+        this.model = null;
+      }
+
+      console.log(`🌸 [AISA Live2D] Loading ${mascotInfo.name} from: ${mascotInfo.path}`);
+      const model = await PIXI.live2d.Live2DModel.from(mascotInfo.path, {
+        autoInteract: true
+      });
+
+      this.model = model;
+      this.app.stage.addChild(model);
+
+      // Positioning & scale
+      model.anchor.set(0.5, 0.5);
+      model.x = this.app.renderer.width / 2;
+      model.y = this.app.renderer.height / 2 + mascotInfo.yOffset;
+      model.scale.set(mascotInfo.scale);
+
+      // Interactive click: Trigger random expression / motion
+      model.interactive = true;
+      model.on('pointertap', () => {
+        this.onModelClick();
+      });
+
+      console.log(`🌸 [AISA Live2D] ${mascotInfo.name} is now active on stage!`);
+    } catch (e) {
+      console.warn(`[AISA Live2D] Failed to load ${mascotInfo.name}:`, e);
+    }
+  },
+
+  async switchMascot(targetKey = null) {
+    const nextKey = targetKey || (this.currentSpeaker === 'harmony' ? 'echo' : 'harmony');
+    await this.loadModel(nextKey);
+    const bubbleMsg = nextKey === 'harmony' ? 'Em là Harmony đây ạ! 🌸' : 'Echo tới đây! Cà khịa mode on! 😈';
+    this.showSpeechBubble(bubbleMsg, 2500);
+  },
+
+  toggleVisibility() {
+    this.isVisible = !this.isVisible;
+    const container = document.getElementById('live2d-stage-container');
+    const toggleBtn = document.getElementById('btn-toggle-live2d');
+    if (container) {
+      if (this.isVisible) {
+        container.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.classList.add('active');
+        if (!this.isInitialized) this.init();
+      } else {
+        container.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('active');
+        this.stopLipSync();
+      }
+    }
+  },
+
+  setEmotion(emotionKey) {
+    if (!this.model) return;
+    const emo = (emotionKey || '').toLowerCase();
+
+    // Emotion to expression mapping (for Mao Pro Cubism 4 expressions)
+    const emotionMap = {
+      joy: 0,
+      smile: 0,
+      blush: 1,
+      smirk: 2,
+      grin: 2,
+      anger: 3,
+      pout: 3,
+      surprised: 4,
+      think: 5,
+      crying: 6,
+      gentle: 7,
+      caring: 7
+    };
+
+    const expIndex = emotionMap[emo];
+    try {
+      if (expIndex !== undefined && typeof this.model.expression === 'function') {
+        this.model.expression(expIndex);
+      }
+    } catch (e) {}
+
+    // Show mini status icon above head
+    const emojiMap = {
+      joy: '✨ Vui vẻ',
+      smile: '😊 Mỉm cười',
+      blush: '😳 Ngại ngùng',
+      smirk: '😏 Đắc ý',
+      pout: '😤 Bĩu môi',
+      anger: '💢 Hờn dỗi',
+      surprised: '😲 Bất ngờ',
+      think: '🤔 Suy nghĩ',
+      crying: '😭 Cảm động',
+      gentle: '💖 Dịu dàng',
+      caring: '🌸 Ân cần'
+    };
+    if (emojiMap[emo]) {
+      this.showSpeechBubble(emojiMap[emo], 2500);
+    }
+  },
+
+  startLipSync() {
+    this.isLipSyncing = true;
+    let mouthVal = 0;
+    let goingUp = true;
+    if (this.lipSyncTimer) clearInterval(this.lipSyncTimer);
+
+    this.lipSyncTimer = setInterval(() => {
+      if (!this.isLipSyncing || !this.model) return;
+      if (goingUp) {
+        mouthVal += 0.28;
+        if (mouthVal >= 0.85) goingUp = false;
+      } else {
+        mouthVal -= 0.28;
+        if (mouthVal <= 0.05) goingUp = true;
+      }
+
+      try {
+        const core = this.model.internalModel?.coreModel;
+        if (core) {
+          if (typeof core.setParameterValueById === 'function') {
+            core.setParameterValueById('ParamMouthOpenY', mouthVal);
+            core.setParameterValueById('PARAM_MOUTH_OPEN_Y', mouthVal);
+          } else if (typeof core.setParamFloat === 'function') {
+            core.setParamFloat('PARAM_MOUTH_OPEN_Y', mouthVal);
+          }
+        }
+      } catch (e) {}
+    }, 70);
+  },
+
+  stopLipSync() {
+    this.isLipSyncing = false;
+    if (this.lipSyncTimer) clearInterval(this.lipSyncTimer);
+    try {
+      const core = this.model?.internalModel?.coreModel;
+      if (core) {
+        if (typeof core.setParameterValueById === 'function') {
+          core.setParameterValueById('ParamMouthOpenY', 0);
+          core.setParameterValueById('PARAM_MOUTH_OPEN_Y', 0);
+        } else if (typeof core.setParamFloat === 'function') {
+          core.setParamFloat('PARAM_MOUTH_OPEN_Y', 0);
+        }
+      }
+    } catch (e) {}
+  },
+
+  showSpeechBubble(text, duration = 3000) {
+    const bubble = document.getElementById('live2d-speech-bubble');
+    if (!bubble) return;
+    bubble.textContent = text;
+    bubble.style.display = 'block';
+    bubble.classList.add('bubble-show');
+
+    if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
+    this.bubbleTimeout = setTimeout(() => {
+      bubble.style.display = 'none';
+      bubble.classList.remove('bubble-show');
+    }, duration);
+  },
+
+  onModelClick() {
+    if (!this.model) return;
+    const cheers = this.currentSpeaker === 'harmony'
+      ? ['Cậu cần em hỗ trợ gì nè? 🌸', 'Sakura ngoan, giữ gìn sức khỏe nha! ✨', 'Em luôn ở bên cạnh cậu nè! 💖']
+      : ['Ê, chọc tớ hoài coi chừng bị chê deadline nha! 😈', 'Bớt bấm lung tung đi nào! 😏', 'Cần Echo ra tay vặn vẹo ai hong? ⚔️'];
+    const randomMsg = cheers[Math.floor(Math.random() * cheers.length)];
+    this.showSpeechBubble(randomMsg, 3000);
+
+    // Random expression
+    try {
+      if (typeof this.model.expression === 'function') {
+        const randExp = Math.floor(Math.random() * 6);
+        this.model.expression(randExp);
+      }
+    } catch (e) {}
+  }
+};
