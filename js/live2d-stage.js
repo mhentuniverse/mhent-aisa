@@ -80,6 +80,26 @@ window.AisaLive2D = {
       // Load default mascot (Harmony)
       await this.loadModel('harmony');
 
+      // 60FPS Harmonic Lip-Sync Ticker
+      this.app.ticker.add(() => {
+        if (!this.model || !this.model.internalModel) return;
+        const core = this.model.internalModel.coreModel;
+        if (!core) return;
+
+        if (this.isLipSyncing) {
+          // Dynamic harmonic vocal mouth wave (natural anime speaking rhythm)
+          const mouthVal = 0.45 + 0.35 * Math.sin(Date.now() / 80) + 0.15 * Math.sin(Date.now() / 35);
+          const clamped = Math.max(0, Math.min(0.95, mouthVal));
+
+          if (typeof core.setParameterValueById === 'function') {
+            core.setParameterValueById('ParamMouthOpenY', clamped);
+            core.setParameterValueById('PARAM_MOUTH_OPEN_Y', clamped);
+          } else if (typeof core.setParamFloat === 'function') {
+            core.setParamFloat('PARAM_MOUTH_OPEN_Y', clamped);
+          }
+        }
+      });
+
       // Bind interactive cursor tracking
       window.addEventListener('mousemove', (e) => {
         if (!this.model || !this.isVisible) return;
@@ -236,48 +256,21 @@ window.AisaLive2D = {
 
   startLipSync() {
     this.isLipSyncing = true;
-    let mouthVal = 0;
-    let goingUp = true;
-    if (this.lipSyncTimer) clearInterval(this.lipSyncTimer);
-
-    this.lipSyncTimer = setInterval(() => {
-      if (!this.isLipSyncing || !this.model) return;
-      if (goingUp) {
-        mouthVal += 0.28;
-        if (mouthVal >= 0.85) goingUp = false;
-      } else {
-        mouthVal -= 0.28;
-        if (mouthVal <= 0.05) goingUp = true;
-      }
-
-      try {
-        const core = this.model.internalModel?.coreModel;
-        if (core) {
-          if (typeof core.setParameterValueById === 'function') {
-            core.setParameterValueById('ParamMouthOpenY', mouthVal);
-            core.setParameterValueById('PARAM_MOUTH_OPEN_Y', mouthVal);
-          } else if (typeof core.setParamFloat === 'function') {
-            core.setParamFloat('PARAM_MOUTH_OPEN_Y', mouthVal);
-          }
-        }
-      } catch (e) {}
-    }, 70);
   },
 
   stopLipSync() {
     this.isLipSyncing = false;
-    if (this.lipSyncTimer) clearInterval(this.lipSyncTimer);
-    try {
-      const core = this.model?.internalModel?.coreModel;
-      if (core) {
+    if (this.model && this.model.internalModel && this.model.internalModel.coreModel) {
+      const core = this.model.internalModel.coreModel;
+      try {
         if (typeof core.setParameterValueById === 'function') {
           core.setParameterValueById('ParamMouthOpenY', 0);
           core.setParameterValueById('PARAM_MOUTH_OPEN_Y', 0);
         } else if (typeof core.setParamFloat === 'function') {
           core.setParamFloat('PARAM_MOUTH_OPEN_Y', 0);
         }
-      }
-    } catch (e) {}
+      } catch (e) {}
+    }
   },
 
   showSpeechBubble(text, duration = 3000) {
