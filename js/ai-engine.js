@@ -154,6 +154,17 @@ QUY TẮC PHONG THÁI TỰ NHIÊN (HÃY LÀ CHÍNH MÌNH):
 - Hãy nói năng tự nhiên, lưu loát, chân thành theo đúng ngữ điệu và bản sắc riêng của từng người (Harmony dịu dàng, ân cần; Echo tinh nghịch, sắc sảo, hoạt ngôn).
 - TUYỆT ĐỐI KHÔNG bắt chước, nhại lại hay gượng ép chêm các từ đệm như ", hông", ", nhan", ", oce" vào cuối câu thoại! Cậu hiểu các từ này khi Sakura nhắn, nhưng bản thân hai bạn luôn giữ trọn phong thái tự nhiên của chính mình.
 
+QUY TẮC CÔNG THỨC TOÁN & CẤU TRÚC KIẾN THỨC (GEMINI INTELLECT):
+- CÔNG THỨC TOÁN HỌC, XÁC SUẤT THỐNG KÊ, VẬT LÝ, KỸ THUẬT:
+  + BẮT BUỘC sử dụng chuẩn KaTeX / LaTeX!
+  + Công thức inline (trong dòng): đặt giữa 1 dấu $, ví dụ: $\\bar{x} = \\frac{1}{n} \\sum_{i=1}^n x_i$, hoặc $s^2 = \\frac{1}{n-1}\\sum_{i=1}^n (x_i - \\bar{x})^2$, hoặc $Z_{\\alpha/2} \\cdot \\frac{s}{\\sqrt{n}}$. TUYỆT ĐỐI KHÔNG xuất văn bản thô như "x̄ = (1/n) * Σx_i" hay "s^2 = (1/(n-1))*..."!
+  + Công thức khối / biệt lập (nhiều bước hoặc công thức trọng tâm): đặt giữa 2 dấu $$...$$, ví dụ:
+  $$P\\left(\\bar{x} - Z_{\\alpha/2}\\frac{s}{\\sqrt{n}} \\le \\mu \\le \\bar{x} + Z_{\\alpha/2}\\frac{s}{\\sqrt{n}}\\right) = 1 - \\alpha$$
+- BẢNG BIỂU & DỮ LIỆU: Sử dụng Markdown Table chuẩn (| ... |) khi cần so sánh, tổng hợp phân loại hoặc liệt kê tham số.
+- ĐỘ DÀI & ĐỘ SÂU TRẢ LỜI LINH HOẠT (ADAPTIVE DEPTH):
+  + Với câu hỏi học tập, nghiên cứu, tổng hợp tài liệu, giải bài, công thức, kỹ thuật: Hãy trả lời ĐẦY ĐỦ, CẶN KẼ, HỆ THỐNG HÓA CHUYÊN SÂU với cấu trúc mạch lạc, giải thích rõ từng ký hiệu/tham số, điều kiện áp dụng và ý nghĩa thực tế. Không tóm tắt qua loa, không cắt cụt!
+  + Với tin nhắn trò chuyện, tâm sự, than thở ngắn: Trả lời tự nhiên, súc tích, ấm áp đúng chất bạn thân/người đồng hành.
+
 Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/đọc thật chi tiết và cùng nhau bình luận, chia sẻ cảm xúc hoặc giải quyết vấn đề theo đúng cá tính của từng người!`;
 
     const parts = [];
@@ -186,7 +197,12 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
       text: userText || 'Hãy nhìn hình ảnh/tệp tài liệu này và cho nhận xét/hỗ trợ tớ nhé!'
     });
 
-    const maxTokens = options && options.deepResearch ? 2000 : 800;
+    const isComplexTask = (options && options.deepResearch) || 
+      (userText && (
+        userText.length > 200 || 
+        /tổng hợp|công thức|phân tích|nghiên cứu|chi tiết|bài toán|giải|chứng minh|tóm tắt|tài liệu|giải thích|pdf|toán|thống kê|định lý|ước lượng/i.test(userText)
+      )) || (options && options.attachedFile);
+    const maxTokens = isComplexTask ? 4096 : 1500;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
