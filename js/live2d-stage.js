@@ -183,15 +183,11 @@ window.AisaLive2D = {
   updateModelsLayout() {
     if (!this.app || !this.app.renderer) return;
 
-    const rw = (this.app.renderer.width || 260) / (this.app.renderer.resolution || 1);
-    const rh = (this.app.renderer.height || 319) / (this.app.renderer.resolution || 1);
+    const rw = (this.app.renderer.width) / (this.app.renderer.resolution || 1);
+    const rh = (this.app.renderer.height) / (this.app.renderer.resolution || 1);
 
     const isDuo = this.currentMode === 'duo';
     const isStudio = this.isLiveStudio;
-
-    // Scale multipliers
-    const studioScaleMult = isStudio ? 1.75 : 1.0;
-    const duoScaleMult = isDuo ? (isStudio ? 1.45 : 0.82) : 1.0;
 
     // Title update
     const titleEl = document.getElementById('live2d-speaker-name');
@@ -208,41 +204,70 @@ window.AisaLive2D = {
       }
     }
 
-    // Harmony layout
-    if (this.models.harmony) {
-      if (this.currentMode === 'duo') {
-        this.models.harmony.visible = true;
-        const targetX = (rw * 0.32) + this.panOffset.x;
-        const targetY = (rh * 0.5 + this.mascots.harmony.yOffset) + this.panOffset.y;
-        this.models.harmony.position.set(targetX, targetY);
-        this.models.harmony.scale.set(this.mascots.harmony.baseScale * this.zoomFactor * duoScaleMult * studioScaleMult);
-      } else if (this.currentMode === 'harmony') {
-        this.models.harmony.visible = true;
-        const targetX = (rw * 0.5) + this.panOffset.x;
-        const targetY = (rh * 0.5 + this.mascots.harmony.yOffset) + this.panOffset.y;
-        this.models.harmony.position.set(targetX, targetY);
-        this.models.harmony.scale.set(this.mascots.harmony.baseScale * this.zoomFactor * studioScaleMult);
-      } else {
-        this.models.harmony.visible = false;
-      }
-    }
+    if (isStudio) {
+      // 🌟 FULLSCREEN GEMINI LIVE STUDIO MODE:
+      // Spanning full center screen, beautiful large dual anime models
+      const baseMult = Math.min(rw / 1000, rh / 700);
+      const studioScale = Math.max(1.4, Math.min(2.8, baseMult * 1.85)) * this.zoomFactor;
 
-    // Echo layout
-    if (this.models.echo) {
-      if (this.currentMode === 'duo') {
-        this.models.echo.visible = true;
-        const targetX = (rw * 0.68) + this.panOffset.x;
-        const targetY = (rh * 0.5 + this.mascots.echo.yOffset) + this.panOffset.y;
-        this.models.echo.position.set(targetX, targetY);
-        this.models.echo.scale.set(this.mascots.echo.baseScale * this.zoomFactor * duoScaleMult * studioScaleMult);
-      } else if (this.currentMode === 'echo') {
-        this.models.echo.visible = true;
-        const targetX = (rw * 0.5) + this.panOffset.x;
-        const targetY = (rh * 0.5 + this.mascots.echo.yOffset) + this.panOffset.y;
-        this.models.echo.position.set(targetX, targetY);
-        this.models.echo.scale.set(this.mascots.echo.baseScale * this.zoomFactor * studioScaleMult);
-      } else {
-        this.models.echo.visible = false;
+      if (this.models.harmony) {
+        if (isDuo) {
+          this.models.harmony.visible = true;
+          this.models.harmony.position.set((rw * 0.35) + this.panOffset.x, (rh * 0.56 + 50) + this.panOffset.y);
+          this.models.harmony.scale.set(this.mascots.harmony.baseScale * studioScale);
+        } else if (this.currentMode === 'harmony') {
+          this.models.harmony.visible = true;
+          this.models.harmony.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.56 + 50) + this.panOffset.y);
+          this.models.harmony.scale.set(this.mascots.harmony.baseScale * studioScale * 1.15);
+        } else {
+          this.models.harmony.visible = false;
+        }
+      }
+
+      if (this.models.echo) {
+        if (isDuo) {
+          this.models.echo.visible = true;
+          this.models.echo.position.set((rw * 0.65) + this.panOffset.x, (rh * 0.56 + 60) + this.panOffset.y);
+          this.models.echo.scale.set(this.mascots.echo.baseScale * studioScale);
+        } else if (this.currentMode === 'echo') {
+          this.models.echo.visible = true;
+          this.models.echo.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.56 + 60) + this.panOffset.y);
+          this.models.echo.scale.set(this.mascots.echo.baseScale * studioScale * 1.15);
+        } else {
+          this.models.echo.visible = false;
+        }
+      }
+
+    } else {
+      // 📱 MINI FLOATING WIDGET (280x380):
+      const miniScale = this.zoomFactor;
+
+      if (this.models.harmony) {
+        if (isDuo) {
+          this.models.harmony.visible = true;
+          this.models.harmony.position.set((rw * 0.32) + this.panOffset.x, (rh * 0.52 + 25) + this.panOffset.y);
+          this.models.harmony.scale.set(this.mascots.harmony.baseScale * 0.72 * miniScale);
+        } else if (this.currentMode === 'harmony') {
+          this.models.harmony.visible = true;
+          this.models.harmony.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.52 + 25) + this.panOffset.y);
+          this.models.harmony.scale.set(this.mascots.harmony.baseScale * miniScale);
+        } else {
+          this.models.harmony.visible = false;
+        }
+      }
+
+      if (this.models.echo) {
+        if (isDuo) {
+          this.models.echo.visible = true;
+          this.models.echo.position.set((rw * 0.68) + this.panOffset.x, (rh * 0.52 + 30) + this.panOffset.y);
+          this.models.echo.scale.set(this.mascots.echo.baseScale * 0.72 * miniScale);
+        } else if (this.currentMode === 'echo') {
+          this.models.echo.visible = true;
+          this.models.echo.position.set((rw * 0.5) + this.panOffset.x, (rh * 0.52 + 30) + this.panOffset.y);
+          this.models.echo.scale.set(this.mascots.echo.baseScale * miniScale);
+        } else {
+          this.models.echo.visible = false;
+        }
       }
     }
   },
@@ -303,28 +328,38 @@ window.AisaLive2D = {
     const container = document.getElementById('live2d-stage-container');
     const headerBtn = document.getElementById('btn-toggle-live-studio');
 
+    // Remove any leftover inline styles
+    if (container) {
+      container.removeAttribute('style');
+    }
+
     if (this.isLiveStudio) {
       if (container) container.classList.add('live-studio-mode');
       document.body.classList.add('live-studio-active');
       if (headerBtn) headerBtn.classList.add('active');
-      this.resizeForLiveStudio();
-      this.showSpeechBubble('Chào mừng đến với Gemini Live Studio! 🌸😈', 3000);
+      setTimeout(() => {
+        this.resizeForLiveStudio();
+        this.showSpeechBubble('Chào mừng Master Yurika đến với Gemini Live Studio! 🌸😈', 3500);
+      }, 50);
     } else {
       if (container) container.classList.remove('live-studio-mode');
       document.body.classList.remove('live-studio-active');
       if (headerBtn) headerBtn.classList.remove('active');
-      if (this.app && this.app.renderer) {
-        this.app.renderer.resize(260, 319);
-      }
-      this.updateModelsLayout();
+      setTimeout(() => {
+        if (this.app && this.app.renderer) {
+          this.app.renderer.resize(280, 338);
+        }
+        this.updateModelsLayout();
+      }, 50);
     }
   },
 
   resizeForLiveStudio() {
     if (!this.app || !this.app.renderer) return;
+    const wrap = document.querySelector('.live2d-canvas-wrap');
     const isWide = window.innerWidth > 900;
-    const targetWidth = isWide ? (window.innerWidth - 420) : window.innerWidth;
-    const targetHeight = isWide ? (window.innerHeight - 54) : (window.innerHeight * 0.5);
+    const targetWidth = wrap && wrap.clientWidth > 300 ? wrap.clientWidth : (isWide ? (window.innerWidth - 420) : window.innerWidth);
+    const targetHeight = wrap && wrap.clientHeight > 200 ? wrap.clientHeight : (isWide ? (window.innerHeight - 54) : Math.floor(window.innerHeight * 0.5));
 
     this.app.renderer.resize(targetWidth, targetHeight);
     this.updateModelsLayout();

@@ -12,9 +12,9 @@
   position: fixed !important;
   bottom: 24px !important;
   right: 24px !important;
-  width: 260px !important;
-  height: 360px !important;
-  background: rgba(19, 19, 20, 0.82) !important;
+  width: 280px !important;
+  height: 380px !important;
+  background: rgba(19, 19, 20, 0.85) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -23,11 +23,19 @@
     0 20px 48px rgba(0, 0, 0, 0.65),
     0 0 28px rgba(244, 114, 182, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  z-index: 99999 !important;
+  z-index: 100 !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, width 0.35s ease, height 0.35s ease, top 0.35s ease, left 0.35s ease !important;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              height 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              top 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              left 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              right 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-radius 0.35s ease,
+              transform 0.35s ease, 
+              opacity 0.35s ease !important;
   user-select: none !important;
   pointer-events: auto !important;
 }
@@ -113,8 +121,8 @@
 }
 
 #live2d-canvas {
-  width: 260px !important;
-  height: 319px !important;
+  width: 100% !important;
+  height: 100% !important;
   display: block !important;
   background: transparent !important;
   cursor: grab !important;
@@ -168,26 +176,21 @@
   left: 0 !important;
   right: 420px !important;
   bottom: 0 !important;
-  width: auto !important;
-  height: auto !important;
+  width: calc(100vw - 420px) !important;
+  height: calc(100vh - 54px) !important;
   border-radius: 0 !important;
   border: none !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background: radial-gradient(circle at 50% 60%, rgba(35, 20, 42, 0.9) 0%, rgba(16, 15, 22, 0.98) 100%) !important;
-  backdrop-filter: blur(30px) !important;
-  -webkit-backdrop-filter: blur(30px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: radial-gradient(circle at 50% 65%, rgba(45, 22, 55, 0.85) 0%, rgba(20, 16, 26, 0.95) 55%, #0f0e13 100%) !important;
+  backdrop-filter: blur(35px) !important;
+  -webkit-backdrop-filter: blur(35px) !important;
   box-shadow: none !important;
-  z-index: 90 !important;
+  z-index: 100 !important;
 }
 
 #live2d-stage-container.live-studio-mode .live2d-canvas-wrap {
   width: 100% !important;
   height: calc(100% - 46px) !important;
-}
-
-#live2d-stage-container.live-studio-mode #live2d-canvas {
-  width: 100% !important;
-  height: 100% !important;
 }
 
 /* Chat center transforms into the right sidebar */
@@ -198,12 +201,12 @@ body.live-studio-active .sanctuary-chat-center {
   bottom: 0 !important;
   width: 420px !important;
   height: calc(100vh - 54px) !important;
-  background: rgba(18, 18, 22, 0.94) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
+  background: rgba(18, 18, 22, 0.95) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
   border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
-  z-index: 95 !important;
-  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5) !important;
+  z-index: 105 !important;
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.6) !important;
 }
 
 body.live-studio-active .sanctuary-sidebar {
@@ -212,10 +215,14 @@ body.live-studio-active .sanctuary-sidebar {
 
 /* Studio Floating Hints for Pan & Zoom */
 .live-studio-hints {
-  position: absolute !important;
-  bottom: 20px !important;
-  left: 24px !important;
   display: none !important;
+}
+
+#live2d-stage-container.live-studio-mode .live-studio-hints {
+  display: flex !important;
+  position: absolute !important;
+  bottom: 24px !important;
+  left: 28px !important;
   align-items: center !important;
   gap: 12px !important;
   background: rgba(0, 0, 0, 0.55) !important;
@@ -228,10 +235,6 @@ body.live-studio-active .sanctuary-sidebar {
   pointer-events: none !important;
   z-index: 15 !important;
   animation: fadeIn 0.4s ease !important;
-}
-
-#live2d-stage-container.live-studio-mode .live-studio-hints {
-  display: flex !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -277,14 +280,16 @@ body.live-studio-active .sanctuary-sidebar {
   #live2d-stage-container.live-studio-mode {
     right: 0 !important;
     bottom: 50% !important;
+    width: 100vw !important;
+    height: 50vh !important;
     border-right: none !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
   }
   body.live-studio-active .sanctuary-chat-center {
-    top: 50% !important;
+    top: calc(50vh + 54px) !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    height: 50% !important;
+    height: calc(50vh - 54px) !important;
   }
 }
