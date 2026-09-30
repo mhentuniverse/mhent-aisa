@@ -829,6 +829,21 @@
           </div>
         </div>
 
+        <!-- Ollama RTX 4050 & Cloudflare Tunnel Endpoint Configuration -->
+        <div class="memory-card" style="margin-bottom: 16px;">
+          <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+            <span>Địa Chỉ GPU Ollama (Local hoặc Cloudflare Tunnel)</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.45;">
+            Khi dùng trên máy tính: <code>http://localhost:11434</code>. Khi dùng từ xa trên điện thoại / web ngoài, dán đường link HTTPS Cloudflare Tunnel (ví dụ: <code>https://xxx.trycloudflare.com</code>) từ file <code>start-gpu-tunnel.bat</code> để kết nối card RTX 4050!
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="input-ollama-url" class="memory-text-input" placeholder="http://localhost:11434 hoặc https://xxx.trycloudflare.com">
+            <button type="button" class="btn-add-fact" id="btn-save-ollama-url">Lưu Endpoint</button>
+          </div>
+        </div>
+
         <div class="memory-card" style="margin-bottom: 16px;">
           <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

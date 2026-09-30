@@ -121,10 +121,10 @@ window.AisaEngine = {
   // --------------------------------------------------------------------------
   async isOllamaAvailable() {
     const config = window.AISA_CONFIG;
-    const base = config.OLLAMA_BASE_URL || 'http://localhost:11434';
+    const base = (config.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1200);
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const res = await fetch(`${base}/api/tags`, { method: 'GET', signal: controller.signal });
       clearTimeout(timeoutId);
       return res.ok;
@@ -135,7 +135,7 @@ window.AisaEngine = {
 
   async callLocalOllama(message, mode, scope, modelId, todayStr, dayName, options = {}) {
     const config = window.AISA_CONFIG;
-    const base = config.OLLAMA_BASE_URL || 'http://localhost:11434';
+    const base = (config.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
 
     // Xác định model cục bộ phù hợp
     let targetModel = 'qwen2.5:3b';
@@ -653,7 +653,7 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ theo định dạng:
 
     let jsonResult = null;
     const config = window.AISA_CONFIG;
-    const base = config.OLLAMA_BASE_URL || 'http://localhost:11434';
+    const base = (config.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
 
     // 1. Thử gọi Ollama local qwen2.5:3b (siêu nhanh, mất ~0.5s)
     try {

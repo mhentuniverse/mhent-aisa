@@ -10,7 +10,7 @@ window.AISA_CONFIG = {
   // Cloudflare Workers AI Endpoint & Multiverse Model
   API_BASE_URL: "https://api.mhentuniverse.com",
   FALLBACK_API_URL: "https://aisa.mhentuniverse.com",
-  OLLAMA_BASE_URL: "http://localhost:11434",
+  OLLAMA_BASE_URL: localStorage.getItem("aisa_ollama_url") || "http://localhost:11434",
   MODEL: localStorage.getItem("aisa_selected_model") || "aisa-v1",
   MODELS: [
     { id: "aisa-v1", name: "AISA v1", desc: "Companion Song Hành • Harmony 🌸 & Echo 😈", icon: "🌸", badge: "Cloud Mặc định" },

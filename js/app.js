@@ -2030,6 +2030,31 @@ window.AisaApp = {
       });
     }
 
+    // Ollama URL / Cloudflare GPU Tunnel in Settings
+    const inputOllamaUrl = document.getElementById('input-ollama-url');
+    const btnSaveOllamaUrl = document.getElementById('btn-save-ollama-url');
+    if (inputOllamaUrl) {
+      inputOllamaUrl.value = localStorage.getItem('aisa_ollama_url') || 'http://localhost:11434';
+    }
+    if (btnSaveOllamaUrl && inputOllamaUrl) {
+      btnSaveOllamaUrl.addEventListener('click', async () => {
+        let newUrl = inputOllamaUrl.value.trim().replace(/\/+$/, '');
+        if (!newUrl) newUrl = 'http://localhost:11434';
+        localStorage.setItem('aisa_ollama_url', newUrl);
+        if (window.AISA_CONFIG) {
+          window.AISA_CONFIG.OLLAMA_BASE_URL = newUrl;
+        }
+        if (window.AisaDialog) {
+          await window.AisaDialog.alert({
+            title: 'Đã Lưu Địa Chỉ Ollama GPU',
+            message: `AISA sẽ kết nối card RTX 4050 qua địa chỉ:\n${newUrl}`,
+            icon: '⚡',
+            okText: 'Hoàn Tất'
+          });
+        }
+      });
+    }
+
     // Reset All Data button in Settings Modal
     const btnResetAll = document.getElementById('btn-reset-all-data');
     if (btnResetAll) {
