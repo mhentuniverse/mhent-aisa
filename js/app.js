@@ -2999,7 +2999,8 @@ window.AisaApp = {
           deepResearch: isDeepResearch,
           webSearch: this.state.isWebSearch,
           thinking: this.state.isThinking,
-          attachedFile: attachedFile
+          attachedFile: attachedFile,
+          history: (this.state.messages && this.state.messages.length > 1) ? this.state.messages.slice(0, -1) : []
         }
       );
 

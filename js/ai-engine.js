@@ -24,10 +24,26 @@ window.AisaEngine = {
       return replies;
     };
 
+    // Chuẩn bị ngữ cảnh lịch sử trò chuyện (Chat Log Context) từ phiên hiện tại
+    const formattedHistory = [];
+    if (options && Array.isArray(options.history) && options.history.length > 0) {
+      // Lấy tối đa 8 lượt tin nhắn gần nhất để ngữ cảnh liên tục mà không làm nặng prompt
+      const recent = options.history.slice(-8);
+      recent.forEach(m => {
+        if (!m || !m.text) return;
+        if (m.role === 'user') {
+          formattedHistory.push({ role: 'user', content: m.text });
+        } else if (m.role === 'assistant') {
+          const speaker = m.speaker ? m.speaker.toUpperCase() : 'HARMONY';
+          formattedHistory.push({ role: 'assistant', content: `${speaker}: ${m.text}` });
+        }
+      });
+    }
+
     // 0. Kiểm tra nếu chọn Mô hình Local chạy trên GPU máy tính (RTX 4050)
     if (config.MODEL && config.MODEL.startsWith('aisa-local')) {
       try {
-        const localReplies = await this.callLocalOllama(message, mode, scope, config.MODEL, todayStr, dayName, options);
+        const localReplies = await this.callLocalOllama(message, mode, scope, config.MODEL, todayStr, dayName, { ...options, formattedHistory });
         if (localReplies && localReplies.length > 0) {
           return finalizeReplies(localReplies);
         }
@@ -40,7 +56,7 @@ window.AisaEngine = {
     const geminiKey = localStorage.getItem(config.STORAGE.GEMINI_KEY);
     if (geminiKey) {
       try {
-        const geminiReplies = await this.callGeminiDirect(geminiKey, message, mode, scope, imageBase64, todayStr, dayName, options);
+        const geminiReplies = await this.callGeminiDirect(geminiKey, message, mode, scope, imageBase64, todayStr, dayName, { ...options, formattedHistory });
         if (geminiReplies && geminiReplies.length > 0) {
           return finalizeReplies(geminiReplies);
         }
@@ -60,7 +76,8 @@ window.AisaEngine = {
       webSearch: webSearch,
       clientDate: todayStr,
       clientDay: dayName,
-      fileInfo: attachedFile ? { name: attachedFile.name, sizeStr: attachedFile.sizeStr } : null
+      fileInfo: attachedFile ? { name: attachedFile.name, sizeStr: attachedFile.sizeStr } : null,
+      history: formattedHistory
     };
 
     try {
@@ -208,10 +225,13 @@ Sakura: "Tớ mệt quá, vừa xong việc."
 HARMONY: Cậu vất vả rồi, mau uống ngụm nước ấm rồi chợp mắt chút đi nhé, em luôn ở đây canh chừng cho cậu nè. 🌸
 ECHO: Biết mệt mà còn ráng cày cuốc tới giờ này! Thôi ngoan ngoãn đi ngủ đi, đừng để tớ phải nhắc lần hai đấy nhé! 😈` : ''}`;
 
+    const historyMessages = (options && Array.isArray(options.formattedHistory)) ? options.formattedHistory : [];
+
     const payload = {
       model: targetModel,
       messages: [
         { role: 'system', content: systemPrompt },
+        ...historyMessages,
         { role: 'user', content: message }
       ],
       stream: false
@@ -351,12 +371,25 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
+    const historyMessages = (options && Array.isArray(options.formattedHistory)) ? options.formattedHistory : [];
+    const contents = [];
+    if (historyMessages.length > 0) {
+      historyMessages.forEach(h => {
+        if (h.role === 'user') {
+          contents.push({ role: 'user', parts: [{ text: h.content }] });
+        } else {
+          contents.push({ role: 'model', parts: [{ text: h.content }] });
+        }
+      });
+    }
+    contents.push({ role: 'user', parts: parts });
+
     let res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt + '\nTUYỆT ĐỐI KHÔNG thêm bất kỳ hành động hay chú thích trong ngoặc như (nhảy vào), (chêm vào), (cười), (comment)... Trả lời trực tiếp bằng lời thoại tự nhiên.' }] },
-        contents: [{ role: 'user', parts: parts }],
+        contents: contents,
         generationConfig: { maxOutputTokens: maxTokens, temperature: 0.75 }
       })
     });
@@ -367,7 +400,7 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt + '\nTUYỆT ĐỐI KHÔNG thêm bất kỳ hành động hay chú thích trong ngoặc như (nhảy vào), (chêm vào), (cười), (comment)... Trả lời trực tiếp bằng lời thoại tự nhiên.' }] },
-          contents: [{ role: 'user', parts: parts }],
+          contents: contents,
           generationConfig: { maxOutputTokens: maxTokens, temperature: 0.75 }
         })
       });
@@ -440,6 +473,17 @@ Trả về DUY NHẤT chuỗi JSON.`;
     return cleaned.trim();
   },
 
+  isSkipText(text) {
+    if (!text || typeof text !== 'string') return true;
+    const t = text.trim();
+    if (!t) return true;
+    // Bắt toàn diện các biến thể .Skip, Skip., [SKIP], (skip), *skip*, Skip, [nhường lời], [im lặng], v.v.
+    if (/^[\s\.\(\[\{\*`~_\-–—]*(?:skip|nhường lời|im lặng|nhường|bỏ qua)[\s\.\)\]\}\*`~_\-–—]*$/i.test(t)) return true;
+    if (/\[\s*SKIP\s*\]/i.test(t) || /\(\s*SKIP\s*\)/i.test(t)) return true;
+    if (/^skip$/i.test(t.replace(/[^a-zA-Z]/g, ''))) return true;
+    return false;
+  },
+
   parsePersonaText(rawText, mode, userText = '') {
     const replies = [];
     const lowerUser = (userText || '').toLowerCase();
@@ -455,8 +499,8 @@ Trả về DUY NHẤT chuỗi JSON.`;
     hText = this.cleanReply(hText);
     eText = this.cleanReply(eText);
 
-    const isHSkip = !hText || hText.toUpperCase().includes('[SKIP]');
-    const isESkip = !eText || eText.toUpperCase().includes('[SKIP]');
+    const isHSkip = this.isSkipText(hText);
+    const isESkip = this.isSkipText(eText);
 
     // Nếu người dùng chỉ gọi Echo -> Ưu tiên đưa Echo lên trước
     if (mentionsEcho && !mentionsHarmony) {
@@ -476,11 +520,20 @@ Trả về DUY NHẤT chuỗi JSON.`;
       }
     }
 
-    // Fallback: nếu cả 2 đều lỡ SKIP hoặc không parse được, hiển thị ít nhất 1 câu
-    if (replies.length === 0 && rawText.trim()) {
+    // Fallback: nếu cả 2 đều lỡ SKIP hoặc không parse được, hiển thị lời đối thoại tự nhiên, không in token skip
+    if (replies.length === 0 && rawText.trim() && !this.isSkipText(rawText)) {
       const clean = this.cleanReply(rawText.trim().replace(/\[SKIP\]/gi, '').trim());
-      if (clean) {
+      if (clean && !this.isSkipText(clean)) {
         replies.push({ speaker: mentionsEcho ? 'ECHO' : 'HARMONY', avatar: mentionsEcho ? '😈' : '🌸', text: clean });
+      }
+    }
+
+    // Đảm bảo không bao giờ để khung chat trống nếu người dùng trò chuyện
+    if (replies.length === 0) {
+      if (mode === 'echo') {
+        replies.push({ speaker: 'ECHO', avatar: '😈', text: 'Tớ đây nà! Cậu vừa nói gì đấy, kể tiếp cho tớ nghe xem nào? 😈' });
+      } else {
+        replies.push({ speaker: 'HARMONY', avatar: '🌸', text: 'Em vẫn luôn lắng nghe cậu đây nè, có chuyện gì vui chia sẻ với em nhé! 🌸' });
       }
     }
 
