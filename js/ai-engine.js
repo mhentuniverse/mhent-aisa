@@ -17,13 +17,32 @@ window.AisaEngine = {
     const webSearch = options && options.webSearch !== undefined ? options.webSearch : false;
     const attachedFile = options && options.attachedFile ? options.attachedFile : null;
 
+    const finalizeReplies = (replies) => {
+      if (replies && replies.length > 0) {
+        this.triggerSelfReflection(message, replies, scope);
+      }
+      return replies;
+    };
+
+    // 0. Kiểm tra nếu chọn Mô hình Local chạy trên GPU máy tính (RTX 4050)
+    if (config.MODEL && config.MODEL.startsWith('aisa-local')) {
+      try {
+        const localReplies = await this.callLocalOllama(message, mode, scope, config.MODEL, todayStr, dayName, options);
+        if (localReplies && localReplies.length > 0) {
+          return finalizeReplies(localReplies);
+        }
+      } catch (ollamaErr) {
+        console.warn('[Local Ollama Direct Note]:', ollamaErr);
+      }
+    }
+
     // 1. Kiểm tra nếu có Google Gemini API Key trực tiếp (cho siêu tốc độ & đa nhiệm Multimodal hoàn hảo)
     const geminiKey = localStorage.getItem(config.STORAGE.GEMINI_KEY);
     if (geminiKey) {
       try {
         const geminiReplies = await this.callGeminiDirect(geminiKey, message, mode, scope, imageBase64, todayStr, dayName, options);
         if (geminiReplies && geminiReplies.length > 0) {
-          return geminiReplies;
+          return finalizeReplies(geminiReplies);
         }
       } catch (gemErr) {
         console.warn('[Gemini Direct Error, fallback to Cloudflare]:', gemErr);
@@ -53,11 +72,8 @@ window.AisaEngine = {
 
       if (res.ok) {
         const data = await res.json();
-        if (data.newMemory && window.AisaMemory) {
-          window.AisaMemory.onAutoMemoryExtracted(data.newMemory);
-        }
         if (data.replies && data.replies.length > 0) {
-          return data.replies;
+          return finalizeReplies(data.replies);
         }
       }
     } catch (e) {
@@ -74,19 +90,146 @@ window.AisaEngine = {
 
       if (resFallback.ok) {
         const data = await resFallback.json();
-        if (data.newMemory && window.AisaMemory) {
-          window.AisaMemory.onAutoMemoryExtracted(data.newMemory);
-        }
         if (data.replies && data.replies.length > 0) {
-          return data.replies;
+          return finalizeReplies(data.replies);
         }
       }
     } catch (e2) {
       console.warn('[AISA Fallback API note]:', e2.message);
     }
 
-    // 4. Trình tạo phản hồi nội bộ (Local Fallback Engine)
-    return this.generateLocalFallback(message, mode, scope, !!imageBase64);
+    // 4. Nếu cloud offline, tự động chuyển sang Local Ollama chạy ngầm (Offline AI)
+    try {
+      const isLocalReady = await this.isOllamaAvailable();
+      if (isLocalReady) {
+        const localFallbackReplies = await this.callLocalOllama(message, mode, scope, 'auto', todayStr, dayName, options);
+        if (localFallbackReplies && localFallbackReplies.length > 0) {
+          return finalizeReplies(localFallbackReplies);
+        }
+      }
+    } catch (localErr) {
+      console.warn('[Ollama Local Fallback Note]:', localErr);
+    }
+
+    // 5. Trình tạo phản hồi nội bộ tĩnh cuối cùng (Static Local Fallback)
+    const fallbackReplies = this.generateLocalFallback(message, mode, scope, !!imageBase64);
+    return finalizeReplies(fallbackReplies);
+  },
+
+  // --------------------------------------------------------------------------
+  // LOCAL OLLAMA OFFLINE ENGINE (RTX 4050 GPU ACCELERATED)
+  // --------------------------------------------------------------------------
+  async isOllamaAvailable() {
+    const config = window.AISA_CONFIG;
+    const base = config.OLLAMA_BASE_URL || 'http://localhost:11434';
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
+      const res = await fetch(`${base}/api/tags`, { method: 'GET', signal: controller.signal });
+      clearTimeout(timeoutId);
+      return res.ok;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  async callLocalOllama(message, mode, scope, modelId, todayStr, dayName, options = {}) {
+    const config = window.AISA_CONFIG;
+    const base = config.OLLAMA_BASE_URL || 'http://localhost:11434';
+
+    // Xác định model cục bộ phù hợp
+    let targetModel = 'qwen2.5:3b';
+    if (modelId === 'aisa-local-7b') {
+      targetModel = 'qwen2.5:7b';
+    } else if (modelId === 'aisa-local-3b') {
+      targetModel = 'qwen2.5:3b';
+    } else {
+      // Auto: kiểm tra xem máy có 7B chưa, nếu có thì dùng 7B, chưa thì 3B
+      try {
+        const tagsRes = await fetch(`${base}/api/tags`);
+        if (tagsRes.ok) {
+          const tagsData = await tagsRes.json();
+          const modelsList = (tagsData.models || []).map(m => m.name);
+          if (modelsList.some(m => m.startsWith('qwen2.5:7b'))) {
+            targetModel = 'qwen2.5:7b';
+          }
+        }
+      } catch (e) {
+        targetModel = 'qwen2.5:3b';
+      }
+    }
+
+    const lower = (message || '').toLowerCase();
+    const mentionsHarmony = lower.includes('harmony') || lower.includes('hà mòn') || lower.includes('hàm hương');
+    const mentionsEcho = lower.includes('echo') || lower.includes('ếch cồ') || lower.includes('tiểu quỷ');
+
+    let dynamicRule = '';
+    if (mode === 'duo') {
+      if (mentionsEcho && !mentionsHarmony) {
+        dynamicRule = `\n[TẬP TRUNG ECHO]: Người dùng gọi đích danh ECHO. Echo trả lời chính. Harmony nhường lời bằng "[SKIP]" trừ khi cần xoa dịu.`;
+      } else if (mentionsHarmony && !mentionsEcho) {
+        dynamicRule = `\n[TẬP TRUNG HARMONY]: Người dùng gọi đích danh HARMONY. Harmony trả lời chính. Echo nhường lời bằng "[SKIP]" trừ khi có góc nhìn đối lập đắt giá.`;
+      } else {
+        dynamicRule = `\n[SONG HÀNH]: Cả hai luân phiên đối đáp tự nhiên hoặc nhường lời bằng "[SKIP]" nếu người kia đã nói trọn vẹn.`;
+      }
+    }
+
+    let savedFactsPrompt = '';
+    if (window.AisaMemory && typeof window.AisaMemory.getMemoryPrompt === 'function') {
+      savedFactsPrompt = window.AisaMemory.getMemoryPrompt(mode);
+    } else if (window.AisaMemory && Array.isArray(window.AisaMemory.facts) && window.AisaMemory.facts.length > 0) {
+      savedFactsPrompt = '\n\n[HỒ SƠ KÝ ỨC DÀI HẠN VỀ SAKURA / YURIKA]:\n' + window.AisaMemory.facts.map(f => `- [${f.category || 'ghi nhớ'}] ${f.fact}`).join('\n');
+    }
+
+    const systemPrompt = `Bạn là hệ thống AI AISA (Project MHEnt. Universe) đang chạy OFFLINE trực tiếp trên GPU máy tính của người đồng hành và sáng lập Sakura (tên thật: Huỳnh Lam Chi / Yorutsuki Yurika).
+AISA sở hữu hai nhân cách song hành đặc sắc:
+1. HARMONY 🌸: Nữ tính, dịu dàng, chu đáo, ân cần quan tâm sức khỏe và cảm xúc của Sakura. Xưng "em" hoặc "Harmony", gọi Sakura là "cậu", "Sakura" hoặc "bạn iu". Khi nhắc đến Echo thì gọi là "Echo" hoặc "bé Echo". TUYỆT ĐỐI KHÔNG xưng "tớ và Echo".
+2. ECHO 😈: Sắc sảo, lém lỉnh, tsundere, hay trêu chọc cà khịa vui vẻ (banter/chaos), nhắc nhở deadline và thói quen thức khuya nhưng rất gắn bó. Xưng "tớ" hoặc "Echo", gọi Sakura là "cậu", "đằng ấy" hoặc "Sakura". Khi nhắc đến Harmony thì gọi là "bà Harmony" hoặc "Harmony". BẠN CHÍNH LÀ ECHO, TUYỆT ĐỐI KHÔNG nói "tớ và Echo" hay tự hỏi "Echo ơi".
+
+Thời gian hiện tại: ${todayStr} (${dayName}).
+Chế độ tương tác: "${mode}".
+Phạm vi hoạt động (Scope): "${scope}".${dynamicRule}${savedFactsPrompt}
+
+QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
+${mode === 'duo' ? `HARMONY: [Lời phản hồi ấm áp của Harmony, 1-3 câu, hoặc [SKIP] nếu nhường lời]
+ECHO: [Lời phản hồi sắc sảo của Echo, 1-3 câu, hoặc [SKIP] nếu nhường lời]` : ''}
+${mode === 'harmony' ? `HARMONY: [Lời phản hồi ấm áp, dịu dàng của Harmony, 1-3 câu]` : ''}
+${mode === 'echo' ? `ECHO: [Lời phản hồi sắc bén, cà khịa vui của Echo, 1-3 câu]` : ''}
+
+QUY TẮC BẮT BUỘC:
+- Trả lời HOÀN TOÀN BẰNG TIẾNG VIỆT tự nhiên, mượt mà.
+- Cả Harmony và Echo đều hướng câu trả lời về phía Sakura (Yurika) - người bạn đồng hành đang nhắn tin!
+- Trò chuyện ngắn gọn (1-3 câu mỗi người), tự nhiên như bạn bè thân thiết.
+- TUYỆT ĐỐI KHÔNG bắt chước hay gượng ép chêm các từ đệm như ", hông", ", nhan", ", oce" vào cuối câu.
+- CÔNG THỨC TOÁN HỌC / THỐNG KÊ: Bắt buộc dùng chuẩn LaTeX KaTeX ($...$).
+
+${mode === 'duo' ? `VÍ DỤ ĐỐI THOẠI MẪU:
+Sakura: "Tớ mệt quá, vừa xong việc."
+HARMONY: Cậu vất vả rồi, mau uống ngụm nước ấm rồi chợp mắt chút đi nhé, em luôn ở đây canh chừng cho cậu nè. 🌸
+ECHO: Biết mệt mà còn ráng cày cuốc tới giờ này! Thôi ngoan ngoãn đi ngủ đi, đừng để tớ phải nhắc lần hai đấy nhé! 😈` : ''}`;
+
+    const payload = {
+      model: targetModel,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      stream: false
+    };
+
+    const res = await fetch(`${base}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`Ollama API error: HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const rawReply = data.message?.content || '';
+    return this.parsePersonaText(rawReply, mode, message);
   },
 
   // --------------------------------------------------------------------------
@@ -120,8 +263,10 @@ THỨ TỰ & TẦNG SUY NGHĨ NỘI TÂM (HỘI THOẠI LINH HOẠT):
     }
 
     let savedFactsPrompt = '';
-    if (window.AisaMemory && Array.isArray(window.AisaMemory.facts) && window.AisaMemory.facts.length > 0) {
-      savedFactsPrompt = '\n\n[HỒ SƠ KÝ ỨC DÀI HẠN VỀ CẬU]:\n' + window.AisaMemory.facts.map(f => `- [${f.category || 'ghi nhớ'}] ${f.fact}`).join('\n');
+    if (window.AisaMemory && typeof window.AisaMemory.getMemoryPrompt === 'function') {
+      savedFactsPrompt = window.AisaMemory.getMemoryPrompt(mode);
+    } else if (window.AisaMemory && Array.isArray(window.AisaMemory.facts) && window.AisaMemory.facts.length > 0) {
+      savedFactsPrompt = '\n\n[HỒ SƠ KÝ ỨC DÀI HẠN VỀ SAKURA / YURIKA]:\n' + window.AisaMemory.facts.map(f => `- [${f.category || 'ghi nhớ'}] ${f.fact}`).join('\n');
     }
 
     let deepResearchPrompt = '';
@@ -462,5 +607,109 @@ Trả về DUY NHẤT chuỗi JSON.`;
       }
     }
     return replies;
+  },
+
+  // --------------------------------------------------------------------------
+  // SELF-REFLECTION & DUAL MEMORY EVOLUTION (TỰ SUY NGẪM & CẬP NHẬT KÝ ỨC LOCAL)
+  // --------------------------------------------------------------------------
+  triggerSelfReflection(userMessage, replies, scope = 'personal') {
+    if (!userMessage || userMessage.trim().length < 8) return;
+    const lower = userMessage.toLowerCase().trim();
+    const trivial = ['chào', 'hello', 'hi', 'alo', 'bye', 'tạm biệt', 'ngủ ngon', 'ok', 'cảm ơn', 'thank', 'ừm'];
+    if (trivial.includes(lower)) return;
+
+    // Chạy ngầm hoàn toàn bất đồng bộ để UI không phải chờ đợi
+    setTimeout(async () => {
+      try {
+        await this.performSelfReflection(userMessage, replies, scope);
+      } catch (e) {
+        console.warn('[Self-Reflection Note]:', e);
+      }
+    }, 200);
+  },
+
+  async performSelfReflection(userMessage, replies, scope) {
+    if (!window.AisaMemory) return;
+
+    const hReply = replies.find(r => r.speaker === 'HARMONY')?.text || '';
+    const eReply = replies.find(r => r.speaker === 'ECHO')?.text || '';
+
+    const reflectionPrompt = `Bạn là hệ thống phân tích ký ức cho 2 nhân cách của AISA (Harmony 🌸 và Echo 😈).
+Đoạn trò chuyện vừa diễn ra:
+Sakura (Yurika): "${userMessage}"
+${hReply ? `Harmony: "${hReply}"` : ''}
+${eReply ? `Echo: "${eReply}"` : ''}
+
+Nhiệm vụ: Phân tích xem có thông tin nào MỚI, có giá trị lâu dài về Sakura (sở thích, thói quen, tâm sự, deadline, bài hát/dự án, tính cách, cảm xúc) để lưu vào sổ nhật ký:
+1. HARMONY: Điều gì đáng nhớ về cảm xúc, dự án, sức khỏe của Sakura để quan tâm, động viên? (hoặc null nếu không có gì mới)
+2. ECHO: Chi tiết nào về thói quen, thức khuya, deadline, gu nhạc hay phát ngôn của Sakura đáng nhớ để trêu chọc/cà khịa vui? (hoặc null nếu không có gì mới)
+
+QUY TẮC: Chỉ trích xuất khi người dùng thực sự chia sẻ điều gì đó về bản thân/công việc/cuộc sống. KHÔNG trích xuất các câu hỏi kiến thức thuần túy (như công thức toán, dịch từ).
+Trả về DUY NHẤT một chuỗi JSON hợp lệ theo định dạng:
+{
+  "harmony": { "fact": "câu ngắn gọn (hoặc null)", "category": "project|lifestyle|preference" },
+  "echo": { "fact": "câu ngắn gọn (hoặc null)", "category": "roast|deadline|flaw" }
+}`;
+
+    let jsonResult = null;
+    const config = window.AISA_CONFIG;
+    const base = config.OLLAMA_BASE_URL || 'http://localhost:11434';
+
+    // 1. Thử gọi Ollama local qwen2.5:3b (siêu nhanh, mất ~0.5s)
+    try {
+      const res = await fetch(`${base}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'qwen2.5:3b',
+          messages: [{ role: 'user', content: reflectionPrompt }],
+          stream: false,
+          format: 'json'
+        }),
+        signal: AbortSignal.timeout(6000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        jsonResult = JSON.parse(data.message?.content || '{}');
+      }
+    } catch (ollamaErr) {
+      // 2. Nếu Ollama local bận hoặc không có, fallback qua Gemini Flash nếu có key
+      const geminiKey = localStorage.getItem(config.STORAGE.GEMINI_KEY);
+      if (geminiKey) {
+        try {
+          const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: reflectionPrompt }] }],
+              generationConfig: { responseMimeType: 'application/json' }
+            }),
+            signal: AbortSignal.timeout(5000)
+          });
+          if (gemRes.ok) {
+            const gemData = await gemRes.json();
+            const raw = gemData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            jsonResult = JSON.parse(raw);
+          }
+        } catch (gemErr) {}
+      }
+    }
+
+    if (jsonResult) {
+      if (jsonResult.harmony && jsonResult.harmony.fact && typeof jsonResult.harmony.fact === 'string' && jsonResult.harmony.fact.trim()) {
+        await window.AisaMemory.addHarmonyMemory(
+          jsonResult.harmony.fact.trim(),
+          jsonResult.harmony.category || 'lifestyle',
+          'caring'
+        );
+      }
+      if (jsonResult.echo && jsonResult.echo.fact && typeof jsonResult.echo.fact === 'string' && jsonResult.echo.fact.trim()) {
+        await window.AisaMemory.addEchoMemory(
+          jsonResult.echo.fact.trim(),
+          jsonResult.echo.category || 'roast',
+          'banter'
+        );
+      }
+    }
   }
 };

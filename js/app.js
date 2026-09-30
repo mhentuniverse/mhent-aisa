@@ -1999,6 +1999,37 @@ window.AisaApp = {
       });
     }
 
+    // Master Passcode in Settings
+    const inputPasscode = document.getElementById('input-master-passcode');
+    const btnSavePasscode = document.getElementById('btn-save-passcode');
+    if (inputPasscode) {
+      inputPasscode.value = localStorage.getItem('aisa_master_passcode') || '2006';
+    }
+    if (btnSavePasscode && inputPasscode) {
+      btnSavePasscode.addEventListener('click', async () => {
+        const newCode = inputPasscode.value.trim();
+        if (newCode.length < 3) {
+          if (window.AisaDialog) {
+            await window.AisaDialog.alert({
+              title: 'Mã Quá Ngắn',
+              message: 'Vui lòng đặt mã từ 3 ký tự trở lên để đảm bảo an toàn!',
+              icon: '⚠️'
+            });
+          }
+          return;
+        }
+        localStorage.setItem('aisa_master_passcode', newCode);
+        if (window.AisaDialog) {
+          await window.AisaDialog.alert({
+            title: 'Đã Cập Nhật Mã Mở Khóa',
+            message: `Mã truy cập mới của cậu là: "${newCode}". Lần sau mở app cậu hãy dùng mã này nhé! 🌸`,
+            icon: '🔐',
+            okText: 'Tuyệt Vời'
+          });
+        }
+      });
+    }
+
     // Reset All Data button in Settings Modal
     const btnResetAll = document.getElementById('btn-reset-all-data');
     if (btnResetAll) {
@@ -2463,8 +2494,12 @@ window.AisaApp = {
       echo: 'Echo'
     };
     const modelLabels = {
-      'aisa-v1': 'AISA v1',
+      'aisa-v1': 'AISA v1 (Cloud)',
+      'aisa-local-3b': 'AISA Local 3B ⚡',
+      'aisa-local-7b': 'AISA Local 7B 🧠',
       'aisa-scholar-v1': 'AISA Scholar v1',
+      'aisa-workspace-v1': 'AISA Workspace v1',
+      'aisa-universe-v1': 'AISA Universe v1',
       'aisa-pro-v1': 'AISA Pro v1'
     };
     const modelLabel = modelLabels[modelId] || modelId;

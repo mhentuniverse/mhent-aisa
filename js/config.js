@@ -10,9 +10,12 @@ window.AISA_CONFIG = {
   // Cloudflare Workers AI Endpoint & Multiverse Model
   API_BASE_URL: "https://api.mhentuniverse.com",
   FALLBACK_API_URL: "https://aisa.mhentuniverse.com",
+  OLLAMA_BASE_URL: "http://localhost:11434",
   MODEL: localStorage.getItem("aisa_selected_model") || "aisa-v1",
   MODELS: [
-    { id: "aisa-v1", name: "AISA v1", desc: "Companion Song Hành • Harmony 🌸 & Echo 😈", icon: "🌸", badge: "Mặc định" },
+    { id: "aisa-v1", name: "AISA v1", desc: "Companion Song Hành • Harmony 🌸 & Echo 😈", icon: "🌸", badge: "Cloud Mặc định" },
+    { id: "aisa-local-3b", name: "AISA Local 3B", desc: "Offline RTX 4050 • Siêu nhẹ, siêu nhanh (Gaming mode)", icon: "⚡", badge: "Local 3B" },
+    { id: "aisa-local-7b", name: "AISA Local 7B", desc: "Offline RTX 4050 • Sâu sắc, thấu cảm & trí tuệ cao", icon: "🧠", badge: "Local 7B" },
     { id: "aisa-scholar-v1", name: "AISA Scholar v1", desc: "Nghiên cứu & Học tập Ngoại ngữ Study", icon: "📚", badge: "Study" },
     { id: "aisa-workspace-v1", name: "AISA Workspace v1", desc: "Quản trị Task, Lịch trình & Mail Workspace", icon: "💼", badge: "Workspace" },
     { id: "aisa-universe-v1", name: "AISA Universe v1", desc: "Cổng Thông tin & Dịch vụ Vũ trụ Universe", icon: "🌌", badge: "Universe" }

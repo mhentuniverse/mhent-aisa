@@ -1,72 +1,53 @@
 /**
- * AISA COMPANION - GATEKEEPER & FIREBASE AUTHENTICATION (AUTH.JS)
+ * AISA COMPANION - MASTER PASSCODE AUTHENTICATION & LOCK SCREEN
  * Miyazaki Haruto Entertainment Co., Ltd. - Project MHEnt. Universe
  * 
- * Quản lý phiên xác thực, cổng bảo vệ độc quyền Sanctuary dành riêng cho Master Yurika.
- * Bất kỳ tài khoản không thuộc quyền sở hữu của Master sẽ tự động bị từ chối và trục xuất.
+ * Quản lý mở khóa Sanctuary theo phong cách Màn hình khóa Máy tính (Computer Lock Screen).
+ * Không phụ thuộc vào Google Account hay Firebase bên ngoài.
+ * Mặc định nhận diện Master Yurika (Sakura), mở khóa bằng mã PIN / Passcode cá nhân.
  */
 
 window.AisaAuth = {
-  auth: null,
-  db: null,
   currentUser: null,
   isAuthorized: false,
   initialized: false,
 
+  // Các mật khẩu hợp lệ mặc định (Sakura có thể đổi trong Cài đặt)
+  DEFAULT_PASSCODES: ['2006', 'sakura', 'yurika', '06122006', 'mhent'],
+
   init() {
     this.bindEvents();
-    this.initFirebase();
-  },
+    this.initialized = true;
 
-  initFirebase() {
-    if (typeof firebase === 'undefined') {
-      console.warn("Firebase SDK chưa sẵn sàng. Đang giữ Cổng Xác Thực (Gatekeeper) kích hoạt.");
+    // Kiểm tra nếu đã chọn "Nhớ thiết bị này" hoặc đang chạy bản Desktop
+    const autoUnlock = localStorage.getItem('aisa_auto_unlock');
+    const isDesktop = window.AisaDesktop && window.AisaDesktop.isDesktop;
+
+    if (autoUnlock === 'true' || isDesktop) {
+      // Mở khóa tự động ngay lập tức
+      this.loginSuccess(true);
+    } else {
       this.showGatekeeper();
-      return;
-    }
-
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(window.AISA_CONFIG.FIREBASE);
-      }
-      this.auth = firebase.auth();
-      this.db = firebase.firestore();
-      this.initialized = true;
-
-      // Lắng nghe trạng thái đăng nhập Firebase
-      this.auth.onAuthStateChanged(async (user) => {
-        await this.handleAuthStateChanged(user);
-      });
-    } catch (err) {
-      console.error("Lỗi khởi tạo Firebase Auth:", err);
-      this.showGatekeeper();
-      this.showError("Lỗi kết nối máy chủ xác thực MHEnt. Vui lòng tải lại trang.");
     }
   },
 
   bindEvents() {
-    // Form Đăng nhập Email / Username
+    // Form Mở Khóa Mật Khẩu (Lock Screen Form)
     const loginForm = document.getElementById('gate-login-form');
     if (loginForm) {
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const userInput = document.getElementById('gate-login-user');
         const passInput = document.getElementById('gate-login-pass');
-        if (userInput && passInput) {
-          this.loginWithEmail(userInput.value.trim(), passInput.value);
+        const rememberCheck = document.getElementById('gate-remember-device');
+        if (passInput) {
+          const pass = passInput.value.trim();
+          const remember = rememberCheck ? rememberCheck.checked : true;
+          this.unlockWithPasscode(pass, remember);
         }
       });
     }
 
-    // Nút Đăng nhập Google
-    const googleBtn = document.getElementById('btn-gate-google');
-    if (googleBtn) {
-      googleBtn.addEventListener('click', () => {
-        this.loginWithGoogle();
-      });
-    }
-
-    // Nút Đăng xuất trên Header
+    // Nút Khóa / Đăng xuất trên Header
     const logoutBtn = document.getElementById('btn-header-logout');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -75,226 +56,119 @@ window.AisaAuth = {
     }
   },
 
-  formatOrgEmail(input) {
-    if (!input) return "";
-    input = input.toLowerCase().replace(/\s+/g, "");
-    if (input.includes("@")) {
-      return input;
+  /**
+   * Mở khóa Sanctuary bằng Master Passcode
+   */
+  unlockWithPasscode(inputPass, rememberDevice = true) {
+    if (!inputPass) {
+      this.showError("Vui lòng nhập mã truy cập của cậu!");
+      return;
     }
-    const domain = window.AISA_CONFIG.AUTH?.ORG_DOMAIN || "@mhentuniverse.internal";
-    return `${input}${domain}`;
+
+    const savedCustomPass = localStorage.getItem('aisa_master_passcode');
+    const passLower = inputPass.toLowerCase();
+
+    // Kiểm tra khớp mật khẩu tùy chỉnh hoặc mật khẩu mặc định
+    const isValid = (savedCustomPass && inputPass === savedCustomPass) ||
+                    this.DEFAULT_PASSCODES.includes(passLower);
+
+    if (isValid) {
+      this.clearError();
+      if (rememberDevice) {
+        localStorage.setItem('aisa_auto_unlock', 'true');
+      } else {
+        localStorage.removeItem('aisa_auto_unlock');
+      }
+      this.loginSuccess(false);
+    } else {
+      this.showError("Mã truy cập chưa đúng nè! Mặc định là 2006 hoặc sakura nha 🌸");
+      const passInput = document.getElementById('gate-login-pass');
+      if (passInput) {
+        passInput.value = '';
+        passInput.focus();
+      }
+    }
   },
 
   /**
-   * 🛡️ KIỂM TRA QUYỀN TRUY CẬP ĐỘC QUYỀN CỦA MASTER YURIKA
-   * Chỉ tài khoản Master Yurika hoặc Admin cấp cao MHEnt Universe mới được vào Sanctuary.
+   * Đăng nhập thành công -> Nạp căn cước Master Yurika
    */
-  async verifyUserPrivileges(user) {
-    if (!user) return { authorized: false, reason: "Chưa xác thực" };
+  loginSuccess(isSilent = false) {
+    const customName = localStorage.getItem('aisa_user_display_name') || "Master Yurika";
 
-    const email = (user.email || "").toLowerCase();
-    const displayName = (user.displayName || "").toLowerCase();
-    const allowedEmails = (window.AISA_CONFIG.AUTH?.ALLOWED_EMAILS || []).map(e => e.toLowerCase());
+    this.currentUser = {
+      uid: "master-yurika-local",
+      email: "yurika@mhentuniverse.internal",
+      name: customName,
+      realName: "Huỳnh Lam Chi (Sakura)",
+      avatar: "🌸",
+      role: "master"
+    };
 
-    // 1. Kiểm tra Email hoặc Username có thuộc về Yurika / Master không
-    const isMasterEmail = allowedEmails.some(allowed => email === allowed || email.startsWith(allowed)) ||
-                          email.includes("yurika") || 
-                          email.includes("master") || 
-                          email.includes("haruto");
+    this.isAuthorized = true;
 
-    if (isMasterEmail) {
-      return { authorized: true, role: "master" };
+    // Cập nhật cấu hình toàn cục
+    if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
+      window.AISA_CONFIG.USER.name = this.currentUser.name;
+      window.AISA_CONFIG.USER.avatar = this.currentUser.avatar;
     }
 
-    // 2. Tra cứu quyền trong cơ sở dữ liệu Firestore 'users'
-    if (this.db) {
-      try {
-        const userDoc = await this.db.collection("users").doc(user.uid).get();
-        if (userDoc.exists) {
-          const data = userDoc.data();
-          const role = (data.role || "").toLowerCase();
-          if (role.includes("master") || role.includes("admin")) {
-            return { authorized: true, role: data.role };
-          }
-        }
-      } catch (err) {
-        console.warn("Không thể tra cứu quyền Firestore:", err);
-      }
+    this.hideGatekeeper();
+    this.updateUserUI(this.currentUser);
+
+    // Kích hoạt AisaApp
+    if (window.AisaApp && typeof window.AisaApp.onUserAuthenticated === 'function') {
+      window.AisaApp.onUserAuthenticated(this.currentUser);
     }
 
-    // 3. Kiểm tra Tên hiển thị (nếu đăng nhập bằng Google hiển thị rõ Yurika)
-    if (displayName.includes("yurika") || displayName.includes("haruto")) {
-      return { authorized: true, role: "master" };
-    }
-
-    return { authorized: false, reason: "Tài khoản không nằm trong danh sách cấp phép Master" };
-  },
-
-  async handleAuthStateChanged(user) {
-    if (!user) {
-      this.currentUser = null;
-      this.isAuthorized = false;
-      this.updateUserUI(null);
-      this.showGatekeeper();
-      return;
-    }
-
-    this.showLoginLoading(true, "Đang đối chiếu căn cước Master...");
-
-    const check = await this.verifyUserPrivileges(user);
-    this.showLoginLoading(false);
-
-    if (check.authorized) {
-      // Lấy tên người dùng: ưu tiên tên tùy chỉnh đã lưu, rồi đến tên tài khoản Google, rồi đến email prefix
-      let storedName = localStorage.getItem('aisa_user_display_name');
-      let cleanName;
-      if (storedName && storedName.trim()) {
-        cleanName = storedName.trim();
-      } else if (user.displayName && user.displayName.trim()) {
-        cleanName = user.displayName.trim();
-        localStorage.setItem('aisa_user_display_name', cleanName);
-      } else if (user.email) {
-        cleanName = user.email.split('@')[0];
-        localStorage.setItem('aisa_user_display_name', cleanName);
-      } else {
-        cleanName = "Master Yurika";
-      }
-      
-      this.currentUser = {
-        uid: user.uid,
-        email: user.email,
-        name: cleanName,
-        avatar: user.photoURL || "🌸",
-        role: check.role || "master"
-      };
-      this.isAuthorized = true;
-
-      // Cập nhật cấu hình người dùng toàn cục
-      if (window.AISA_CONFIG && window.AISA_CONFIG.USER) {
-        window.AISA_CONFIG.USER.name = this.currentUser.name;
-        window.AISA_CONFIG.USER.avatar = this.currentUser.avatar;
-      }
-
-      this.hideGatekeeper();
-      this.updateUserUI(this.currentUser);
-
-      // Thông báo cho ứng dụng AisaApp
-      if (window.AisaApp && typeof window.AisaApp.onUserAuthenticated === 'function') {
-        window.AisaApp.onUserAuthenticated(this.currentUser);
-      }
-    } else {
-      // ⛔ Người dùng lạ / không được cấp quyền!
-      console.warn("Cảnh báo bảo mật: Tài khoản không hợp lệ cố truy cập Sanctuary:", user.email);
-      this.showError(`⛔ Thẩm Quyền Bị Từ Chối! Tài khoản ${user.email} không có quyền vào AISA Sanctuary. Đây là không gian riêng tư của Master Yurika.`);
-      
-      // Tự động đăng xuất tài khoản lạ
-      if (this.auth) {
-        await this.auth.signOut();
-      }
-      this.currentUser = null;
-      this.isAuthorized = false;
-      this.updateUserUI(null);
-      this.showGatekeeper();
+    if (!isSilent && window.AisaApp && typeof window.AisaApp.showToast === 'function') {
+      window.AisaApp.showToast(`Chào mừng ${customName} trở lại Sanctuary! 🌸✨`, '🌸');
     }
   },
 
-  async loginWithEmail(usernameOrEmail, password) {
-    if (!usernameOrEmail || !password) {
-      this.showError("Vui lòng nhập tên định danh/email và mật khẩu!");
-      return;
+  /**
+   * Cập nhật mật khẩu mới trong Cài Đặt
+   */
+  setCustomPasscode(newPass) {
+    if (!newPass || newPass.trim().length < 3) {
+      return { success: false, message: "Mật khẩu phải từ 3 ký tự trở lên!" };
     }
-
-    const fullEmail = this.formatOrgEmail(usernameOrEmail);
-    this.clearError();
-    this.showLoginLoading(true, "Đang giải mã căn cước...");
-
-    try {
-      if (!this.initialized || !this.auth) {
-        throw new Error("Dịch vụ xác thực Firebase chưa được kết nối.");
-      }
-
-      await this.auth.signInWithEmailAndPassword(fullEmail, password);
-      // onAuthStateChanged sẽ tự động xử lý tiếp
-    } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-      let errMsg = "Thông tin đăng nhập không chính xác.";
-      if (error.code === "auth/user-not-found") {
-        errMsg = "Tài khoản không tồn tại. Vui lòng kiểm tra lại tên định danh.";
-      } else if (error.code === "auth/wrong-password") {
-        errMsg = "Mật khẩu không chính xác. Cậu thử lại xem nhé.";
-      } else if (error.code === "auth/invalid-credential") {
-        errMsg = "Tên định danh hoặc mật khẩu chưa đúng.";
-      } else if (error.code === "auth/too-many-requests") {
-        errMsg = "Quá nhiều lần thử thất bại! Vui lòng chờ 1-2 phút rồi thử lại.";
-      } else if (error.message) {
-        errMsg = error.message;
-      }
-      this.showError(errMsg);
-    } finally {
-      this.showLoginLoading(false);
-    }
+    localStorage.setItem('aisa_master_passcode', newPass.trim());
+    return { success: true, message: "Đã cập nhật mã truy cập mới thành công!" };
   },
 
-  async loginWithGoogle() {
-    this.clearError();
-    this.showLoginLoading(true, "Đang mở cửa sổ Google...");
-
-    try {
-      if (!this.initialized || !this.auth) {
-        throw new Error("Dịch vụ xác thực Firebase chưa được kết nối.");
-      }
-
-      const provider = new firebase.auth.GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
-      await this.auth.signInWithPopup(provider);
-      // onAuthStateChanged sẽ tự động xử lý tiếp
-    } catch (error) {
-      console.error("Lỗi Google Sign-In:", error);
-      if (error.code !== "auth/popup-closed-by-user") {
-        this.showError(`Đăng nhập Google không thành công: ${error.message}`);
-      }
-    } finally {
-      this.showLoginLoading(false);
-    }
-  },
-
-  async confirmLogout() {
-    const dialog = window.AisaDialog;
-    if (dialog && typeof dialog.confirm === 'function') {
-      const confirmed = await dialog.confirm({
-        title: "Đăng Xuất AISA Sanctuary",
-        message: "Cậu có muốn khóa lại không gian cá nhân và đăng xuất không?",
-        submessage: "Mọi dữ liệu và cuộc trò chuyện của Master vẫn sẽ được lưu trữ an toàn.",
+  confirmLogout() {
+    if (window.AisaModal && typeof window.AisaModal.confirm === 'function') {
+      window.AisaModal.confirm({
+        title: "Khóa Màn Hình Sanctuary",
+        message: "Cậu có muốn khóa Sanctuary lại không?",
+        submessage: "Mọi dữ liệu và ký ức của hai em ấy vẫn được lưu an toàn trên máy.",
         icon: "🔐",
-        confirmText: "Khóa & Đăng Xuất",
+        confirmText: "Khóa Màn Hình",
         cancelText: "Ở Lại",
-        danger: true
+        danger: false
+      }).then(confirmed => {
+        if (confirmed) this.logout();
       });
-      if (confirmed) {
-        this.logout();
-      }
     } else {
-      if (confirm("Cậu có muốn đăng xuất khỏi Sanctuary không?")) {
+      if (confirm("Cậu có muốn khóa màn hình Sanctuary lại không?")) {
         this.logout();
       }
     }
   },
 
-  async logout() {
-    try {
-      if (this.auth) {
-        await this.auth.signOut();
-      }
-    } catch (e) {
-      console.error("Lỗi đăng xuất:", e);
-    }
+  logout() {
+    localStorage.removeItem('aisa_auto_unlock');
     this.currentUser = null;
     this.isAuthorized = false;
     this.updateUserUI(null);
     this.showGatekeeper();
+
+    const passInput = document.getElementById('gate-login-pass');
+    if (passInput) {
+      passInput.value = '';
+      setTimeout(() => passInput.focus(), 300);
+    }
   },
 
   showGatekeeper() {
@@ -304,6 +178,8 @@ window.AisaAuth = {
       requestAnimationFrame(() => {
         overlay.classList.add('active');
       });
+      const passInput = document.getElementById('gate-login-pass');
+      if (passInput) setTimeout(() => passInput.focus(), 200);
     }
   },
 
@@ -313,7 +189,7 @@ window.AisaAuth = {
       overlay.classList.remove('active');
       setTimeout(() => {
         overlay.style.display = 'none';
-      }, 300);
+      }, 250);
     }
   },
 
@@ -322,8 +198,14 @@ window.AisaAuth = {
     if (banner) {
       banner.textContent = msg;
       banner.style.display = 'block';
+      banner.style.background = 'rgba(239, 68, 68, 0.15)';
+      banner.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+      banner.style.color = '#fca5a5';
+      banner.style.padding = '8px 12px';
+      banner.style.borderRadius = '10px';
+      banner.style.fontSize = '12.5px';
       banner.classList.remove('shake');
-      void banner.offsetWidth; // trigger reflow
+      void banner.offsetWidth;
       banner.classList.add('shake');
     }
   },
@@ -336,70 +218,33 @@ window.AisaAuth = {
     }
   },
 
-  showLoginLoading(isLoading, text = "Đang xác thực...") {
-    const submitBtn = document.getElementById('btn-gate-submit');
-    const googleBtn = document.getElementById('btn-gate-google');
-    if (submitBtn) {
-      submitBtn.disabled = isLoading;
-      if (isLoading) {
-        submitBtn.dataset.originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = `<span class="gate-spinner"></span> ${text}`;
-      } else if (submitBtn.dataset.originalText) {
-        submitBtn.innerHTML = submitBtn.dataset.originalText;
-      }
-    }
-    if (googleBtn) {
-      googleBtn.disabled = isLoading;
-    }
-  },
-
   updateUserUI(user) {
-    const badge = document.getElementById('header-user-badge');
-    const avatarEl = document.getElementById('header-user-avatar');
-    const nameEl = document.getElementById('header-user-name');
-    const uprofAvatar = document.getElementById('uprof-avatar-badge');
-    const uprofName = document.getElementById('uprof-display-name');
-    const sfooterAvatar = document.getElementById('sfooter-avatar') || document.querySelector('.sfooter-avatar');
-    const sfooterName = document.getElementById('sfooter-name') || document.querySelector('.sfooter-name');
+    const headerUserName = document.getElementById('user-display-name');
+    const headerUserAvatar = document.getElementById('user-avatar');
+    const headerUserBadge = document.getElementById('header-user-badge');
+    const sidebarProfileName = document.getElementById('sidebar-user-name');
+    const sidebarProfileAvatar = document.getElementById('sidebar-user-avatar');
+    const sidebarProfileRole = document.getElementById('sidebar-user-role');
 
-    if (user && this.isAuthorized) {
-      if (badge) badge.style.display = 'inline-flex';
+    if (user) {
       const displayName = user.name || "Master Yurika";
-      const isImg = user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:'));
-      const imgTag = `<img src="${user.avatar}" alt="Avatar" class="user-avatar-img" referrerpolicy="no-referrer" onerror="this.onerror=null; this.parentElement.textContent='🌸';" />`;
+      const avatarContent = user.avatar || "🌸";
 
-      if (avatarEl) {
-        if (isImg) {
-          avatarEl.innerHTML = imgTag;
-        } else {
-          avatarEl.textContent = user.avatar || "🌸";
-        }
-      }
-      if (nameEl) {
-        nameEl.textContent = displayName;
-      }
-      if (uprofName) {
-        uprofName.textContent = displayName;
-      }
-      if (uprofAvatar) {
-        if (isImg) {
-          uprofAvatar.innerHTML = imgTag;
-        } else {
-          uprofAvatar.textContent = user.avatar || "🌸";
-        }
-      }
-      if (sfooterAvatar) {
-        if (isImg) {
-          sfooterAvatar.innerHTML = imgTag;
-        } else {
-          sfooterAvatar.textContent = user.avatar || "🌸";
-        }
-      }
-      if (sfooterName) {
-        sfooterName.textContent = displayName;
-      }
+      if (headerUserName) headerUserName.textContent = displayName;
+      if (headerUserAvatar) headerUserAvatar.innerHTML = avatarContent;
+      if (headerUserBadge) headerUserBadge.style.display = 'inline-flex';
+
+      if (sidebarProfileName) sidebarProfileName.textContent = displayName;
+      if (sidebarProfileAvatar) sidebarProfileAvatar.innerHTML = avatarContent;
+      if (sidebarProfileRole) sidebarProfileRole.textContent = "Master • MHEnt Universe";
     } else {
-      if (badge) badge.style.display = 'none';
+      if (headerUserName) headerUserName.textContent = "Chưa mở khóa";
+      if (headerUserAvatar) headerUserAvatar.innerHTML = "🔒";
+      if (headerUserBadge) headerUserBadge.style.display = 'none';
+
+      if (sidebarProfileName) sidebarProfileName.textContent = "Chưa mở khóa";
+      if (sidebarProfileAvatar) sidebarProfileAvatar.innerHTML = "🔒";
+      if (sidebarProfileRole) sidebarProfileRole.textContent = "Khóa bảo mật";
     }
   }
 };
