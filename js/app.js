@@ -407,6 +407,30 @@ window.AisaApp = {
       // Lọc bỏ các phiên rỗng không có tin nhắn người dùng (giữ lịch sử sạch sẽ chuẩn Gemini)
       this.state.sessions = (this.state.sessions || []).filter(s => Array.isArray(s.messages) && s.messages.some(m => m.role === 'user'));
 
+      // Tự động khôi phục từ tệp JSON cục bộ (data/chats/sessions.json) nếu bộ nhớ tạm rỗng
+      if (this.state.sessions.length === 0) {
+        setTimeout(async () => {
+          try {
+            let loaded = null;
+            if (window.AisaDesktop && window.AisaDesktop.loadChatLogs) {
+              const res = await window.AisaDesktop.loadChatLogs();
+              if (res && res.success && Array.isArray(res.sessions)) loaded = res.sessions;
+            } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+              const res = await fetch('/api/local-chats').then(r => r.json()).catch(() => null);
+              if (res && Array.isArray(res.sessions)) loaded = res.sessions;
+            }
+            if (loaded && loaded.length > 0 && this.state.sessions.length === 0) {
+              this.state.sessions = loaded;
+              this.saveState();
+              this.renderSessionsList();
+              if (window.AisaToast) {
+                window.AisaToast.show(`Đã nạp ${loaded.length} phiên chat từ tệp JSON cục bộ (data/chats/) 📂`);
+              }
+            }
+          } catch (e) { }
+        }, 300);
+      }
+
       // Kiểm tra tham số 'id' trên thanh địa chỉ URL
       const urlParams = new URLSearchParams(window.location.search);
       const urlSessionId = urlParams.get('id');
@@ -485,7 +509,196 @@ window.AisaApp = {
       if (this.state.currentSessionId) {
         this.debounceSyncCloud();
       }
+
+      // Tự động lưu bản sao Log Chat ra tệp JSON Local (data/chats/)
+      this.debounceSaveLocalChats();
     } catch (e) { }
+  },
+
+  // --------------------------------------------------------------------------
+  // LOCAL CHAT LOGS PERSISTENCE & JSON EXPORT / IMPORT ENGINE
+  // Tự động lưu trữ lịch sử hội thoại thành file JSON cục bộ tại data/chats/
+  // --------------------------------------------------------------------------
+  debounceSaveLocalChats() {
+    clearTimeout(this._localChatSaveTimer);
+    this._localChatSaveTimer = setTimeout(() => {
+      this.persistLocalChatLogs();
+    }, 600);
+  },
+
+  async persistLocalChatLogs() {
+    try {
+      const currentSession = this.state.sessions.find(s => s.id === this.state.currentSessionId) || null;
+      const payload = {
+        updatedAt: new Date().toISOString(),
+        totalSessions: this.state.sessions.length,
+        currentSession: currentSession,
+        sessions: this.state.sessions
+      };
+
+      // 1. Nếu đang chạy trong Desktop App (Electron)
+      if (window.AisaDesktop && window.AisaDesktop.saveChatLogs) {
+        await window.AisaDesktop.saveChatLogs(payload);
+        return;
+      }
+
+      // 2. Nếu đang chạy qua Local Server
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        await fetch('/api/local-chats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('[Local Chat Log Note]:', e);
+    }
+  },
+
+  exportSessionJson(sessionId) {
+    const session = this.state.sessions.find(s => s.id === (sessionId || this.state.currentSessionId));
+    if (!session) {
+      if (window.AisaToast) window.AisaToast.show('Không tìm thấy cuộc trò chuyện để xuất file.');
+      return;
+    }
+    const safeTitle = (session.title || 'cuoc_tro_chuyen')
+      .replace(/[<>:"/\\|?*]/g, '_')
+      .slice(0, 40)
+      .trim();
+    const fileName = `aisa_chat_${session.id}_${safeTitle}.json`;
+    const jsonStr = JSON.stringify(session, null, 2);
+
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (window.AisaToast) {
+      window.AisaToast.show(`Đã xuất tệp log chat: "${session.title}" ra JSON 💾`);
+    }
+  },
+
+  exportAllSessionsJson() {
+    if (!this.state.sessions || this.state.sessions.length === 0) {
+      if (window.AisaToast) window.AisaToast.show('Chưa có lịch sử trò chuyện để xuất.');
+      return;
+    }
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const fileName = `aisa_all_chat_logs_${dateStr}.json`;
+    const data = {
+      description: "AISA Companion — Complete Chat Logs Backup",
+      exportedAt: now.toISOString(),
+      appName: "AISA Companion",
+      version: "1.1.0",
+      totalSessions: this.state.sessions.length,
+      sessions: this.state.sessions
+    };
+    const jsonStr = JSON.stringify(data, null, 2);
+
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (window.AisaToast) {
+      window.AisaToast.show(`Đã xuất toàn bộ ${this.state.sessions.length} phiên trò chuyện ra JSON 💾`);
+    }
+  },
+
+  async openLocalChatsFolder() {
+    if (window.AisaDesktop && window.AisaDesktop.openChatsFolder) {
+      await window.AisaDesktop.openChatsFolder();
+      if (window.AisaToast) window.AisaToast.show('Đang mở thư mục Log Chat: data/chats 📂');
+    } else {
+      this.exportAllSessionsJson();
+    }
+  },
+
+  async showChatLogsActionMenu() {
+    const isDesktop = !!(window.AisaDesktop && window.AisaDesktop.openChatsFolder);
+
+    if (window.AisaDialog && window.AisaDialog.confirm) {
+      const confirmed = await window.AisaDialog.confirm({
+        title: 'Nhật Ký Log Chat Local (JSON)',
+        message: 'AISA tự động đồng bộ và lưu toàn bộ cuộc trò chuyện thành các tệp JSON cục bộ trong thư mục "data/chats/".',
+        submessage: isDesktop 
+          ? 'Cậu muốn mở trực tiếp thư mục tệp JSON trên máy hay nạp lại dữ liệu từ tệp JSON?'
+          : 'Cậu muốn tải về tệp JSON sao lưu hay nạp dữ liệu từ máy tính lên?',
+        icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+        confirmText: isDesktop ? 'Mở Thư Mục Chats' : 'Tải Về File JSON',
+        cancelText: 'Nạp File JSON'
+      });
+
+      if (confirmed) {
+        if (isDesktop) {
+          await this.openLocalChatsFolder();
+        } else {
+          this.exportAllSessionsJson();
+        }
+      } else {
+        const fileInput = document.getElementById('input-import-chat-json');
+        if (fileInput) fileInput.click();
+      }
+    } else {
+      if (isDesktop) {
+        await this.openLocalChatsFolder();
+      } else {
+        this.exportAllSessionsJson();
+      }
+    }
+  },
+
+  async importChatLogsJson(file) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      let importedSessions = [];
+      if (Array.isArray(parsed)) {
+        importedSessions = parsed;
+      } else if (parsed && Array.isArray(parsed.sessions)) {
+        importedSessions = parsed.sessions;
+      } else if (parsed && parsed.id && Array.isArray(parsed.messages)) {
+        importedSessions = [parsed];
+      }
+
+      if (importedSessions.length === 0) {
+        if (window.AisaToast) window.AisaToast.show('Tệp JSON không chứa phiên trò chuyện hợp lệ.');
+        return;
+      }
+
+      const existingIds = new Set(this.state.sessions.map(s => s.id));
+      let addedCount = 0;
+      importedSessions.forEach(s => {
+        if (!existingIds.has(s.id)) {
+          this.state.sessions.push(s);
+          existingIds.add(s.id);
+          addedCount++;
+        }
+      });
+
+      this.saveState();
+      this.renderSessionsList();
+      if (this.state.sessions.length > 0 && !this.state.currentSessionId) {
+        this.switchSession(this.state.sessions[0].id);
+      }
+      if (window.AisaToast) {
+        window.AisaToast.show(`Đã nạp thành công ${addedCount} phiên chat từ tệp JSON! ✨`);
+      }
+    } catch (e) {
+      if (window.AisaToast) window.AisaToast.show('Lỗi đọc tệp JSON: ' + e.message);
+    }
   },
 
   // --------------------------------------------------------------------------
@@ -745,17 +958,23 @@ window.AisaApp = {
 
     const btnFav = document.getElementById('ctx-item-favorite');
     const btnRename = document.getElementById('ctx-item-rename');
+    const btnExportJson = document.getElementById('ctx-item-export-json');
     const btnDelete = document.getElementById('ctx-item-delete');
 
     if (btnFav) btnFav.onclick = (e) => this.toggleSessionFavorite(sessionId, e);
     if (btnRename) btnRename.onclick = (e) => this.promptRenameSession(sessionId, e);
+    if (btnExportJson) btnExportJson.onclick = (e) => {
+      e.stopPropagation();
+      this.closeSessionContextMenu();
+      this.exportSessionJson(sessionId);
+    };
     if (btnDelete) btnDelete.onclick = (e) => this.deleteSession(sessionId, e);
 
     menu.style.display = 'flex';
 
     // Position menu near touch point or target button
     const menuWidth = 210;
-    const menuHeight = 135;
+    const menuHeight = 175;
     let posX = clientX != null ? clientX : 0;
     let posY = clientY != null ? clientY : 0;
 
@@ -1855,6 +2074,24 @@ window.AisaApp = {
       btnNavMemory.addEventListener('click', () => {
         const memBtn = document.getElementById('btn-open-memory');
         if (memBtn) memBtn.click();
+      });
+    }
+
+    // 3B. Sidebar Quick Nav: Local Chat Logs JSON Hub
+    const btnNavChatLogs = document.getElementById('btn-nav-chat-logs');
+    if (btnNavChatLogs) {
+      btnNavChatLogs.addEventListener('click', () => {
+        this.showChatLogsActionMenu();
+      });
+    }
+
+    const inputImportChatJson = document.getElementById('input-import-chat-json');
+    if (inputImportChatJson) {
+      inputImportChatJson.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          this.importChatLogsJson(e.target.files[0]);
+          e.target.value = '';
+        }
       });
     }
 

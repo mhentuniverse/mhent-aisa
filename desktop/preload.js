@@ -23,5 +23,10 @@ contextBridge.exposeInMainWorld('AisaDesktop', {
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   maximizeWindow: () => ipcRenderer.send('window:maximize'),
   closeWindow: () => ipcRenderer.send('window:close'),
-  isMaximized: () => ipcRenderer.invoke('window:is-maximized')
+  isMaximized: () => ipcRenderer.invoke('window:is-maximized'),
+
+  // Local JSON Chat Logs Persistence
+  saveChatLogs: (data) => ipcRenderer.invoke('desktop:save-chat-logs', data),
+  loadChatLogs: () => ipcRenderer.invoke('desktop:load-chat-logs'),
+  openChatsFolder: () => ipcRenderer.invoke('desktop:open-chats-folder')
 });

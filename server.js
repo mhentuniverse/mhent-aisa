@@ -27,6 +27,61 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let reqPath = decodeURIComponent(req.url.split('?')[0]);
+
+  // API Endpoint: Quản lý Log Chat Local dạng JSON
+  if (reqPath === '/api/local-chats' || reqPath.startsWith('/api/local-chats')) {
+    const chatsDir = path.join(__dirname, 'data', 'chats');
+    if (!fs.existsSync(chatsDir)) {
+      fs.mkdirSync(chatsDir, { recursive: true });
+    }
+
+    if (req.method === 'GET') {
+      const allPath = path.join(chatsDir, 'sessions.json');
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      if (fs.existsSync(allPath)) {
+        res.end(fs.readFileSync(allPath, 'utf-8'));
+      } else {
+        res.end(JSON.stringify({ sessions: [] }));
+      }
+      return;
+    }
+
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          if (parsed.sessions) {
+            fs.writeFileSync(path.join(chatsDir, 'sessions.json'), JSON.stringify(parsed.sessions, null, 2), 'utf-8');
+          }
+          if (parsed.currentSession && parsed.currentSession.id) {
+            const safeTitle = (parsed.currentSession.title || parsed.currentSession.id)
+              .replace(/[<>:"/\\|?*]/g, '_')
+              .slice(0, 45)
+              .trim();
+            fs.writeFileSync(path.join(chatsDir, `${parsed.currentSession.id}_${safeTitle}.json`), JSON.stringify(parsed.currentSession, null, 2), 'utf-8');
+          }
+          res.writeHead(200, {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+          });
+          res.end(JSON.stringify({ success: true, dir: chatsDir }));
+        } catch (e) {
+          res.writeHead(500, {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+          });
+          res.end(JSON.stringify({ success: false, error: e.message }));
+        }
+      });
+      return;
+    }
+  }
+
   if (reqPath === '/' || reqPath === '/chat' || reqPath.startsWith('/chat')) {
     reqPath = '/index.html';
   }

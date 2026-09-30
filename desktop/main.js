@@ -34,6 +34,60 @@ function startLocalServer() {
         const parsedUrl = url.parse(req.url);
         let pathname = decodeURIComponent(parsedUrl.pathname);
 
+        // API Endpoint: Quản lý Log Chat Local dạng JSON
+        if (pathname === '/api/local-chats' || pathname.startsWith('/api/local-chats')) {
+          const chatsDir = path.join(__dirname, '..', 'data', 'chats');
+          if (!fs.existsSync(chatsDir)) {
+            fs.mkdirSync(chatsDir, { recursive: true });
+          }
+
+          if (req.method === 'GET') {
+            const allPath = path.join(chatsDir, 'sessions.json');
+            res.writeHead(200, {
+              'Content-Type': 'application/json; charset=utf-8',
+              'Access-Control-Allow-Origin': '*'
+            });
+            if (fs.existsSync(allPath)) {
+              res.end(fs.readFileSync(allPath, 'utf-8'));
+            } else {
+              res.end(JSON.stringify({ sessions: [] }));
+            }
+            return;
+          }
+
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => { body += chunk; });
+            req.on('end', () => {
+              try {
+                const parsed = JSON.parse(body);
+                if (parsed.sessions) {
+                  fs.writeFileSync(path.join(chatsDir, 'sessions.json'), JSON.stringify(parsed.sessions, null, 2), 'utf-8');
+                }
+                if (parsed.currentSession && parsed.currentSession.id) {
+                  const safeTitle = (parsed.currentSession.title || parsed.currentSession.id)
+                    .replace(/[<>:"/\\|?*]/g, '_')
+                    .slice(0, 45)
+                    .trim();
+                  fs.writeFileSync(path.join(chatsDir, `${parsed.currentSession.id}_${safeTitle}.json`), JSON.stringify(parsed.currentSession, null, 2), 'utf-8');
+                }
+                res.writeHead(200, {
+                  'Content-Type': 'application/json; charset=utf-8',
+                  'Access-Control-Allow-Origin': '*'
+                });
+                res.end(JSON.stringify({ success: true, dir: chatsDir }));
+              } catch (e) {
+                res.writeHead(500, {
+                  'Content-Type': 'application/json; charset=utf-8',
+                  'Access-Control-Allow-Origin': '*'
+                });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+            return;
+          }
+        }
+
         // SPA routing: route / or /chat or clean paths to index.html
         if (pathname === '/' || pathname === '/chat' || pathname.startsWith('/chat')) {
           pathname = '/index.html';
@@ -393,4 +447,58 @@ ipcMain.on('window:close', () => {
 });
 ipcMain.handle('window:is-maximized', () => {
   return mainWindow ? mainWindow.isMaximized() : false;
+});
+
+// 10. Local Chat Logs (JSON File Persistence)
+ipcMain.handle('desktop:save-chat-logs', async (event, { sessions, currentSession }) => {
+  try {
+    const chatsDir = path.join(__dirname, '..', 'data', 'chats');
+    if (!fs.existsSync(chatsDir)) {
+      await fsPromises.mkdir(chatsDir, { recursive: true });
+    }
+    // 1. Lưu tổng hợp toàn bộ các phiên trò chuyện vào data/chats/sessions.json
+    if (sessions) {
+      const allPath = path.join(chatsDir, 'sessions.json');
+      await fsPromises.writeFile(allPath, JSON.stringify(sessions, null, 2), 'utf-8');
+    }
+    // 2. Lưu riêng phiên hiện tại thành file JSON độc lập
+    if (currentSession && currentSession.id) {
+      const safeTitle = (currentSession.title || currentSession.id)
+        .replace(/[<>:"/\\|?*]/g, '_')
+        .slice(0, 45)
+        .trim();
+      const sessionPath = path.join(chatsDir, `${currentSession.id}_${safeTitle}.json`);
+      await fsPromises.writeFile(sessionPath, JSON.stringify(currentSession, null, 2), 'utf-8');
+    }
+    return { success: true, dir: chatsDir };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('desktop:load-chat-logs', async () => {
+  try {
+    const chatsDir = path.join(__dirname, '..', 'data', 'chats');
+    const allPath = path.join(chatsDir, 'sessions.json');
+    if (fs.existsSync(allPath)) {
+      const data = await fsPromises.readFile(allPath, 'utf-8');
+      return { success: true, sessions: JSON.parse(data) };
+    }
+    return { success: true, sessions: null };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('desktop:open-chats-folder', async () => {
+  try {
+    const chatsDir = path.join(__dirname, '..', 'data', 'chats');
+    if (!fs.existsSync(chatsDir)) {
+      await fsPromises.mkdir(chatsDir, { recursive: true });
+    }
+    await shell.openPath(chatsDir);
+    return { success: true, path: chatsDir };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
 });
