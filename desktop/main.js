@@ -27,6 +27,56 @@ const MIME_TYPES = {
   '.mp3': 'audio/mpeg'
 };
 
+function resolveChatsDir() {
+  // 1. Thư mục project workspace chuẩn của Master Yurika trong Documents
+  try {
+    const workspaceChatsDir = path.join(
+      app.getPath('documents'),
+      'Miyazaki Haruto Entertainment Co., Ltd. - Project MHEnt. Universe',
+      'mhent-aisa',
+      'data',
+      'chats'
+    );
+    if (fs.existsSync(path.dirname(workspaceChatsDir))) {
+      if (!fs.existsSync(workspaceChatsDir)) {
+        fs.mkdirSync(workspaceChatsDir, { recursive: true });
+      }
+      return workspaceChatsDir;
+    }
+  } catch (e) {}
+
+  // 2. Thư mục cha nếu portable exe nằm trong thư mục dist/
+  try {
+    const exeDir = path.dirname(process.execPath);
+    const fromExeParent = path.join(exeDir, '..', 'data', 'chats');
+    if (fs.existsSync(path.join(exeDir, '..', 'data'))) {
+      if (!fs.existsSync(fromExeParent)) {
+        fs.mkdirSync(fromExeParent, { recursive: true });
+      }
+      return fromExeParent;
+    }
+  } catch (e) {}
+
+  // 3. Nếu portable exe chạy ở bất kỳ đâu khác (Desktop, USB) -> tạo folder data/chats ngay cạnh file exe
+  try {
+    if (app.isPackaged) {
+      const exeDir = path.dirname(process.execPath);
+      const portableDir = path.join(exeDir, 'data', 'chats');
+      if (!fs.existsSync(portableDir)) {
+        fs.mkdirSync(portableDir, { recursive: true });
+      }
+      return portableDir;
+    }
+  } catch (e) {}
+
+  // 4. Môi trường dev (npm start)
+  const devDir = path.join(__dirname, '..', 'data', 'chats');
+  if (!fs.existsSync(devDir)) {
+    try { fs.mkdirSync(devDir, { recursive: true }); } catch (e) {}
+  }
+  return devDir;
+}
+
 function startLocalServer() {
   return new Promise((resolve, reject) => {
     localServer = http.createServer((req, res) => {
@@ -36,10 +86,7 @@ function startLocalServer() {
 
         // API Endpoint: Quản lý Log Chat Local dạng JSON
         if (pathname === '/api/local-chats' || pathname.startsWith('/api/local-chats')) {
-          const chatsDir = path.join(__dirname, '..', 'data', 'chats');
-          if (!fs.existsSync(chatsDir)) {
-            fs.mkdirSync(chatsDir, { recursive: true });
-          }
+          const chatsDir = resolveChatsDir();
 
           if (req.method === 'GET') {
             const allPath = path.join(chatsDir, 'sessions.json');
@@ -452,10 +499,7 @@ ipcMain.handle('window:is-maximized', () => {
 // 10. Local Chat Logs (JSON File Persistence)
 ipcMain.handle('desktop:save-chat-logs', async (event, { sessions, currentSession }) => {
   try {
-    const chatsDir = path.join(__dirname, '..', 'data', 'chats');
-    if (!fs.existsSync(chatsDir)) {
-      await fsPromises.mkdir(chatsDir, { recursive: true });
-    }
+    const chatsDir = resolveChatsDir();
     // 1. Lưu tổng hợp toàn bộ các phiên trò chuyện vào data/chats/sessions.json
     if (sessions) {
       const allPath = path.join(chatsDir, 'sessions.json');
@@ -478,7 +522,7 @@ ipcMain.handle('desktop:save-chat-logs', async (event, { sessions, currentSessio
 
 ipcMain.handle('desktop:load-chat-logs', async () => {
   try {
-    const chatsDir = path.join(__dirname, '..', 'data', 'chats');
+    const chatsDir = resolveChatsDir();
     const allPath = path.join(chatsDir, 'sessions.json');
     if (fs.existsSync(allPath)) {
       const data = await fsPromises.readFile(allPath, 'utf-8');
@@ -492,10 +536,7 @@ ipcMain.handle('desktop:load-chat-logs', async () => {
 
 ipcMain.handle('desktop:open-chats-folder', async () => {
   try {
-    const chatsDir = path.join(__dirname, '..', 'data', 'chats');
-    if (!fs.existsSync(chatsDir)) {
-      await fsPromises.mkdir(chatsDir, { recursive: true });
-    }
+    const chatsDir = resolveChatsDir();
     await shell.openPath(chatsDir);
     return { success: true, path: chatsDir };
   } catch (err) {

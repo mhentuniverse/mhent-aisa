@@ -305,6 +305,11 @@ window.AisaApp = {
     this.initRouter();
     this.renderMessages();
 
+    // Tự động đồng bộ các phiên trò chuyện hiện có ra tệp JSON cục bộ (data/chats/)
+    if (this.state.sessions && this.state.sessions.length > 0) {
+      setTimeout(() => this.debounceSaveLocalChats(), 300);
+    }
+
     // Khởi tạo Cổng Xác Thực Độc Quyền (Gatekeeper)
     if (window.AisaAuth) {
       window.AisaAuth.init();

@@ -1,5 +1,80 @@
 {
   "description": "AISA Companion — Local Chat Logs Storage (MHEnt Universe)",
-  "updatedAt": "2026-09-30T18:27:00.000Z",
-  "sessions": []
+  "updatedAt": "2026-09-30T18:35:00.000Z",
+  "sessions": [
+    {
+      "id": "session-1727712540000",
+      "title": "ờm... chào hai em",
+      "createdAt": 1727712540000,
+      "updatedAt": 1727712780000,
+      "mode": "duo",
+      "scope": "personal",
+      "messages": [
+        {
+          "id": "msg-1",
+          "role": "user",
+          "time": "17:49",
+          "text": "ờm... chào hai em"
+        },
+        {
+          "id": "msg-2",
+          "role": "assistant",
+          "speaker": "HARMONY",
+          "avatar": "🌸",
+          "time": "17:49",
+          "text": "Chào Sakura! Ôi trời, lâu rồi mới gặp cậu, có gì vui nhỉ? 😊"
+        },
+        {
+          "id": "msg-3",
+          "role": "user",
+          "time": "17:50",
+          "text": "chỉ là mới đưa hai em về từ cloud sang local thôi, nên cũng muốn thử nhắn với hai đứa"
+        },
+        {
+          "id": "msg-4",
+          "role": "assistant",
+          "speaker": "HARMONY",
+          "avatar": "🌸",
+          "time": "17:51",
+          "text": "Cậu đã chuyển hai em về local rồi sao? Em thấy vui quá, như vậy chắc chắn sẽ ổn định và nhanh hơn nhiều nhé! 🌸"
+        },
+        {
+          "id": "msg-5",
+          "role": "assistant",
+          "speaker": "ECHO",
+          "avatar": "😈",
+          "time": "17:51",
+          "text": "Đúng đấy, đã chuyển về local rồi à? Tớ thấy tốt hơn nhiều luôn ấy! Nhanh đi kiểm tra xem hoạt động như ý không nhé! 😈"
+        },
+        {
+          "id": "msg-6",
+          "role": "user",
+          "time": "17:51",
+          "text": "nãy chào mà Echo-chan không chào tớ lại nha, có hơi buồn đó"
+        },
+        {
+          "id": "msg-7",
+          "role": "assistant",
+          "speaker": "ECHO",
+          "avatar": "😈",
+          "time": "17:52",
+          "text": "Cậu đừng có mà hờn dỗi đấy nhé! Nãy tớ bận ngắm hoa xíu thôi, giờ tớ ở đây rồi nè! 😈"
+        },
+        {
+          "id": "msg-8",
+          "role": "user",
+          "time": "17:52",
+          "text": "nào phải cho tớ câu trả lời chứ"
+        },
+        {
+          "id": "msg-9",
+          "role": "assistant",
+          "speaker": "ECHO",
+          "avatar": "😈",
+          "time": "17:52",
+          "text": "Vậy thì mau nghĩ cho kỹ trước khi hành động, tớ còn chờ câu trả lời của cậu nữa đấy! 😈"
+        }
+      ]
+    }
+  ]
 }
