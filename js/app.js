@@ -1950,8 +1950,10 @@ window.AisaApp = {
         e.preventDefault();
         const factInput = document.getElementById('input-new-fact');
         const catSelect = document.getElementById('select-fact-category');
+        const targetSelect = document.getElementById('select-fact-target');
+        const target = targetSelect ? targetSelect.value : 'both';
         if (factInput && factInput.value.trim() && window.AisaMemory) {
-          window.AisaMemory.addFact(factInput.value.trim(), catSelect.value);
+          window.AisaMemory.addMemory(factInput.value.trim(), target, catSelect ? catSelect.value : 'general');
           factInput.value = '';
         }
       });

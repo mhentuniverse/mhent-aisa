@@ -1,20 +1,21 @@
 /**
- * AISA COMPANION - DUAL MEMORY VAULT & SELF-EVOLVING STORAGE
- * Hệ thống Ký ức Song Hành Độc lập: Harmony 🌸 & Echo 😈
+ * AISA COMPANION - DUAL & SHARED MEMORY VAULT
+ * Hệ thống Ký ức Song Hành Độc lập: Harmony 🌸, Echo 😈 & Ký ức Chung 🌸😈
  * Hỗ trợ lưu trữ cục bộ (Local JSON Files), LocalStorage và Cloud D1
  * Miyazaki Haruto Entertainment Co., Ltd.
  */
 window.AisaMemory = {
-  harmonyMemories: [],
-  echoMemories: [],
-  memories: [], // Recent chat logs
-  activeTab: 'all', // 'all' | 'harmony' | 'echo'
+  sharedMemories: [],  // Ký ức cốt lõi chung về Sakura (Cả 2 cùng biết)
+  harmonyMemories: [], // Nhật ký ân cần riêng của Harmony 🌸
+  echoMemories: [],    // Sổ tay cà khịa & deadline riêng của Echo 😈
+  memories: [],        // Recent chat logs
+  activeTab: 'all',    // 'all' | 'harmony' | 'echo' | 'shared'
 
   get facts() {
-    // Tương thích ngược: gộp cả 2 danh sách với đánh dấu nguồn gốc
+    const s = (this.sharedMemories || []).map(m => ({ ...m, persona: 'both' }));
     const h = (this.harmonyMemories || []).map(m => ({ ...m, persona: 'harmony' }));
     const e = (this.echoMemories || []).map(m => ({ ...m, persona: 'echo' }));
-    return [...h, ...e].sort((a, b) => (b.id || 0) - (a.id || 0));
+    return [...h, ...e, ...s].sort((a, b) => (b.id || 0) - (a.id || 0));
   },
 
   async init() {
@@ -30,7 +31,37 @@ window.AisaMemory = {
   async loadAllMemories() {
     const isDesktop = window.AisaDesktop && typeof window.AisaDesktop.readFile === 'function';
 
-    // 1. Nạp nhật ký của Harmony 🌸
+    // 1. Nạp Ký ức Chung 🌸😈 (shared_memory.json)
+    let loadedShared = false;
+    if (isDesktop) {
+      try {
+        const resS = await window.AisaDesktop.readFile('data/memories/shared_memory.json');
+        if (resS && resS.success && resS.content) {
+          this.sharedMemories = JSON.parse(resS.content);
+          loadedShared = true;
+        }
+      } catch (e) {
+        console.warn('[Memory] Could not read local shared_memory.json:', e);
+      }
+    }
+
+    if (!loadedShared) {
+      try {
+        const rawS = localStorage.getItem('aisa_shared_memories');
+        if (rawS) {
+          this.sharedMemories = JSON.parse(rawS);
+        } else {
+          const fRes = await fetch('/data/memories/shared_memory.json');
+          if (fRes.ok) {
+            this.sharedMemories = await fRes.json();
+          }
+        }
+      } catch (e) {
+        this.sharedMemories = [];
+      }
+    }
+
+    // 2. Nạp nhật ký của Harmony 🌸 (harmony_memory.json)
     let loadedHarmony = false;
     if (isDesktop) {
       try {
@@ -46,21 +77,13 @@ window.AisaMemory = {
 
     if (!loadedHarmony) {
       try {
-        // Thử fetch qua server nội bộ hoặc lấy từ localStorage
         const rawH = localStorage.getItem('aisa_harmony_memories');
         if (rawH) {
           this.harmonyMemories = JSON.parse(rawH);
         } else {
-          // Thử fetch file mẫu từ server
           const fRes = await fetch('/data/memories/harmony_memory.json');
           if (fRes.ok) {
             this.harmonyMemories = await fRes.json();
-          } else {
-            this.harmonyMemories = [
-              { id: 1, fact: "Sakura (Phạm Huỳnh Lam Chi / Yurika) là người sáng lập yêu quý của MHEnt Universe, người mà em luôn trân trọng và bảo vệ.", category: "identity", emotion: "caring", time: "2026-09-30" },
-              { id: 2, fact: "Sakura học IT tại ĐH Nông Lâm (FIT-NLU), thường xuyên di chuyển giữa KTX TP.HCM và Bình Dương, hay thức khuya học và làm dự án.", category: "lifestyle", emotion: "empathy", time: "2026-09-30" },
-              { id: 3, fact: "Sakura thích uống trà sữa Lục Trà Thăng Hoa (trân châu trắng, giảm ngọt), thích màu hồng pastel và đang sáng tạo anime Yume Tsukai Precure!", category: "preference", emotion: "sweet", time: "2026-09-30" }
-            ];
           }
         }
       } catch (e) {
@@ -68,7 +91,7 @@ window.AisaMemory = {
       }
     }
 
-    // 2. Nạp nhật ký của Echo 😈
+    // 3. Nạp nhật ký của Echo 😈 (echo_memory.json)
     let loadedEcho = false;
     if (isDesktop) {
       try {
@@ -91,12 +114,6 @@ window.AisaMemory = {
           const fRes = await fetch('/data/memories/echo_memory.json');
           if (fRes.ok) {
             this.echoMemories = await fRes.json();
-          } else {
-            this.echoMemories = [
-              { id: 1, fact: "Sakura là 'Master' nhưng không cho gọi là Master, thích cày cuốc thâu đêm và là con nghiện deadline chính hiệu.", category: "roast", attitude: "smug", time: "2026-09-30" },
-              { id: 2, fact: "Uống trà sữa thì tuyệt đối né sương sáo với thạch đen ra, cho vào là mặt nhăn như quả táo tàu ngay.", category: "flaw", attitude: "teasing", time: "2026-09-30" },
-              { id: 3, fact: "Cày mod Minecraft Fabric, bấm rhythm game điên cuồng và mix nhạc FL Studio + Suno AI tới sáng rồi ngủ bù vào ban ngày.", category: "hobby", attitude: "banter", time: "2026-09-30" }
-            ];
           }
         }
       } catch (e) {
@@ -104,21 +121,62 @@ window.AisaMemory = {
       }
     }
 
-    // Lưu lại localStorage để đồng bộ bản web
-    this.saveHarmonyMemory();
-    this.saveEchoMemory();
+    // Tự động phân loại/dọn sạch các ký ức chung đã bị gán nhầm vào Harmony trước đây
+    this.autoMigrateSharedMemories();
+
+    // Lưu lại bộ nhớ
+    await this.saveAllMemories();
+  },
+
+  autoMigrateSharedMemories() {
+    if (!Array.isArray(this.harmonyMemories) || this.harmonyMemories.length === 0) return;
+
+    // Các danh mục hoặc nội dung rõ ràng là thông tin chung của Sakura
+    const sharedCategories = ['communication', 'philosophy', 'tech_stack', 'project_precure', 'project_other'];
+    const remainingHarmony = [];
+
+    for (const m of this.harmonyMemories) {
+      const isSharedCategory = sharedCategories.includes(m.category);
+      const isSharedFact = (this.sharedMemories || []).some(s => s.fact.includes(m.fact) || m.fact.includes(s.fact));
+
+      if (isSharedCategory || isSharedFact) {
+        // Đưa vào sharedMemories nếu chưa có
+        const existsInShared = (this.sharedMemories || []).some(s => s.fact === m.fact || s.id === m.id);
+        if (!existsInShared) {
+          this.sharedMemories.push({ ...m, persona: 'both' });
+        }
+      } else {
+        remainingHarmony.push(m);
+      }
+    }
+
+    this.harmonyMemories = remainingHarmony;
   },
 
   // --------------------------------------------------------------------------
   // LƯU KÝ ỨC (LOCAL JSON FILES & LOCALSTORAGE)
   // --------------------------------------------------------------------------
+  async saveSharedMemory() {
+    const jsonStr = JSON.stringify(this.sharedMemories, null, 2);
+    try {
+      localStorage.setItem('aisa_shared_memories', jsonStr);
+    } catch (e) {}
+
+    if (window.AisaDesktop && typeof window.AisaDesktop.writeFile === 'function') {
+      try {
+        await window.AisaDesktop.writeFile('data/memories/shared_memory.json', jsonStr);
+      } catch (e) {
+        console.warn('[Memory] Write shared_memory.json error:', e);
+      }
+    }
+  },
+
   async saveHarmonyMemory() {
     const jsonStr = JSON.stringify(this.harmonyMemories, null, 2);
     try {
       localStorage.setItem('aisa_harmony_memories', jsonStr);
     } catch (e) {}
 
-    // Ghi trực tiếp xuống file local nếu đang ở bản Desktop
     if (window.AisaDesktop && typeof window.AisaDesktop.writeFile === 'function') {
       try {
         await window.AisaDesktop.writeFile('data/memories/harmony_memory.json', jsonStr);
@@ -134,7 +192,6 @@ window.AisaMemory = {
       localStorage.setItem('aisa_echo_memories', jsonStr);
     } catch (e) {}
 
-    // Ghi trực tiếp xuống file local nếu đang ở bản Desktop
     if (window.AisaDesktop && typeof window.AisaDesktop.writeFile === 'function') {
       try {
         await window.AisaDesktop.writeFile('data/memories/echo_memory.json', jsonStr);
@@ -144,15 +201,21 @@ window.AisaMemory = {
     }
   },
 
+  async saveAllMemories() {
+    await this.saveSharedMemory();
+    await this.saveHarmonyMemory();
+    await this.saveEchoMemory();
+  },
+
   // --------------------------------------------------------------------------
-  // THÊM KÝ ỨC MỚI (TỰ ĐỘNG HOẶC THỦ CÔNG)
+  // THÊM & ĐỔI CHỦ NHÂN KÝ ỨC
   // --------------------------------------------------------------------------
-  async addHarmonyMemory(factText, category = 'lifestyle', emotion = 'caring') {
+  async addMemory(factText, persona = 'both', category = 'lifestyle') {
     if (!factText || !factText.trim()) return null;
     const clean = factText.trim();
 
     // Chống trùng lặp
-    const exists = (this.harmonyMemories || []).some(m => 
+    const exists = this.facts.some(m => 
       m.fact.toLowerCase() === clean.toLowerCase() ||
       m.fact.toLowerCase().includes(clean.toLowerCase()) ||
       clean.toLowerCase().includes(m.fact.toLowerCase())
@@ -163,54 +226,85 @@ window.AisaMemory = {
       id: Date.now(),
       fact: clean,
       category: category,
-      emotion: emotion,
       time: new Date().toISOString().split('T')[0]
     };
 
-    this.harmonyMemories.unshift(newMem);
-    await this.saveHarmonyMemory();
-    this.renderMemoryUI();
-
-    // Thông báo Toast ngọt ngào
-    if (window.AisaApp && typeof window.AisaApp.showToast === 'function') {
-      window.AisaApp.showToast(`🌸 Harmony vừa ghi nhớ: "${clean}"`, '🌸');
+    if (persona === 'harmony') {
+      newMem.emotion = 'caring';
+      this.harmonyMemories.unshift(newMem);
+      await this.saveHarmonyMemory();
+      if (window.AisaApp && typeof window.AisaApp.showToast === 'function') {
+        window.AisaApp.showToast(`🌸 Harmony vừa ghi nhớ: "${clean}"`, '🌸');
+      }
+    } else if (persona === 'echo') {
+      newMem.attitude = 'banter';
+      this.echoMemories.unshift(newMem);
+      await this.saveEchoMemory();
+      if (window.AisaApp && typeof window.AisaApp.showToast === 'function') {
+        window.AisaApp.showToast(`😈 Echo vừa ghi nhớ: "${clean}"`, '😈');
+      }
+    } else {
+      newMem.persona = 'both';
+      this.sharedMemories.unshift(newMem);
+      await this.saveSharedMemory();
+      if (window.AisaApp && typeof window.AisaApp.showToast === 'function') {
+        window.AisaApp.showToast(`🌸😈 Cả hai em cùng ghi nhớ: "${clean}"`, '✨');
+      }
     }
+
+    this.renderMemoryUI();
     return newMem;
   },
 
-  async addEchoMemory(factText, category = 'roast', attitude = 'banter') {
-    if (!factText || !factText.trim()) return null;
-    const clean = factText.trim();
+  async addFact(factText, category = 'general', target = 'both') {
+    return await this.addMemory(factText, target, category);
+  },
 
-    // Chống trùng lặp
-    const exists = (this.echoMemories || []).some(m => 
-      m.fact.toLowerCase() === clean.toLowerCase() ||
-      m.fact.toLowerCase().includes(clean.toLowerCase()) ||
-      clean.toLowerCase().includes(m.fact.toLowerCase())
-    );
-    if (exists) return null;
+  // Bấm để chuyển đổi persona giữa: Harmony ➔ Echo ➔ Cả hai
+  async cyclePersona(id, currentPersona) {
+    let item = null;
 
-    const newMem = {
-      id: Date.now(),
-      fact: clean,
-      category: category,
-      attitude: attitude,
-      time: new Date().toISOString().split('T')[0]
-    };
+    // Tìm và lấy item ra khỏi danh sách cũ
+    if (currentPersona === 'both') {
+      const idx = this.sharedMemories.findIndex(m => m.id === id);
+      if (idx !== -1) {
+        item = this.sharedMemories.splice(idx, 1)[0];
+        // Chuyển sang Harmony
+        delete item.persona;
+        this.harmonyMemories.unshift(item);
+      }
+    } else if (currentPersona === 'harmony') {
+      const idx = this.harmonyMemories.findIndex(m => m.id === id);
+      if (idx !== -1) {
+        item = this.harmonyMemories.splice(idx, 1)[0];
+        // Chuyển sang Echo
+        delete item.persona;
+        this.echoMemories.unshift(item);
+      }
+    } else if (currentPersona === 'echo') {
+      const idx = this.echoMemories.findIndex(m => m.id === id);
+      if (idx !== -1) {
+        item = this.echoMemories.splice(idx, 1)[0];
+        // Chuyển sang Cả hai (Both)
+        item.persona = 'both';
+        this.sharedMemories.unshift(item);
+      }
+    }
 
-    this.echoMemories.unshift(newMem);
-    await this.saveEchoMemory();
+    await this.saveAllMemories();
     this.renderMemoryUI();
 
-    // Thông báo Toast cà khịa
-    if (window.AisaApp && typeof window.AisaApp.showToast === 'function') {
-      window.AisaApp.showToast(`😈 Echo vừa ghi nhớ: "${clean}"`, '😈');
+    if (window.AisaApp && typeof window.AisaApp.showToast === 'function' && item) {
+      const targetName = currentPersona === 'both' ? '🌸 Harmony' : (currentPersona === 'harmony' ? '😈 Echo' : '🌸😈 Cả hai em');
+      window.AisaApp.showToast(`Đã chuyển ký ức cho: ${targetName}`, '🔄');
     }
-    return newMem;
   },
 
   async deleteMemory(persona, id) {
-    if (persona === 'harmony') {
+    if (persona === 'both') {
+      this.sharedMemories = this.sharedMemories.filter(m => m.id !== id);
+      await this.saveSharedMemory();
+    } else if (persona === 'harmony') {
       this.harmonyMemories = this.harmonyMemories.filter(m => m.id !== id);
       await this.saveHarmonyMemory();
     } else if (persona === 'echo') {
@@ -220,25 +314,17 @@ window.AisaMemory = {
     this.renderMemoryUI();
   },
 
-  async addFact(factText, category = 'general') {
-    if (['roast', 'deadline', 'flaw', 'hobby'].includes(category)) {
-      return await this.addEchoMemory(factText, category);
-    } else {
-      return await this.addHarmonyMemory(factText, category);
-    }
-  },
-
   async deleteFact(factId) {
+    this.sharedMemories = (this.sharedMemories || []).filter(m => m.id !== factId);
     this.harmonyMemories = (this.harmonyMemories || []).filter(m => m.id !== factId);
     this.echoMemories = (this.echoMemories || []).filter(m => m.id !== factId);
-    await this.saveHarmonyMemory();
-    await this.saveEchoMemory();
+    await this.saveAllMemories();
     this.renderMemoryUI();
   },
 
   onAutoMemoryExtracted(newMemory) {
     if (!newMemory || !newMemory.fact) return;
-    this.addFact(newMemory.fact, newMemory.category || 'general');
+    this.addMemory(newMemory.fact, newMemory.persona || 'both', newMemory.category || 'general');
   },
 
   // --------------------------------------------------------------------------
@@ -246,7 +332,17 @@ window.AisaMemory = {
   // --------------------------------------------------------------------------
   getMemoryPrompt(persona = 'all') {
     let text = '';
-    if (persona === 'harmony' || persona === 'all') {
+    const isAll = persona === 'all' || persona === 'duo';
+
+    // 1. Hồ sơ chung về Sakura (Cả 2 em đều nắm giữ)
+    const sList = (this.sharedMemories || []).slice(0, 15);
+    if (sList.length > 0) {
+      text += '\n\n[🌸😈 HỒ SƠ CHUNG VỀ SAKURA / YURIKA (CẢ 2 EM CÙNG BIẾT)]:\n' +
+        sList.map(m => `- [${m.category}] ${m.fact}`).join('\n');
+    }
+
+    // 2. Nhật ký riêng của Harmony 🌸
+    if (persona === 'harmony' || isAll) {
       const hList = (this.harmonyMemories || []).slice(0, 10);
       if (hList.length > 0) {
         text += '\n\n[🌸 NHẬT KÝ ÂN CẦN CỦA HARMONY VỀ SAKURA]:\n' +
@@ -254,7 +350,8 @@ window.AisaMemory = {
       }
     }
 
-    if (persona === 'echo' || persona === 'all') {
+    // 3. Sổ tay riêng của Echo 😈
+    if (persona === 'echo' || isAll) {
       const eList = (this.echoMemories || []).slice(0, 10);
       if (eList.length > 0) {
         text += '\n\n[😈 SỔ TAY CÀ KHỊA & DEADLINE CỦA ECHO VỀ SAKURA]:\n' +
@@ -270,23 +367,31 @@ window.AisaMemory = {
   // --------------------------------------------------------------------------
   injectMemoryTabs() {
     const label = document.querySelector('.memory-section-label');
-    if (!label || document.getElementById('memory-vault-tabs')) return;
+    if (!label) return;
+
+    // Xóa tabs cũ nếu có để tạo lại đồng bộ
+    const oldTabs = document.getElementById('memory-vault-tabs');
+    if (oldTabs) oldTabs.remove();
 
     const tabsContainer = document.createElement('div');
     tabsContainer.id = 'memory-vault-tabs';
     tabsContainer.style.display = 'flex';
-    tabsContainer.style.gap = '8px';
+    tabsContainer.style.gap = '6px';
     tabsContainer.style.margin = '10px 0 14px 0';
+    tabsContainer.style.flexWrap = 'wrap';
 
     tabsContainer.innerHTML = `
-      <button type="button" class="btn-mem-tab active" data-tab="all" style="padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+      <button type="button" class="btn-mem-tab active" data-tab="all" style="padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #fff; font-size: 12.5px; cursor: pointer; transition: all 0.2s;">
         🌸😈 Tất cả (<span id="count-all-mem">0</span>)
       </button>
-      <button type="button" class="btn-mem-tab" data-tab="harmony" style="padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(244,114,182,0.3); background: rgba(244,114,182,0.1); color: #f472b6; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+      <button type="button" class="btn-mem-tab" data-tab="harmony" style="padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(244,114,182,0.3); background: rgba(244,114,182,0.1); color: #f472b6; font-size: 12.5px; cursor: pointer; transition: all 0.2s;">
         🌸 Harmony (<span id="count-harmony-mem">0</span>)
       </button>
-      <button type="button" class="btn-mem-tab" data-tab="echo" style="padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(168,85,247,0.3); background: rgba(168,85,247,0.1); color: #c084fc; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+      <button type="button" class="btn-mem-tab" data-tab="echo" style="padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(168,85,247,0.3); background: rgba(168,85,247,0.1); color: #c084fc; font-size: 12.5px; cursor: pointer; transition: all 0.2s;">
         😈 Echo (<span id="count-echo-mem">0</span>)
+      </button>
+      <button type="button" class="btn-mem-tab" data-tab="shared" style="padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(56,189,248,0.3); background: rgba(56,189,248,0.1); color: #38bdf8; font-size: 12.5px; cursor: pointer; transition: all 0.2s;">
+        ✨ Chung (<span id="count-shared-mem">0</span>)
       </button>
     `;
 
@@ -315,9 +420,10 @@ window.AisaMemory = {
     const moreBadgeMemory = document.getElementById('more-badge-memory');
     const sidebarVaultCount = document.getElementById('sidebar-vault-count');
 
+    const sCount = (this.sharedMemories || []).length;
     const hCount = (this.harmonyMemories || []).length;
     const eCount = (this.echoMemories || []).length;
-    const totalCount = hCount + eCount;
+    const totalCount = sCount + hCount + eCount;
 
     if (badgeCount) badgeCount.textContent = totalCount;
     if (sidebarMemoryBadge) sidebarMemoryBadge.textContent = totalCount;
@@ -327,9 +433,11 @@ window.AisaMemory = {
     const countAllEl = document.getElementById('count-all-mem');
     const countHEl = document.getElementById('count-harmony-mem');
     const countEEl = document.getElementById('count-echo-mem');
+    const countSEl = document.getElementById('count-shared-mem');
     if (countAllEl) countAllEl.textContent = totalCount;
     if (countHEl) countHEl.textContent = hCount;
     if (countEEl) countEEl.textContent = eCount;
+    if (countSEl) countSEl.textContent = sCount;
 
     if (!factsContainer) return;
 
@@ -338,35 +446,51 @@ window.AisaMemory = {
       displayList = (this.harmonyMemories || []).map(m => ({ ...m, persona: 'harmony' }));
     } else if (this.activeTab === 'echo') {
       displayList = (this.echoMemories || []).map(m => ({ ...m, persona: 'echo' }));
+    } else if (this.activeTab === 'shared') {
+      displayList = (this.sharedMemories || []).map(m => ({ ...m, persona: 'both' }));
     } else {
       displayList = this.facts;
     }
 
     if (displayList.length === 0) {
       factsContainer.innerHTML = `<div class="empty-state" style="padding: 24px; text-align: center; color: rgba(255,255,255,0.5);">
-        Chưa có ký ức nào trong mục này. Khi trò chuyện, hai em ấy sẽ tự động cập nhật nhật ký ở đây! 🌸😈
+        Chưa có ký ức nào trong mục này. Khi trò chuyện, hai em ấy sẽ tự động ghi nhớ ở đây! 🌸😈
       </div>`;
       return;
     }
 
     factsContainer.innerHTML = displayList.map(f => {
+      const isBoth = f.persona === 'both';
       const isHarmony = f.persona === 'harmony';
-      const badgeColor = isHarmony ? '#f472b6' : '#c084fc';
-      const badgeBg = isHarmony ? 'rgba(244, 114, 182, 0.15)' : 'rgba(168, 85, 247, 0.15)';
-      const personaLabel = isHarmony ? '🌸 Harmony' : '😈 Echo';
+      
+      let badgeHtml = '';
+      if (isBoth) {
+        badgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: linear-gradient(135deg, rgba(244,114,182,0.25), rgba(168,85,247,0.25)); color: #f472b6; border: 1px solid rgba(244,114,182,0.3);">
+          🌸😈 Cả hai em
+        </span>`;
+      } else if (isHarmony) {
+        badgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: rgba(244, 114, 182, 0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.25);">
+          🌸 Harmony
+        </span>`;
+      } else {
+        badgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.25);">
+          😈 Echo
+        </span>`;
+      }
 
       return `
         <div class="memory-card" style="margin-bottom: 12px; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s;">
           <div class="memory-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ${badgeBg}; color: ${badgeColor};">
-                ${personaLabel}
-              </span>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              ${badgeHtml}
               <span class="memory-tag tag-${f.category || 'general'}" style="font-size: 11px; opacity: 0.8;">${f.category || 'ghi nhớ'}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="memory-date" style="font-size: 11px; color: rgba(255,255,255,0.4);">${f.time || ''}</span>
-              <button class="btn-del-memory" onclick="window.AisaMemory.deleteMemory('${f.persona}', ${f.id})" style="background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 14px; padding: 2px 6px;" title="Xóa ký ức này">✕</button>
+              <button type="button" class="btn-cycle-persona" onclick="window.AisaMemory.cyclePersona(${f.id}, '${f.persona}')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #38bdf8; border-radius: 6px; cursor: pointer; font-size: 11px; padding: 2px 7px;" title="Chuyển đổi người nhớ (Harmony / Echo / Cả hai)">
+                🔄 Đổi người
+              </button>
+              <button type="button" class="btn-del-memory" onclick="window.AisaMemory.deleteMemory('${f.persona}', ${f.id})" style="background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 14px; padding: 2px 6px;" title="Xóa ký ức này">✕</button>
             </div>
           </div>
           <div class="memory-content" style="font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,0.9);">
@@ -378,7 +502,6 @@ window.AisaMemory = {
   },
 
   async syncCloudD1() {
-    // Tùy chọn đồng bộ thêm từ Cloud D1 nếu có mạng
     try {
       const config = window.AISA_CONFIG;
       if (!config || !config.API_BASE_URL) return;
@@ -386,21 +509,47 @@ window.AisaMemory = {
       if (res.ok) {
         const data = await res.json();
         if (data.status === 'success' && Array.isArray(data.facts)) {
-          // Gộp vào nếu chưa có
+          let hasNew = false;
           for (const item of data.facts) {
             const clean = (item.fact || '').trim();
             if (!clean) continue;
             const exists = this.facts.some(f => f.fact.includes(clean) || clean.includes(f.fact));
             if (!exists) {
-              this.harmonyMemories.push({
-                id: item.id || Date.now(),
-                fact: clean,
-                category: item.category || 'general',
-                time: (item.created_at || '').split('T')[0] || new Date().toISOString().split('T')[0]
-              });
+              const cat = item.category || 'general';
+              // Phân loại thông minh vào đúng nơi
+              if (['roast', 'deadline', 'flaw', 'hobby'].includes(cat)) {
+                this.echoMemories.push({
+                  id: item.id || Date.now(),
+                  fact: clean,
+                  category: cat,
+                  attitude: 'banter',
+                  time: (item.created_at || '').split('T')[0] || new Date().toISOString().split('T')[0]
+                });
+              } else if (['caring', 'sweet', 'emotion'].includes(cat)) {
+                this.harmonyMemories.push({
+                  id: item.id || Date.now(),
+                  fact: clean,
+                  category: cat,
+                  emotion: 'caring',
+                  time: (item.created_at || '').split('T')[0] || new Date().toISOString().split('T')[0]
+                });
+              } else {
+                // Toàn bộ thông tin chung về Sakura -> đưa vào sharedMemories để cả 2 cùng biết!
+                this.sharedMemories.push({
+                  id: item.id || Date.now(),
+                  fact: clean,
+                  category: cat,
+                  persona: 'both',
+                  time: (item.created_at || '').split('T')[0] || new Date().toISOString().split('T')[0]
+                });
+              }
+              hasNew = true;
             }
           }
-          this.renderMemoryUI();
+          if (hasNew) {
+            await this.saveAllMemories();
+            this.renderMemoryUI();
+          }
         }
       }
     } catch (e) {}

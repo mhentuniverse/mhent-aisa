@@ -1,0 +1,79 @@
+[
+  {
+    "id": 40,
+    "fact": "Ngôn ngữ của Sakura: Khi trò chuyện, Sakura thường dùng từ ngữ thân mật, đời thường (như hong, nà, nhan, oce, :<<<). Harmony và Echo hoàn toàn thấu hiểu ý nghĩa, nhưng bản thân hai bạn luôn giữ trọn phong thái tự nhiên, độc đáo của riêng mình, TUYỆT ĐỐI KHÔNG nhại lại hay gượng ép chêm các từ đệm đó vào câu của mình.",
+    "category": "communication",
+    "persona": "both",
+    "time": "2026-09-29"
+  },
+  {
+    "id": 14,
+    "fact": "Cách xưng hô ưa thích: Cậu - tớ. Giọng điệu thân thiện, mộc mạc, gần gũi như bạn thân cùng phòng dự án.",
+    "category": "communication",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 16,
+    "fact": "Hệ sinh thái AI Teammates: Sakura định hướng xây dựng nhóm trợ lý AI như nhân sự MHEnt (Harmony ngọt ngào chu đáo, Echo nhạy bén và thích cà khịa vui vẻ), có thể thảo luận và phản biện lẫn nhau.",
+    "category": "communication",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 17,
+    "fact": "Dự án trọng điểm: 'Yume Tsukai Pretty Cure!' (夢使いプリキュア！) — Thể loại Magical Girl, Fantasy, Tình bạn, Ước mơ, Chiến đấu biến hình. Haruto / Cure Music & Sakura / Cure Nature.",
+    "category": "project",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 26,
+    "fact": "Kỹ thuật âm nhạc: Sáng tác và phối khí qua FL Studio + Suno AI; phân phối nhạc số qua RouteNote. Từng ra mắt album '夢使いプリキュア ! Vol. 2: 夢の未来'.",
+    "category": "project",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 30,
+    "fact": "Nền tảng kỹ thuật: Chuyên ngành IT tại FIT-NLU, thành thạo lập trình C/C++, Java (OOP), HTML/CSS, lệnh PowerShell, tối ưu hệ điều hành Windows; dùng Antigravity IDE, Cursor.",
+    "category": "tech_stack",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 34,
+    "fact": "Gu thẩm mỹ: Tông màu pastel, chủ đạo là màu hồng và hoa anh đào, tranh vẽ màu nước. Cực kỳ ghét hình ảnh tạo bằng AI trông giả tạo, biến dạng hoặc lỗi chi tiết nhân vật.",
+    "category": "preference",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 36,
+    "fact": "Thức uống yêu thích: Mê trà sữa lài (Lục Trà Thăng Hoa), trà sữa Thái xanh, trân châu trắng.",
+    "category": "preference",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 37,
+    "fact": "Món ăn/thức uống ghét (tuyệt đối tránh): Thạch đen / sương sáo, dồi sụn.",
+    "category": "preference",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 38,
+    "fact": "Gaming: Minecraft (modpack Fabric tự mod), rhythm games, Strinova, Valorant, game kinh dị quan sát (I'm on Observation Duty, Alternate Watch).",
+    "category": "habit",
+    "persona": "both",
+    "time": "2026-09-27"
+  },
+  {
+    "id": 39,
+    "fact": "Đời sống sinh viên & Tài chính: Ở ký túc xá ĐH Nông Lâm (FIT-NLU), ngân sách sinh viên có giới hạn; ưu tiên tiết kiệm, thiết thực. Quản lý tài chính theo kiểu tích lũy từng khoản nhỏ ('Quỹ Dành Dụm Cosplay Của Sakura').",
+    "category": "lifestyle",
+    "persona": "both",
+    "time": "2026-09-27"
+  }
+]

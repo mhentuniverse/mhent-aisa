@@ -743,10 +743,15 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>Ghim Ký Ức / Thói Quen Mới Cho AISA Nhớ</span>
           </div>
-          <form id="form-add-fact" class="memory-input-row">
+          <form id="form-add-fact" class="memory-input-row" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <input type="text" id="input-new-fact" class="memory-text-input"
-              placeholder="Ví dụ: Tớ thích uống cà phê ít đường vào buổi sáng..." required>
-            <select id="select-fact-category" class="memory-select" aria-label="Phân loại ký ức">
+              placeholder="Ví dụ: Tớ thích uống cà phê ít đường vào buổi sáng..." required style="flex: 1; min-width: 180px;">
+            <select id="select-fact-target" class="memory-select" aria-label="Ghi nhớ cho ai" style="width: auto;">
+              <option value="both">🌸😈 Cả hai em</option>
+              <option value="harmony">🌸 Harmony</option>
+              <option value="echo">😈 Echo</option>
+            </select>
+            <select id="select-fact-category" class="memory-select" aria-label="Phân loại ký ức" style="width: auto;">
               <option value="identity">Cá nhân</option>
               <option value="preference">Sở thích</option>
               <option value="habit">Thói quen</option>
