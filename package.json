@@ -5,6 +5,7 @@
   "main": "desktop/main.js",
   "scripts": {
     "start": "electron .",
+    "voice:server": "voice-server\\.venv\\Scripts\\python voice-server/server.py",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
@@ -32,7 +33,11 @@
       "**/*",
       "!dist/**",
       "!functions/**",
-      "!.git/**"
+      "!.git/**",
+      "!voice-server/.venv/**",
+      "!voice-server/models/**",
+      "!voice-server/*.wav",
+      "!voice-server/__pycache__/**"
     ],
     "win": {
       "target": [
@@ -48,5 +53,8 @@
       "createStartMenuShortcut": true,
       "shortcutName": "AISA Sanctuary"
     }
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
   }
 }

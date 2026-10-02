@@ -22,11 +22,16 @@
 
 ## 🧠 Kiến Trúc Kỹ Thuật (Architecture)
 
-- **Neural Brain Core:** Llama 3.3 70B Instruct (Cloudflare Workers AI Gateway).
+- **Neural Brain Core:** Llama 3.3 70B Instruct (Cloudflare Workers AI Gateway) & Google Gemini 2.5 Flash / Local Ollama.
 - **Vision AI Engine:** Llama 3.2 Vision OCR bóc tách từ vựng & phân tích ảnh tài liệu/sách vở.
 - **Long-Term Memory Vault:** Edge SQLite Cloudflare D1 (`personal_memory`, `saved_info`).
 - **Data & Calendar Bridge:** Supabase REST API (quản lý lịch trình, sự kiện theo múi giờ Việt Nam UTC+7).
-- **Voice Synthesis & Ambient:** Web Speech API (tinh chỉnh pitch/rate riêng biệt theo nhân cách) + Web Audio API bộ tạo sóng âm 432Hz xoa dịu tâm trí.
+- **RVC v2 & Piper Offline Voice Engine (Desktop Edition):**
+  - Tích hợp mô hình AI chuyển đổi âm sắc **RVC v2** (Retrieval-based Voice Conversion) tăng tốc phần cứng CUDA GPU (NVIDIA RTX).
+  - 🌸 **Harmony**: Âm sắc Kamisato Ayaka (`ayaka-rmvpe.pth`)
+  - 😈 **Echo**: Âm sắc Furina (`furina_rmvpe.pth`)
+  - **Base Speech**: Piper TTS Neural Engine tiếng Việt (`vivos`) sinh giọng nói hoàn toàn offline siêu tốc (~0.4s).
+- **Voice Synthesis & Ambient:** Web Speech API fallback + Web Audio API bộ tạo sóng âm 432Hz xoa dịu tâm trí.
 - **Frontend Stack:** Pure Modern Vanilla JS & CSS Grid/Flexbox, Glassmorphism Cyberpunk theme, Zero build-step requirement, SPA Routing ready (`vercel.json`).
 
 ---

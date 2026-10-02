@@ -7,3 +7,8 @@ yarn-error.log*
 Thumbs.db
 .DS_Store
 cloudflared.exe
+data/chats/
+voice-server/.venv/
+voice-server/models/
+voice-server/*.wav
+voice-server/__pycache__/

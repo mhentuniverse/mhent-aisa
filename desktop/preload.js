@@ -28,5 +28,9 @@ contextBridge.exposeInMainWorld('AisaDesktop', {
   // Local JSON Chat Logs Persistence
   saveChatLogs: (data) => ipcRenderer.invoke('desktop:save-chat-logs', data),
   loadChatLogs: () => ipcRenderer.invoke('desktop:load-chat-logs'),
-  openChatsFolder: () => ipcRenderer.invoke('desktop:open-chats-folder')
+  openChatsFolder: () => ipcRenderer.invoke('desktop:open-chats-folder'),
+
+  // RVC Neural Voice Synthesizer (Kamisato Ayaka / Furina)
+  synthesizeSpeech: (text, speaker, options = {}) =>
+    ipcRenderer.invoke('desktop:tts-synthesize', { text, speaker, options })
 });

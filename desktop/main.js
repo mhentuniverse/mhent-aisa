@@ -543,3 +543,26 @@ ipcMain.handle('desktop:open-chats-folder', async () => {
     return { success: false, error: err.message };
   }
 });
+
+// 11. RVC Voice Synthesizer (Kamisato Ayaka for Harmony, Furina for Echo)
+const rvcEngine = require('./rvc-engine');
+
+ipcMain.handle('desktop:tts-synthesize', async (event, { text, speaker, options }) => {
+  try {
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return { success: false, error: 'Text trống' };
+    }
+
+    const speakerKey = (speaker || 'HARMONY').toUpperCase();
+    const dataUrl = await rvcEngine.synthesizeSpeech(text, speakerKey, options || {});
+    if (dataUrl) {
+      return { success: true, dataUrl };
+    } else {
+      return { success: false, error: 'RVC Engine chưa sẵn sàng hoặc chưa trả về audio' };
+    }
+  } catch (err) {
+    console.error('[IPC RVC TTS] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
