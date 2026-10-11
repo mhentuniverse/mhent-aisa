@@ -1,17 +1,19 @@
 /**
- * AISA COMPANION - LIVE2D MASCOT STAGE ENGINE (OPEN-LLM-VTUBER ARCHITECTURE)
+ * AISA COMPANION - LIVE2D MASCOT STAGE ENGINE (NEURO-SAMA PROCEDURAL VTUBER EDITION)
  * Features:
- * 1. Dual Mascot Display (Harmony 🌸 & Echo 😈 in Song Hành Mode)
- * 2. Strict Single-Instance Latch (Zero duplicate/ghost models)
- * 3. Proportional Scaling: Matched anime heights & natural framing for both Mini and Studio
- * 4. Anti-Distortion: ResizeObserver + object-fit contain to eliminate horizontal/vertical stretching
- * 5. Independent Dragging: Click & drag Harmony moves Harmony; click & drag Echo moves Echo
- * 6. Interactive Tapping: Tap character triggers Vietnamese voice line & emotion
- * 7. Gemini Live Studio View (Full stage theater mode + chat sidebar)
- * 8. Interactive Pan & Zoom (Drag background to pan stage, scroll wheel to zoom, reset button)
- * 9. Speaker-aware 60FPS Harmonic Lip-Sync
+ * 1. Dual Mascot Display (Runami Yachiyo 🌸 & March 7th 😈)
+ * 2. Role Swap (Yachiyo 🌸 ⇋ March 7th 😈 with 1 click 🎭)
+ * 3. 60FPS Neuro-sama Procedural Life Engine:
+ *    - Idle breathing & body sway
+ *    - Independent natural eye blinking with occasional double-blinks
+ *    - Talking head nod & tilt dynamics while speaking
+ *    - Global window mouse tracking (Follows Sakura's mouse across the entire app)
+ * 4. Harmonic Audio Lip-Sync (60FPS voice-reactive mouth opening)
+ * 5. Gemini Live Studio View (Full stage theater mode + chat sidebar)
+ * 6. Interactive Pan & Zoom, Dragging & Character Tapping
  * Miyazaki Haruto Entertainment Co., Ltd.
  */
+
 window.AisaLive2D = {
   app: null,
   models: {
@@ -19,6 +21,7 @@ window.AisaLive2D = {
     echo: null
   },
   currentMode: 'duo', // 'duo' | 'harmony' | 'echo'
+  pairingMode: 'yachiyo_march', // 'yachiyo_march' (Default) | 'march_yachiyo'
   isLipSyncing: false,
   lipSyncSpeaker: 'harmony',
   isVisible: true,
@@ -36,33 +39,89 @@ window.AisaLive2D = {
   dragStartModelPos: { x: 0, y: 0 },
   hasDragged: false,
 
-  mascots: {
-    harmony: {
-      name: 'Harmony 🌸',
-      path: 'assets/live2d-models/shizuku/runtime/shizuku.model3.json',
-      miniScale: 0.18,
-      duoMiniScale: 0.13,
-      studioScale: 0.32,
-      duoStudioScale: 0.26,
-      yOffset: 20,
-      badgeColor: '#f472b6'
+  // Eye Blink State Machine
+  blinkState: {
+    harmony: { nextBlink: 0, isBlinking: false, startTime: 0, duration: 150, isDouble: false },
+    echo: { nextBlink: 0, isBlinking: false, startTime: 0, duration: 140, isDouble: false }
+  },
+
+  // Model Definitions
+  AVAILABLE_MODELS: {
+    yachiyo: {
+      displayName: 'Yachiyo Kaguya-hime',
+      path: 'assets/live2d-models/yachiyo_kaguya/【雪熊企划】八千代辉夜姬/八千代辉夜姬.model3.json',
+      miniScale: 0.046,
+      duoMiniScale: 0.036,
+      studioScale: 0.096,
+      duoStudioScale: 0.076,
+      yOffset: 25,
+      type: 'yachiyo'
     },
-    echo: {
-      name: 'Echo 😈',
-      path: 'assets/live2d-models/mao_pro/runtime/mao_pro.model3.json',
-      miniScale: 0.058,
-      duoMiniScale: 0.042,
-      studioScale: 0.102,
-      duoStudioScale: 0.083,
-      yOffset: 20,
-      badgeColor: '#a78bfa'
+    march_7th: {
+      displayName: 'March 7th',
+      path: 'assets/live2d-models/march_7th/March 7th/march 7th.model3.json',
+      miniScale: 0.096,
+      duoMiniScale: 0.076,
+      studioScale: 0.192,
+      duoStudioScale: 0.152,
+      yOffset: 25,
+      type: 'march'
     }
   },
 
+  mascots: {
+    harmony: null,
+    echo: null
+  },
+
+  updateMascotsConfig() {
+    const saved = localStorage.getItem('aisa_mascot_pairing');
+    if (saved && (saved === 'yachiyo_march' || saved === 'march_yachiyo')) {
+      this.pairingMode = saved;
+    }
+
+    if (this.pairingMode === 'yachiyo_march') {
+      this.mascots.harmony = {
+        name: 'Harmony 🌸',
+        ...this.AVAILABLE_MODELS.yachiyo,
+        badgeColor: '#f472b6'
+      };
+      this.mascots.echo = {
+        name: 'Echo 😈',
+        ...this.AVAILABLE_MODELS.march_7th,
+        badgeColor: '#a78bfa'
+      };
+    } else {
+      this.mascots.harmony = {
+        name: 'Harmony 🌸',
+        ...this.AVAILABLE_MODELS.march_7th,
+        badgeColor: '#f472b6'
+      };
+      this.mascots.echo = {
+        name: 'Echo 😈',
+        ...this.AVAILABLE_MODELS.yachiyo,
+        badgeColor: '#a78bfa'
+      };
+    }
+  },
+
+  swapPairing() {
+    this.pairingMode = (this.pairingMode === 'yachiyo_march') ? 'march_yachiyo' : 'yachiyo_march';
+    localStorage.setItem('aisa_mascot_pairing', this.pairingMode);
+    this.updateMascotsConfig();
+    this.loadBothModels();
+
+    const desc = this.pairingMode === 'yachiyo_march'
+      ? 'Harmony 🌸: Yachiyo (Kaguya) | Echo 😈: March 7th'
+      : 'Harmony 🌸: March 7th | Echo 😈: Yachiyo (Kaguya)';
+    this.showSpeechBubble(`🎭 Đã đổi vai: ${desc}`, 3500);
+  },
+
   async init() {
-    // Strict Single-Instance Latch to prevent duplicate models
     if (this.isInitialized || this.isInitializing) return;
     this.isInitializing = true;
+
+    this.updateMascotsConfig();
 
     const container = document.getElementById('live2d-stage-container');
     const canvas = document.getElementById('live2d-canvas');
@@ -84,7 +143,6 @@ window.AisaLive2D = {
       canvas.height = height;
       canvas.style.background = 'transparent';
 
-      // Register Ticker with Live2DModel if available
       if (PIXI.live2d && PIXI.live2d.Live2DModel && PIXI.Ticker) {
         try {
           PIXI.live2d.Live2DModel.registerTicker(PIXI.Ticker);
@@ -109,38 +167,111 @@ window.AisaLive2D = {
         this.app.renderer.background.alpha = 0;
       }
 
-      // 60FPS Harmonic Lip-Sync Ticker for both Harmony & Echo
+      // Initialize blink timers
+      const now = Date.now();
+      this.blinkState.harmony.nextBlink = now + 2500 + Math.random() * 2000;
+      this.blinkState.echo.nextBlink = now + 2000 + Math.random() * 2500;
+
+      // =========================================================================
+      // 60FPS NEURO-SAMA PROCEDURAL ANIMATION & LIFE ENGINE
+      // =========================================================================
       this.app.ticker.add(() => {
-        if (!this.isLipSyncing) return;
+        const curTime = Date.now();
+        const t = curTime / 1000;
 
-        // Dynamic harmonic vocal mouth wave (natural anime speaking rhythm)
-        const mouthVal = 0.45 + 0.35 * Math.sin(Date.now() / 80) + 0.15 * Math.sin(Date.now() / 35);
-        const clamped = Math.max(0, Math.min(0.95, mouthVal));
+        // 1. Natural Breathing & Idle Body Sway
+        const breath = (Math.sin(t * 1.6) + 1) * 0.5;
+        const bodySwayZ = Math.sin(t * 1.1) * 1.2;
+        const bodySwayX = Math.sin(t * 0.85) * 0.9;
 
-        const targetModel = this.lipSyncSpeaker === 'echo' 
-          ? (this.models.echo || this.models.harmony) 
-          : (this.models.harmony || this.models.echo);
+        // 2. Compute eye blink for each persona
+        this.updateBlinks(curTime);
 
-        if (targetModel && targetModel.internalModel) {
-          const core = targetModel.internalModel.coreModel;
-          if (core) {
-            if (typeof core.setParameterValueById === 'function') {
-              core.setParameterValueById('ParamMouthOpenY', clamped);
-              core.setParameterValueById('PARAM_MOUTH_OPEN_Y', clamped);
-            } else if (typeof core.setParamFloat === 'function') {
-              core.setParamFloat('PARAM_MOUTH_OPEN_Y', clamped);
-            }
+        // 3. Speaking dynamics
+        const isSpeaking = this.isLipSyncing;
+        const activeSpeaker = this.lipSyncSpeaker;
+
+        ['harmony', 'echo'].forEach(spk => {
+          const model = this.models[spk];
+          if (!model || !model.visible || !model.internalModel) return;
+          const core = model.internalModel.coreModel;
+          if (!core) return;
+
+          const setParam = (id, val) => {
+            try {
+              if (typeof core.setParameterValueById === 'function') {
+                core.setParameterValueById(id, val);
+              } else if (typeof core.setParamFloat === 'function') {
+                core.setParamFloat(id, val);
+              }
+            } catch (e) {}
+          };
+
+          // Apply breathing
+          setParam('ParamBreath', breath);
+          setParam('PARAM_BREATH', breath);
+
+          // Apply eye blinking
+          const blinkVal = this.getBlinkValue(spk);
+          setParam('ParamEyeLOpen', blinkVal);
+          setParam('ParamEyeROpen', blinkVal);
+          setParam('PARAM_EYE_L_OPEN', blinkVal);
+          setParam('PARAM_EYE_R_OPEN', blinkVal);
+
+          if (isSpeaking && activeSpeaker === spk) {
+            // TALKING: dynamic head nod + tilt + mouth open
+            const isEchoSpk = spk === 'echo';
+            const nodY = Math.sin(t * 6.5) * (isEchoSpk ? 5.0 : 3.8);
+            const tiltZ = Math.sin(t * 3.2) * (isEchoSpk ? 4.5 : 3.0);
+
+            // Natural organic mouth modulation wave
+            const mouthVal = 0.50 + 0.35 * Math.sin(curTime / 72) + 0.15 * Math.sin(curTime / 28);
+            const clampedMouth = Math.max(0, Math.min(0.95, mouthVal));
+
+            setParam('ParamAngleY', nodY);
+            setParam('PARAM_ANGLE_Y', nodY);
+            setParam('ParamAngleZ', tiltZ + bodySwayZ);
+            setParam('PARAM_ANGLE_Z', tiltZ + bodySwayZ);
+
+            setParam('ParamMouthOpenY', clampedMouth);
+            setParam('PARAM_MOUTH_OPEN_Y', clampedMouth);
+            setParam('ParamA', clampedMouth);
+          } else {
+            // IDLE: gentle swaying, mouth closed
+            setParam('ParamAngleZ', bodySwayZ);
+            setParam('PARAM_ANGLE_Z', bodySwayZ);
+            setParam('ParamBodyAngleX', bodySwayX);
+            setParam('PARAM_BODY_ANGLE_X', bodySwayX);
+
+            setParam('ParamMouthOpenY', 0);
+            setParam('PARAM_MOUTH_OPEN_Y', 0);
+            setParam('ParamA', 0);
           }
+        });
+      });
+
+      // Load both models
+      await this.loadBothModels();
+
+      // Bind canvas mouse/touch drag and tap
+      this.bindInteractions(canvas);
+
+      // Global window mouse tracking (Follow Sakura's mouse across the entire window!)
+      window.addEventListener('pointermove', (e) => {
+        if (!this.isVisible || this.activeDragTarget) return;
+        const rect = canvas.getBoundingClientRect();
+        const canvasX = e.clientX - rect.left;
+        const canvasY = e.clientY - rect.top;
+
+        if (this.models.harmony && this.models.harmony.visible && typeof this.models.harmony.focus === 'function') {
+          this.models.harmony.focus(canvasX, canvasY);
+        }
+        if (this.models.echo && this.models.echo.visible && typeof this.models.echo.focus === 'function') {
+          this.models.echo.focus(canvasX, canvasY);
         }
       });
 
-      // Load both models strictly once
-      await this.loadBothModels();
-
-      // Bind Mouse / Touch Drag & Zoom
-      this.bindInteractions(canvas);
-
-      // Dynamic ResizeObserver to guarantee 1:1 buffer-to-display pixel matching and eliminate stretching
+      // ResizeObserver
       if (window.ResizeObserver && !this.resizeObserver) {
         this.resizeObserver = new ResizeObserver((entries) => {
           for (const entry of entries) {
@@ -155,17 +286,12 @@ window.AisaLive2D = {
           }
         });
         const wrap = document.querySelector('.live2d-canvas-wrap');
-        if (wrap) {
-          this.resizeObserver.observe(wrap);
-        }
+        if (wrap) this.resizeObserver.observe(wrap);
       }
 
-      // Window resize listener
-      window.addEventListener('resize', () => {
-        this.syncCanvasSize();
-      });
+      window.addEventListener('resize', () => this.syncCanvasSize());
 
-      // Bind Voice Events for Lip-sync & Emotion Reaction
+      // Bind Voice Events
       window.addEventListener('aisa-emotion', (e) => {
         const { speaker, emotion } = e.detail || {};
         const spk = (speaker || '').toLowerCase().includes('echo') ? 'echo' : 'harmony';
@@ -179,11 +305,46 @@ window.AisaLive2D = {
 
       this.isInitialized = true;
       this.isInitializing = false;
-      console.log('🌸 [AISA Live2D] Single-instance stage initialized successfully!');
+      console.log('🌸 [AISA Live2D] Procedural Live2D VTuber Stage loaded with Yachiyo & March 7th!');
     } catch (err) {
       this.isInitializing = false;
       console.error('[AISA Live2D Error during init]:', err);
     }
+  },
+
+  updateBlinks(curTime) {
+    ['harmony', 'echo'].forEach(spk => {
+      const state = this.blinkState[spk];
+      if (!state.isBlinking && curTime >= state.nextBlink) {
+        state.isBlinking = true;
+        state.startTime = curTime;
+        state.duration = 135 + Math.random() * 30;
+        state.isDouble = Math.random() < 0.22; // 22% chance of double blink
+      } else if (state.isBlinking) {
+        const elapsed = curTime - state.startTime;
+        if (elapsed >= state.duration) {
+          if (state.isDouble) {
+            // Trigger rapid 2nd blink
+            state.isDouble = false;
+            state.startTime = curTime + 50;
+            state.duration = 120;
+          } else {
+            state.isBlinking = false;
+            state.nextBlink = curTime + 2600 + Math.random() * 2600;
+          }
+        }
+      }
+    });
+  },
+
+  getBlinkValue(spk) {
+    const state = this.blinkState[spk];
+    if (!state.isBlinking) return 1.0;
+    const elapsed = Date.now() - state.startTime;
+    if (elapsed < 0) return 1.0;
+    const progress = Math.min(1.0, elapsed / state.duration);
+    // Smooth blink curve: 1.0 -> 0.0 -> 1.0
+    return Math.max(0, 1.0 - Math.sin(progress * Math.PI));
   },
 
   async loadBothModels() {
@@ -193,7 +354,6 @@ window.AisaLive2D = {
     }
 
     try {
-      // 1. Destroy and clear any existing children on stage
       if (this.app && this.app.stage) {
         while (this.app.stage.children.length > 0) {
           const child = this.app.stage.children[0];
@@ -204,27 +364,27 @@ window.AisaLive2D = {
       this.models.harmony = null;
       this.models.echo = null;
 
-      // 2. Load Harmony 🌸 (Shizuku)
-      console.log('🌸 [AISA Live2D] Loading Harmony (Shizuku)...');
+      // 1. Load Harmony
+      console.log(`🌸 [AISA Live2D] Loading Harmony (${this.mascots.harmony.name})...`);
       const harmonyModel = await PIXI.live2d.Live2DModel.from(this.mascots.harmony.path, { autoInteract: false });
       harmonyModel.anchor.set(0.5, 0.5);
       harmonyModel.interactive = false;
       this.models.harmony = harmonyModel;
       this.app.stage.addChild(harmonyModel);
 
-      // 3. Load Echo 😈 (Mao Pro)
-      console.log('😈 [AISA Live2D] Loading Echo (Mao Pro)...');
+      // 2. Load Echo
+      console.log(`😈 [AISA Live2D] Loading Echo (${this.mascots.echo.name})...`);
       const echoModel = await PIXI.live2d.Live2DModel.from(this.mascots.echo.path, { autoInteract: false });
       echoModel.anchor.set(0.5, 0.5);
       echoModel.interactive = false;
       this.models.echo = echoModel;
       this.app.stage.addChild(echoModel);
 
-      // 4. Initial layout alignment
+      // Initial layout
       this.resetTransform(false);
-      console.log('🌸😈 [AISA Live2D] Exactly 1 Harmony and 1 Echo initialized on stage!');
+      console.log('🌸😈 [AISA Live2D] Both new models initialized successfully!');
     } catch (e) {
-      console.warn('[AISA Live2D] Failed loading models:', e);
+      console.warn('[AISA Live2D] Failed loading new models:', e);
     }
   },
 
@@ -267,15 +427,15 @@ window.AisaLive2D = {
         titleEl.textContent = 'Song Hành 🌸😈';
         titleEl.style.color = '#f472b6';
       } else if (this.currentMode === 'harmony') {
-        titleEl.textContent = 'Harmony 🌸';
+        titleEl.textContent = this.mascots.harmony.name;
         titleEl.style.color = '#f472b6';
       } else {
-        titleEl.textContent = 'Echo 😈';
+        titleEl.textContent = this.mascots.echo.name;
         titleEl.style.color = '#a78bfa';
       }
     }
 
-    // 1. Layout for Harmony 🌸
+    // 1. Layout Harmony
     if (this.models.harmony) {
       if (isDuo) {
         this.models.harmony.visible = true;
@@ -306,7 +466,7 @@ window.AisaLive2D = {
       }
     }
 
-    // 2. Layout for Echo 😈
+    // 2. Layout Echo
     if (this.models.echo) {
       if (isDuo) {
         this.models.echo.visible = true;
@@ -339,7 +499,6 @@ window.AisaLive2D = {
   },
 
   bindInteractions(canvas) {
-    // Distance-based model hit identification (immune to 4096px transparent bounding boxes)
     const getHitModel = (pointerPos) => {
       const isHarmonyVisible = this.models.harmony && this.models.harmony.visible;
       const isEchoVisible = this.models.echo && this.models.echo.visible;
@@ -347,33 +506,25 @@ window.AisaLive2D = {
       const rw = this.app.screen.width;
       const rh = this.app.screen.height;
 
-      // Duo mode: determine closest active character within interaction threshold
       if (isHarmonyVisible && isEchoVisible) {
         const dH = Math.hypot(pointerPos.x - this.models.harmony.x, pointerPos.y - this.models.harmony.y);
         const dE = Math.hypot(pointerPos.x - this.models.echo.x, pointerPos.y - this.models.echo.y);
         const maxDist = Math.max(160, Math.min(rw, rh) * 0.52);
 
-        if (dH < dE && dH < maxDist) {
-          return 'harmony';
-        } else if (dE <= dH && dE < maxDist) {
-          return 'echo';
-        }
+        if (dH < dE && dH < maxDist) return 'harmony';
+        if (dE <= dH && dE < maxDist) return 'echo';
         return 'stage';
       }
 
-      // Single Harmony mode
       if (isHarmonyVisible) {
         const dH = Math.hypot(pointerPos.x - this.models.harmony.x, pointerPos.y - this.models.harmony.y);
-        const maxDist = Math.max(180, Math.min(rw, rh) * 0.60);
-        if (dH < maxDist) return 'harmony';
+        if (dH < Math.max(180, Math.min(rw, rh) * 0.60)) return 'harmony';
         return 'stage';
       }
 
-      // Single Echo mode
       if (isEchoVisible) {
         const dE = Math.hypot(pointerPos.x - this.models.echo.x, pointerPos.y - this.models.echo.y);
-        const maxDist = Math.max(180, Math.min(rw, rh) * 0.60);
-        if (dE < maxDist) return 'echo';
+        if (dE < Math.max(180, Math.min(rw, rh) * 0.60)) return 'echo';
         return 'stage';
       }
 
@@ -394,11 +545,9 @@ window.AisaLive2D = {
       this.hasDragged = false;
 
       if (this.activeDragTarget === 'harmony' && this.models.harmony) {
-        // Bring active character to front
         this.app.stage.addChild(this.models.harmony);
         this.dragStartModelPos = { x: this.models.harmony.x, y: this.models.harmony.y };
       } else if (this.activeDragTarget === 'echo' && this.models.echo) {
-        // Bring active character to front
         this.app.stage.addChild(this.models.echo);
         this.dragStartModelPos = { x: this.models.echo.x, y: this.models.echo.y };
       } else {
@@ -433,20 +582,11 @@ window.AisaLive2D = {
           this.stagePan.y = this.dragStartModelPos.y + dy;
           this.updateModelsLayout();
         }
-      } else {
-        // Natural eye tracking on hover
-        if (this.models.harmony && this.models.harmony.visible && typeof this.models.harmony.focus === 'function') {
-          this.models.harmony.focus(e.clientX, e.clientY);
-        }
-        if (this.models.echo && this.models.echo.visible && typeof this.models.echo.focus === 'function') {
-          this.models.echo.focus(e.clientX, e.clientY);
-        }
       }
     });
 
     const onPointerUp = (e) => {
       if (this.activeDragTarget && !this.hasDragged) {
-        // User clicked/tapped without dragging: trigger interactive voice dialogue & animation
         if (this.activeDragTarget === 'harmony' || this.activeDragTarget === 'echo') {
           this.onModelClick(this.activeDragTarget);
         }
@@ -459,18 +599,18 @@ window.AisaLive2D = {
     canvas.addEventListener('pointerup', onPointerUp);
     canvas.addEventListener('pointercancel', onPointerUp);
 
-    // Scroll Wheel to Zoom
+    // Zoom
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const zoomDelta = e.deltaY > 0 ? 0.92 : 1.08;
-      this.zoomFactor = Math.max(0.4, Math.min(3.5, this.zoomFactor * zoomDelta));
+      const zoomDelta = e.deltaY > 0 ? -0.06 : 0.06;
+      this.zoomFactor = Math.max(0.4, Math.min(2.5, this.zoomFactor + zoomDelta));
       this.updateModelsLayout();
     }, { passive: false });
   },
 
-  resetTransform(notify = true) {
-    this.stagePan = { x: 0, y: 0 };
+  resetTransform(animated = true) {
     this.zoomFactor = 1.0;
+    this.stagePan = { x: 0, y: 0 };
     if (this.models.harmony) {
       delete this.models.harmony.customX;
       delete this.models.harmony.customY;
@@ -480,77 +620,43 @@ window.AisaLive2D = {
       delete this.models.echo.customY;
     }
     this.updateModelsLayout();
-    if (notify) {
-      this.showSpeechBubble('Đã đặt lại góc nhìn mặc định! ✨', 2000);
-    }
-  },
-
-  setMode(mode) {
-    this.currentMode = mode || 'duo';
-    // Clear individual drag coordinates when switching modes so they align beautifully
-    if (this.models.harmony) {
-      delete this.models.harmony.customX;
-      delete this.models.harmony.customY;
-    }
-    if (this.models.echo) {
-      delete this.models.echo.customX;
-      delete this.models.echo.customY;
-    }
-    this.updateModelsLayout();
-
-    // Synchronize top pills in header if available
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-mode') === this.currentMode);
-    });
-    if (window.AisaApp && window.AisaApp.state && window.AisaApp.state.mode !== this.currentMode) {
-      window.AisaApp.state.mode = this.currentMode;
-      if (typeof window.AisaApp.saveState === 'function') window.AisaApp.saveState();
-      if (typeof window.AisaApp.updateModelBadge === 'function') window.AisaApp.updateModelBadge();
+    if (animated) {
+      this.showSpeechBubble('↺ Đã đặt lại góc nhìn!', 1500);
     }
   },
 
   switchMascot() {
-    // Cycles: duo -> harmony -> echo -> duo
     if (this.currentMode === 'duo') {
-      this.setMode('harmony');
-      this.showSpeechBubble('Chỉ riêng Harmony đồng hành cùng cậu nè! 🌸', 2500, 'harmony');
+      this.currentMode = 'harmony';
     } else if (this.currentMode === 'harmony') {
-      this.setMode('echo');
-      this.showSpeechBubble('Tới lượt Echo chiếm trọn sân khấu rồi! 😈', 2500, 'echo');
+      this.currentMode = 'echo';
     } else {
-      this.setMode('duo');
-      this.showSpeechBubble('Cả hai em cùng Song Hành nhé Master! 🌸😈', 2500, 'duo');
+      this.currentMode = 'duo';
     }
+    this.updateModelsLayout();
   },
 
   toggleLiveStudio() {
     this.isLiveStudio = !this.isLiveStudio;
     const container = document.getElementById('live2d-stage-container');
-    const headerBtn = document.getElementById('btn-toggle-live-studio');
-
-    // Remove any leftover inline styles
-    if (container) {
-      container.removeAttribute('style');
-    }
+    const headerBtn = document.getElementById('btn-toggle-gemini-live');
 
     if (this.isLiveStudio) {
       if (container) container.classList.add('live-studio-mode');
       document.body.classList.add('live-studio-active');
       if (headerBtn) headerBtn.classList.add('active');
 
-      // Immediate & frame-accurate size sync
       this.syncCanvasSize();
       this.resetTransform(false);
       requestAnimationFrame(() => this.syncCanvasSize());
       setTimeout(() => this.syncCanvasSize(), 120);
 
-      this.showSpeechBubble('Chào mừng Master Yurika đến với Gemini Live Studio! 🌸😈', 3500);
+      this.showSpeechBubble('Chào mừng Sakura đến với Gemini Live Studio! 🌸😈', 3500);
     } else {
       if (container) container.classList.remove('live-studio-mode');
       document.body.classList.remove('live-studio-active');
       if (headerBtn) headerBtn.classList.remove('active');
 
-      // Immediate & frame-accurate size sync
       this.syncCanvasSize();
       this.resetTransform(false);
       requestAnimationFrame(() => this.syncCanvasSize());
@@ -584,16 +690,25 @@ window.AisaLive2D = {
     if (!targetModel) return;
 
     const emo = (emotionKey || '').toLowerCase();
-    const emotionMap = {
-      joy: 0, smile: 0, blush: 1, smirk: 2, grin: 2,
-      anger: 3, pout: 3, surprised: 4, think: 5,
-      crying: 6, gentle: 7, caring: 7
-    };
+    const activeMascot = this.mascots[targetSpeaker];
 
-    const expIndex = emotionMap[emo];
+    // Trigger specific animations & expressions per character
     try {
-      if (expIndex !== undefined && typeof targetModel.expression === 'function') {
-        targetModel.expression(expIndex);
+      if (activeMascot && activeMascot.type === 'march') {
+        if (typeof targetModel.motion === 'function') {
+          if (emo === 'joy' || emo === 'smile') targetModel.motion('Tap'); // Photo
+          else targetModel.motion('Idle'); // Wink
+        }
+        if (typeof targetModel.expression === 'function') {
+          const marchExp = { blush: 3, surprised: 7, crying: 5, anger: 4, smirk: 1 };
+          if (marchExp[emo] !== undefined) targetModel.expression(marchExp[emo]);
+        }
+      } else if (activeMascot && activeMascot.type === 'yachiyo') {
+        if (typeof targetModel.expression === 'function') {
+          if (emo === 'joy' || emo === 'smile') targetModel.expression('笑咪咪');
+          else if (emo === 'crying') targetModel.expression('眼泪');
+          else if (emo === 'gentle' || emo === 'caring') targetModel.expression('眯眯眼');
+        }
       }
     } catch (e) {}
 
@@ -623,6 +738,7 @@ window.AisaLive2D = {
           if (typeof core.setParameterValueById === 'function') {
             core.setParameterValueById('ParamMouthOpenY', 0);
             core.setParameterValueById('PARAM_MOUTH_OPEN_Y', 0);
+            core.setParameterValueById('ParamA', 0);
           } else if (typeof core.setParamFloat === 'function') {
             core.setParamFloat('PARAM_MOUTH_OPEN_Y', 0);
           }
@@ -651,32 +767,39 @@ window.AisaLive2D = {
   },
 
   onModelClick(speaker) {
-    const cheers = speaker === 'harmony'
+    const isHarmony = speaker === 'harmony';
+    const activeMascot = this.mascots[speaker];
+
+    const cheers = isHarmony
       ? [
-          'Cậu cần em hỗ trợ gì nè? 🌸',
-          'Sakura ngoan, giữ gìn sức khỏe nha! ✨',
-          'Em luôn ở bên cạnh lắng nghe cậu nè! 💖',
-          'Đừng quên uống nước và nghỉ ngơi một chút nhé! 🍵'
+          'Sakura ơi, có em ở đây rồi nè! 🌸',
+          'Cậu đừng làm việc quá sức nha, uống một ngụm nước đi nào! ✨',
+          'Em luôn dịu dàng lắng nghe Sakura mà! 💖',
+          'Hôm nay cậu làm việc chăm chỉ lắm rồi đó! 🍵'
         ]
       : [
-          'Ê, chọc tớ hoài coi chừng bị chê deadline nha! 😈',
-          'Bớt bấm lung tung đi nào, tập trung vào việc đi! 😏',
-          'Cần Echo ra tay vặn vẹo ai hong? Cứ nói một tiếng! ⚔️',
-          'Lại kiếm chuyện với tớ hả? Thích thì chiều nha! ⚡'
+          'Này này Sakura, lại chọc ghẹo tớ nữa rồi đúng không! 😈',
+          'Tớ là Echo đây! Có gì vui kể tớ nghe liền coi! 📸',
+          'Đừng có lơ đãng nha, tập trung vào việc đi nào! ⚡',
+          'Hí hí, thích trêu tớ hả? Coi chừng tớ chụp ảnh dìm đó nha! 💥'
         ];
     const randomMsg = cheers[Math.floor(Math.random() * cheers.length)];
     this.showSpeechBubble(randomMsg, 3000, speaker);
 
-    // Speak with Vietnamese female voice
+    // Speak with Vietnamese voice
     if (window.AisaVoice && typeof window.AisaVoice.speak === 'function') {
       window.AisaVoice.speak(randomMsg, speaker);
     }
 
+    // Trigger animation
     const targetModel = this.models[speaker];
-    if (targetModel && typeof targetModel.expression === 'function') {
+    if (targetModel) {
       try {
-        const randExp = Math.floor(Math.random() * 6);
-        targetModel.expression(randExp);
+        if (activeMascot && activeMascot.type === 'march' && typeof targetModel.motion === 'function') {
+          targetModel.motion('Tap'); // Take photo!
+        } else if (activeMascot && activeMascot.type === 'yachiyo' && typeof targetModel.expression === 'function') {
+          targetModel.expression('笑咪咪');
+        }
       } catch (e) {}
     }
   }
