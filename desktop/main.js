@@ -544,8 +544,8 @@ ipcMain.handle('desktop:open-chats-folder', async () => {
   }
 });
 
-// 11. RVC Voice Synthesizer (Kamisato Ayaka for Harmony, Furina for Echo)
-const rvcEngine = require('./rvc-engine');
+// 11. Gemini Voice Synthesizer (Autonoe for Harmony 🌸, Leda for Echo 😈)
+const geminiVoiceEngine = require('./gemini-voice-engine');
 
 ipcMain.handle('desktop:tts-synthesize', async (event, { text, speaker, options }) => {
   try {
@@ -554,14 +554,14 @@ ipcMain.handle('desktop:tts-synthesize', async (event, { text, speaker, options 
     }
 
     const speakerKey = (speaker || 'HARMONY').toUpperCase();
-    const dataUrl = await rvcEngine.synthesizeSpeech(text, speakerKey, options || {});
+    const dataUrl = await geminiVoiceEngine.synthesizeSpeech(text, speakerKey, options || {});
     if (dataUrl) {
       return { success: true, dataUrl };
     } else {
-      return { success: false, error: 'RVC Engine chưa sẵn sàng hoặc chưa trả về audio' };
+      return { success: false, error: 'Gemini Voice Synthesis không trả về audio' };
     }
   } catch (err) {
-    console.error('[IPC RVC TTS] Error:', err.message);
+    console.error('[IPC Gemini TTS] Error:', err.message);
     return { success: false, error: err.message };
   }
 });

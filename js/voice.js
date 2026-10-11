@@ -157,8 +157,10 @@ window.AisaVoice = {
       window.AisaDesktop.synthesizeSpeech(cleanText, speaker)
         .then(result => {
           if (!result || !result.success || !result.dataUrl) {
-            console.warn('[Voice] Voice synthesis failed, fallback to Web Speech:', result && result.error);
-            this._speakWebSpeech(cleanText, speaker, onDone);
+            console.warn('[Voice] Desktop synthesis failed, fallback to Gemini Web / Web Speech:', result && result.error);
+            this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
+              if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
+            });
             return;
           }
           const audio = new Audio(result.dataUrl);
@@ -167,10 +169,80 @@ window.AisaVoice = {
           audio.onerror = () => this._speakWebSpeech(cleanText, speaker, onDone);
           audio.play().catch(() => this._speakWebSpeech(cleanText, speaker, onDone));
         })
-        .catch(() => this._speakWebSpeech(cleanText, speaker, onDone));
+        .catch(() => {
+          this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
+            if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
+          });
+        });
       return;
     }
-    this._speakWebSpeech(cleanText, speaker, onDone);
+
+    // Web Browser Mode: Call Gemini TTS directly
+    this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
+      if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
+    });
+  },
+
+  async _speakGeminiWeb(cleanText, speaker, onDone) {
+    const key = localStorage.getItem('mhent_ai_api_key') || '';
+    const isEcho = (speaker || '').toUpperCase().includes('ECHO');
+    const voiceName = isEcho ? 'Leda' : 'Autonoe';
+    const style = isEcho ? 'youthful, cheeky and teasing' : 'gentle, sweet and caring';
+
+    // 1. If user has saved their key in localStorage, call Gemini direct
+    if (key) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              role: 'user',
+              parts: [{ text: cleanText, speech_metadata: { style } }]
+            }],
+            generationConfig: {
+              responseModalities: ['AUDIO'],
+              speechConfig: { voiceConfig: { voice: voiceName } }
+            }
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
+          const mime = data.candidates[0].content.parts[0].inlineData.mimeType || 'audio/wav';
+          const dataUrl = `data:${mime};base64,${data.candidates[0].content.parts[0].inlineData.data}`;
+          const audio = new Audio(dataUrl);
+          this._currentAudio = audio;
+          audio.onended = onDone;
+          audio.onerror = () => this._speakWebSpeech(cleanText, speaker, onDone);
+          await audio.play();
+          return true;
+        }
+      } catch (e) {
+        console.warn('[Gemini Voice Direct] Failed, trying worker proxy:', e.message);
+      }
+    }
+
+    // 2. Call Cloudflare Worker endpoint (/api/voice)
+    try {
+      const res = await fetch('https://api.mhentuniverse.com/api/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleanText, speaker })
+      });
+      const data = await res.json();
+      if (data && data.success && data.dataUrl) {
+        const audio = new Audio(data.dataUrl);
+        this._currentAudio = audio;
+        audio.onended = onDone;
+        audio.onerror = () => this._speakWebSpeech(cleanText, speaker, onDone);
+        await audio.play();
+        return true;
+      }
+    } catch (e) {
+      console.warn('[Gemini Voice Proxy] Error:', e.message);
+    }
+
+    return false;
   },
 
   _speakWebSpeech(cleanText, speaker, onDone) {

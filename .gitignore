@@ -8,7 +8,7 @@ Thumbs.db
 .DS_Store
 cloudflared.exe
 data/chats/
-voice-server/.venv/
-voice-server/models/
-voice-server/*.wav
-voice-server/__pycache__/
+audio_demo/
+.env*
+data/keys.json
+data/config.json
