@@ -50,12 +50,8 @@ window.AisaVoice = {
       const otherVi = viVoices.find(v => v !== femaleVi) || femaleVi || viVoices[0];
       return otherVi;
     }
-    const femaleFallback = voices.find(v => {
-      const n = v.name.toLowerCase();
-      return (n.includes('female') || n.includes('natural') || n.includes('jenny') || n.includes('aria') || n.includes('zira') || n.includes('ayumi')) &&
-             !n.includes('male') && !n.includes('david') && !n.includes('mark') && !n.includes('george');
-    });
-    return femaleFallback || voices[0];
+    // TUYỆT ĐỐI KHÔNG fallback sang voice tiếng Anh (như Zira / David) khi đọc tiếng Việt
+    return null;
   },
 
   // Vedal Hands-free WebRTC Mic & VAD State
@@ -554,10 +550,10 @@ window.AisaVoice = {
     };
     if (!cleanText) { onDone(); return; }
     if (window.AisaDesktop && typeof window.AisaDesktop.synthesizeSpeech === 'function') {
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TTS timeout')), 1600));
-      Promise.race([window.AisaDesktop.synthesizeSpeech(cleanText, speaker), timeoutPromise])
+      window.AisaDesktop.synthesizeSpeech(cleanText, speaker)
         .then(result => {
           if (!result || !result.success || !result.dataUrl) {
+            console.warn('[Voice] Desktop synthesis failed, trying Gemini Web:', result && result.error);
             this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
               if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
             });
@@ -566,17 +562,26 @@ window.AisaVoice = {
           const audio = new Audio(result.dataUrl);
           this._currentAudio = audio;
           audio.onended = onDone;
-          audio.onerror = () => this._speakWebSpeech(cleanText, speaker, onDone);
-          audio.play().catch(() => this._speakWebSpeech(cleanText, speaker, onDone));
+          audio.onerror = () => {
+            this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
+              if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
+            });
+          };
+          audio.play().catch(e => {
+            console.warn('[Audio play error]:', e);
+            if (onDone) onDone();
+          });
         })
-        .catch(() => {
-          // Instant fallback to 0ms local speech if network TTS is slow
-          this._speakWebSpeech(cleanText, speaker, onDone);
+        .catch(err => {
+          console.warn('[Voice] synthesizeSpeech error:', err);
+          this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
+            if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
+          });
         });
       return;
     }
 
-    // Web Browser Mode: Call Gemini TTS directly with timeout
+    // Web Browser Mode: Call Gemini TTS directly
     this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
       if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
     });
@@ -588,11 +593,11 @@ window.AisaVoice = {
     const voiceName = isEcho ? 'Leda' : 'Autonoe';
     const style = isEcho ? 'youthful, cheeky and teasing' : 'gentle, sweet and caring';
 
-    // 1. If user has saved their key in localStorage, call Gemini direct with timeout
+    // 1. If user has saved their key in localStorage, call Gemini direct
     if (key) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1600);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent?key=${key}`, {
           method: 'POST',
           signal: controller.signal,
@@ -621,7 +626,7 @@ window.AisaVoice = {
           return true;
         }
       } catch (e) {
-        console.warn('[Gemini Voice Direct] Failed or timed out, fallback to local voice:', e.message);
+        console.warn('[Gemini Voice Direct] Failed, trying worker proxy:', e.message);
       }
     }
 
@@ -650,11 +655,16 @@ window.AisaVoice = {
 
   _speakWebSpeech(cleanText, speaker, onDone) {
     if (!this.synth) { if (onDone) onDone(); return; }
+    const chosenVoice = this.getBestVoice(speaker);
+    if (!chosenVoice) {
+      console.warn('[Web Speech] Không có voice tiếng Việt trên máy, bỏ qua fallback để tránh phát giọng tiếng Anh.');
+      if (onDone) onDone();
+      return;
+    }
     this.synth.cancel();
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    const chosenVoice = this.getBestVoice(speaker);
-    if (chosenVoice) { utterance.voice = chosenVoice; utterance.lang = chosenVoice.lang || 'vi-VN'; }
-    else { utterance.lang = 'vi-VN'; }
+    utterance.voice = chosenVoice;
+    utterance.lang = chosenVoice.lang || 'vi-VN';
     if (speaker.toUpperCase() === 'HARMONY') { utterance.pitch = 1.22; utterance.rate = 1.0; }
     else { utterance.pitch = 1.12; utterance.rate = 1.06; }
     utterance.onend = onDone;

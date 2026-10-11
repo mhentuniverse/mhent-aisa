@@ -3148,7 +3148,7 @@ window.AisaApp = {
 
     try {
       const replies = await window.AisaEngine.chat(
-        'Hãy lắng nghe đoạn âm thanh này của Sakura và đối đáp lại thật tự nhiên, dễ thương và ngắn gọn (1 câu dưới 18 từ).',
+        'Hãy lắng nghe đoạn âm thanh này của Sakura và đối đáp lại thật tự nhiên, dễ thương và ngắn gọn (1 câu dưới 18 từ). BẮT BUỘC 100% TIẾNG VIỆT, KHÔNG NÓI TIẾNG ANH.',
         this.state.mode,
         this.state.scope,
         null,

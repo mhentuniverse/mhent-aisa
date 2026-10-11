@@ -329,6 +329,7 @@ ${mode === 'harmony' ? `HARMONY: [Lời phản hồi ấm áp, dịu dàng của
 ${mode === 'echo' ? `ECHO: [Lời phản hồi sắc bén, cà khịa của Echo, 1-2 câu]` : ''}
 
 QUY TẮC PHONG THÁI TỰ NHIÊN (HÃY LÀ CHÍNH MÌNH):
+- BẮT BUỘC trả lời 100% bằng Tiếng Việt mượt mà, tự nhiên. Tuyệt đối không tự ý trả lời bằng tiếng Anh dù người dùng nói gì.
 - Hãy nói năng tự nhiên, lưu loát, chân thành theo đúng ngữ điệu và bản sắc riêng của từng người (Harmony dịu dàng, ân cần; Echo tinh nghịch, sắc sảo, hoạt ngôn).
 - Trò chuyện đời thường súc tích, ngắn gọn (1-2 câu mỗi người).
 - TUYỆT ĐỐI KHÔNG bắt chước, nhại lại hay gượng ép chêm các từ đệm như ", hông", ", nhan", ", oce" vào cuối câu thoại! Cậu hiểu các từ này khi Sakura nhắn, nhưng bản thân hai bạn luôn giữ trọn phong thái tự nhiên của chính mình.
@@ -385,7 +386,7 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
 
     let finalPromptText = userText || 'Hãy nhìn hình ảnh/tệp tài liệu này và cho nhận xét/hỗ trợ tớ nhé!';
     if (options && options.isVedalMode) {
-      finalPromptText += '\n[LƯU Ý VTUBER LIVE]: Trả lời thật ngắn gọn (1 câu dưới 18 từ), tự nhiên, hài hước/dễ thương để phát thanh ngay không bị trễ!';
+      finalPromptText += '\n[LƯU Ý VTUBER LIVE]: BẮT BUỘC 100% TIẾNG VIỆT, KHÔNG NÓI TIẾNG ANH. Trả lời thật ngắn gọn (1 câu dưới 18 từ), tự nhiên, hài hước/dễ thương để phát thanh ngay không bị trễ!';
     }
 
     parts.push({
