@@ -58,14 +58,21 @@ window.AisaVoice = {
     return femaleFallback || voices[0];
   },
 
-  // Vedal Hands-free Loop State
+  // Vedal Hands-free WebRTC Mic & VAD State
   isVedalMode: false,
+  mediaStream: null,
+  micAudioCtx: null,
+  analyserNode: null,
+  mediaRecorder: null,
+  recordedChunks: [],
+  isMicActive: false,
+  isUserSpeaking: false,
+  vadSilenceTimer: null,
+  vadCheckRaf: null,
   vedalRecognition: null,
-  vedalListeningActive: false,
-  _silenceTimer: null,
-  _idleChatterTimer: null,
   _currentTranscript: '',
   _committing: false,
+  _idleChatterTimer: null,
 
   init() {
     this.initSpeechRecognition();
@@ -88,7 +95,7 @@ window.AisaVoice = {
 
   initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { console.log('Speech recognition not supported.'); return; }
+    if (!SpeechRecognition) return;
     this.recognition = new SpeechRecognition();
     this.recognition.lang = 'vi-VN';
     this.recognition.continuous = false;
@@ -107,12 +114,16 @@ window.AisaVoice = {
         input.dispatchEvent(new Event('input'));
       }
     };
-    this.recognition.onerror = (e) => { console.warn('Voice recognition error:', e.error); this.stopListening(); };
+    this.recognition.onerror = () => { this.stopListening(); };
     this.recognition.onend = () => { this.stopListening(); };
   },
 
   toggleSpeechToText() {
-    if (!this.recognition) { alert('Trinh duyet chua ho tro nhan dien giong noi tieng Viet.'); return; }
+    if (!this.recognition) {
+      // Fallback: prompt mic permissions or toggle Vedal mode
+      this.toggleVedalMode();
+      return;
+    }
     if (this.isListening) {
       this.recognition.stop();
       this.stopListening();
@@ -129,9 +140,9 @@ window.AisaVoice = {
   },
 
   // =========================================================================
-  // VEDAL HANDS-FREE VTUBER CONTINUOUS VOICE LOOP (NEURO-SAMA STYLE)
+  // NATIVE WEBRTC MIC & REAL-TIME VAD ENGINE (LOW LATENCY VEDAL STREAM)
   // =========================================================================
-  toggleVedalMode() {
+  async toggleVedalMode() {
     this.isVedalMode = !this.isVedalMode;
     const headerBtn = document.getElementById('btn-toggle-live-studio');
     const stageBtn = document.getElementById('btn-vedal-mode-toggle');
@@ -140,13 +151,12 @@ window.AisaVoice = {
     if (stageBtn) stageBtn.classList.toggle('active', this.isVedalMode);
 
     if (this.isVedalMode) {
-      // Ensure Live Studio is visible and full stage
       if (window.AisaLive2D) {
         if (!window.AisaLive2D.isLiveStudio) window.AisaLive2D.toggleLiveStudio();
         window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura (Cứ nói tự nhiên nha)...');
         window.AisaLive2D.showSpeechBubble('🔴 Chế độ Vedal Live kích hoạt! Sakura hãy nói chuyện tự nhiên vào mic nha~ 🌸🎙️', 3500);
       }
-      this.startVedalListening();
+      await this.startVedalListening();
       this.resetIdleChatterTimer();
     } else {
       this.stopVedalListening();
@@ -159,110 +169,251 @@ window.AisaVoice = {
     }
   },
 
-  startVedalListening() {
+  async startVedalListening() {
     if (!this.isVedalMode || this.isSpeaking) return;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn('[Vedal] Speech recognition not supported in this environment.');
-      return;
+
+    try {
+      if (!this.mediaStream) {
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+      }
+
+      if (!this.micAudioCtx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.micAudioCtx = new AudioCtx();
+      }
+      if (this.micAudioCtx.state === 'suspended') {
+        await this.micAudioCtx.resume();
+      }
+
+      if (!this.analyserNode) {
+        const source = this.micAudioCtx.createMediaStreamSource(this.mediaStream);
+        this.analyserNode = this.micAudioCtx.createAnalyser();
+        this.analyserNode.fftSize = 256;
+        this.analyserNode.smoothingTimeConstant = 0.35;
+        source.connect(this.analyserNode);
+      }
+
+      this.isMicActive = true;
+      if (window.AisaLive2D) {
+        window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura...');
+      }
+
+      // Try starting SpeechRecognition in parallel for real-time text preview
+      this._startSpeechRecognitionSubtitle();
+
+      // Start the real-time VAD & visualizer loop
+      this._startVadLoop();
+    } catch (err) {
+      console.error('[WebRTC Mic Error]:', err);
+      if (window.AisaLive2D) {
+        window.AisaLive2D.setStreamStatus('idle', '⚠️ Không thể mở Micro');
+        window.AisaLive2D.showSpeechBubble('Cậu hãy kiểm tra quyền truy cập Micro trên máy nha! 🎤⚠️', 3500);
+      }
     }
+  },
+
+  _startSpeechRecognitionSubtitle() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
 
     if (!this.vedalRecognition) {
-      this.vedalRecognition = new SpeechRecognition();
-      this.vedalRecognition.lang = 'vi-VN';
-      this.vedalRecognition.continuous = true;
-      this.vedalRecognition.interimResults = true;
-      this.vedalRecognition.maxAlternatives = 1;
+      try {
+        this.vedalRecognition = new SpeechRecognition();
+        this.vedalRecognition.lang = 'vi-VN';
+        this.vedalRecognition.continuous = true;
+        this.vedalRecognition.interimResults = true;
+        this.vedalRecognition.maxAlternatives = 1;
 
-      this.vedalRecognition.onstart = () => {
-        this.vedalListeningActive = true;
-        if (window.AisaLive2D) window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura...');
-      };
+        this.vedalRecognition.onresult = (event) => {
+          if (!this.isVedalMode || this.isSpeaking) return;
+          this.resetIdleChatterTimer();
 
-      this.vedalRecognition.onresult = (event) => {
-        if (!this.isVedalMode || this.isSpeaking) return;
-        this.resetIdleChatterTimer();
-
-        let interim = '';
-        let final = '';
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            final += transcript;
-          } else {
-            interim += transcript;
-          }
-        }
-
-        const spokenText = (final || interim).trim();
-        if (spokenText) {
-          this._currentTranscript = spokenText;
-          if (window.AisaLive2D) {
-            window.AisaLive2D.updateLiveSubtitle('sakura', spokenText, !final);
+          let interim = '';
+          let final = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) final += transcript;
+            else interim += transcript;
           }
 
-          // Silence detection: commit prompt when user pauses
-          clearTimeout(this._silenceTimer);
-          this._silenceTimer = setTimeout(() => {
-            this._commitVedalSpeech();
-          }, final ? 900 : 1400);
-        }
-      };
+          const spokenText = (final || interim).trim();
+          if (spokenText) {
+            this._currentTranscript = spokenText;
+            if (window.AisaLive2D) {
+              window.AisaLive2D.updateLiveSubtitle('sakura', spokenText, !final);
+            }
+          }
+        };
 
-      this.vedalRecognition.onerror = (e) => {
-        console.warn('[Vedal Voice] recognition error:', e.error);
-        if (e.error === 'not-allowed') {
-          this.isVedalMode = false;
-          alert('Vui lòng cấp quyền Microphone để AISA có thể lắng nghe cậu nha!');
-          return;
-        }
-        if (this.isVedalMode && !this.isSpeaking && !this._committing) {
-          setTimeout(() => this.startVedalListening(), 500);
-        }
-      };
+        this.vedalRecognition.onerror = (e) => {
+          // In Electron, speech.googleapis.com often returns 'network'; ignore and let WebRTC VAD handle it!
+          if (e.error !== 'network') {
+            console.warn('[Subtitle SpeechRecognition]:', e.error);
+          }
+        };
 
-      this.vedalRecognition.onend = () => {
-        this.vedalListeningActive = false;
-        if (this.isVedalMode && !this.isSpeaking && !this._committing) {
-          setTimeout(() => this.startVedalListening(), 350);
-        }
-      };
+        this.vedalRecognition.onend = () => {
+          if (this.isVedalMode && !this.isSpeaking && !this._committing && this.isMicActive) {
+            try { this.vedalRecognition.start(); } catch (e) {}
+          }
+        };
+      } catch (e) {}
     }
 
     try {
       this.vedalRecognition.start();
+    } catch (e) {}
+  },
+
+  _startVadLoop() {
+    if (this.vadCheckRaf) cancelAnimationFrame(this.vadCheckRaf);
+    const dataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
+
+    const checkVad = () => {
+      if (!this.isMicActive || !this.isVedalMode) return;
+
+      if (this.isSpeaking) {
+        this.vadCheckRaf = requestAnimationFrame(checkVad);
+        return;
+      }
+
+      this.analyserNode.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+      const avgVolume = sum / dataArray.length / 255;
+
+      // Real-time audio wave bars jump to Sakura's actual voice!
+      const waveEl = document.getElementById('vedal-audio-wave');
+      if (waveEl) {
+        const spans = waveEl.querySelectorAll('span');
+        const norm = Math.min(1, avgVolume * 4.2);
+        spans.forEach((span, i) => {
+          const h = Math.max(3, Math.round(norm * 22 * (0.8 + 0.4 * Math.sin(i * 1.5))));
+          span.style.height = `${h}px`;
+        });
+      }
+
+      // Voice Activity Detection Threshold: 0.028
+      const SPEECH_THRESHOLD = 0.028;
+      if (avgVolume > SPEECH_THRESHOLD) {
+        this.resetIdleChatterTimer();
+        if (!this.isUserSpeaking) {
+          this.isUserSpeaking = true;
+          this._startRecordingChunks();
+          if (window.AisaLive2D) {
+            window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura nói...');
+          }
+        }
+        if (this.vadSilenceTimer) {
+          clearTimeout(this.vadSilenceTimer);
+          this.vadSilenceTimer = null;
+        }
+      } else if (this.isUserSpeaking) {
+        // Snappy silence timeout: 750ms after speech ends!
+        if (!this.vadSilenceTimer) {
+          this.vadSilenceTimer = setTimeout(() => {
+            this._finishRecordingAndCommit();
+          }, 750);
+        }
+      }
+
+      this.vadCheckRaf = requestAnimationFrame(checkVad);
+    };
+
+    this.vadCheckRaf = requestAnimationFrame(checkVad);
+  },
+
+  _startRecordingChunks() {
+    this.recordedChunks = [];
+    if (!this.mediaStream) return;
+    try {
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
+      this.mediaRecorder = mime ? new MediaRecorder(this.mediaStream, { mimeType: mime }) : new MediaRecorder(this.mediaStream);
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) this.recordedChunks.push(e.data);
+      };
+      this.mediaRecorder.start(100);
     } catch (e) {
-      // Ignore if already listening
+      console.warn('[MediaRecorder start]:', e);
     }
   },
 
-  stopVedalListening() {
-    this.vedalListeningActive = false;
-    clearTimeout(this._silenceTimer);
-    if (this.vedalRecognition) {
-      try { this.vedalRecognition.stop(); } catch (e) {}
-    }
-  },
+  _finishRecordingAndCommit() {
+    this.isUserSpeaking = false;
+    clearTimeout(this.vadSilenceTimer);
+    this.vadSilenceTimer = null;
 
-  _commitVedalSpeech() {
-    const text = (this._currentTranscript || '').trim();
-    if (!text) return;
-    this._currentTranscript = '';
+    if (this._committing) return;
     this._committing = true;
 
-    // Stop mic while AI is reasoning and responding
+    // Pause mic while AI processes
     this.stopVedalListening();
 
     if (window.AisaLive2D) {
       window.AisaLive2D.setStreamStatus('thinking', '💭 Đang suy nghĩ...');
-      window.AisaLive2D.updateLiveSubtitle('sakura', text, false);
     }
 
-    if (window.AisaApp && typeof window.AisaApp.sendPrompt === 'function') {
-      window.AisaApp.sendPrompt(text);
+    const commitAudioBlob = () => {
+      if (this.recordedChunks.length > 0) {
+        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        if (blob.size > 1200) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64data = reader.result;
+            if (window.AisaApp && typeof window.AisaApp.sendAudioPrompt === 'function') {
+              window.AisaApp.sendAudioPrompt(base64data, 'audio/webm');
+            }
+            this._committing = false;
+          };
+          reader.readAsDataURL(blob);
+          return;
+        }
+      }
+      this._committing = false;
+      this.resumeVedalListening();
+    };
+
+    // If SpeechRecognition produced a text transcript, use text directly
+    const text = (this._currentTranscript || '').trim();
+    if (text) {
+      this._currentTranscript = '';
+      if (window.AisaApp && typeof window.AisaApp.sendPrompt === 'function') {
+        window.AisaApp.sendPrompt(text);
+      }
+      this._committing = false;
+      return;
     }
-    this._committing = false;
+
+    // Otherwise (e.g. in Electron), send the recorded audio blob directly!
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.mediaRecorder.onstop = () => {
+        commitAudioBlob();
+      };
+      try { this.mediaRecorder.stop(); } catch (e) { commitAudioBlob(); }
+    } else {
+      commitAudioBlob();
+    }
+  },
+
+  stopVedalListening() {
+    this.isMicActive = false;
+    this.isUserSpeaking = false;
+    if (this.vadSilenceTimer) clearTimeout(this.vadSilenceTimer);
+    this.vadSilenceTimer = null;
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try { this.mediaRecorder.stop(); } catch (e) {}
+    }
+    if (this.vedalRecognition) {
+      try { this.vedalRecognition.stop(); } catch (e) {}
+    }
   },
 
   speakVedalReplies(replies) {
@@ -288,7 +439,7 @@ window.AisaVoice = {
       }
 
       this.speak(clean, rep.speaker || 'HARMONY', null, () => {
-        setTimeout(() => playNext(index + 1), 350);
+        setTimeout(() => playNext(index + 1), 250);
       });
     };
 
@@ -304,11 +455,11 @@ window.AisaVoice = {
       }
       this.startVedalListening();
       this.resetIdleChatterTimer();
-    }, 450);
+    }, 350);
   },
 
   triggerIdleChatter() {
-    if (!this.isVedalMode || this.isSpeaking || (this.vedalListeningActive && this._currentTranscript)) return;
+    if (!this.isVedalMode || this.isSpeaking || (this.isUserSpeaking)) return;
 
     const isEcho = window.AisaLive2D && window.AisaLive2D.currentMode === 'echo';
     const isDuo = !isEcho && window.AisaLive2D && window.AisaLive2D.currentMode === 'duo';
@@ -403,10 +554,10 @@ window.AisaVoice = {
     };
     if (!cleanText) { onDone(); return; }
     if (window.AisaDesktop && typeof window.AisaDesktop.synthesizeSpeech === 'function') {
-      window.AisaDesktop.synthesizeSpeech(cleanText, speaker)
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TTS timeout')), 1600));
+      Promise.race([window.AisaDesktop.synthesizeSpeech(cleanText, speaker), timeoutPromise])
         .then(result => {
           if (!result || !result.success || !result.dataUrl) {
-            console.warn('[Voice] Desktop synthesis failed, fallback to Gemini Web / Web Speech:', result && result.error);
             this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
               if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
             });
@@ -419,14 +570,13 @@ window.AisaVoice = {
           audio.play().catch(() => this._speakWebSpeech(cleanText, speaker, onDone));
         })
         .catch(() => {
-          this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
-            if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
-          });
+          // Instant fallback to 0ms local speech if network TTS is slow
+          this._speakWebSpeech(cleanText, speaker, onDone);
         });
       return;
     }
 
-    // Web Browser Mode: Call Gemini TTS directly
+    // Web Browser Mode: Call Gemini TTS directly with timeout
     this._speakGeminiWeb(cleanText, speaker, onDone).then(success => {
       if (!success) this._speakWebSpeech(cleanText, speaker, onDone);
     });
@@ -438,11 +588,14 @@ window.AisaVoice = {
     const voiceName = isEcho ? 'Leda' : 'Autonoe';
     const style = isEcho ? 'youthful, cheeky and teasing' : 'gentle, sweet and caring';
 
-    // 1. If user has saved their key in localStorage, call Gemini direct
+    // 1. If user has saved their key in localStorage, call Gemini direct with timeout
     if (key) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1600);
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent?key=${key}`, {
           method: 'POST',
+          signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{
@@ -455,6 +608,7 @@ window.AisaVoice = {
             }
           })
         });
+        clearTimeout(timeoutId);
         const data = await res.json();
         if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
           const mime = data.candidates[0].content.parts[0].inlineData.mimeType || 'audio/wav';
@@ -467,7 +621,7 @@ window.AisaVoice = {
           return true;
         }
       } catch (e) {
-        console.warn('[Gemini Voice Direct] Failed, trying worker proxy:', e.message);
+        console.warn('[Gemini Voice Direct] Failed or timed out, fallback to local voice:', e.message);
       }
     }
 

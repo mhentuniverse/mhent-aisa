@@ -372,8 +372,24 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
       });
     }
 
+    // Hỗ trợ đính kèm âm thanh trực tiếp (Multimodal Voice Input từ Mic)
+    if (options && options.audioBase64) {
+      const rawAudio = options.audioBase64.includes(',') ? options.audioBase64.split(',')[1] : options.audioBase64;
+      parts.push({
+        inlineData: {
+          mimeType: options.audioMimeType || 'audio/webm',
+          data: rawAudio
+        }
+      });
+    }
+
+    let finalPromptText = userText || 'Hãy nhìn hình ảnh/tệp tài liệu này và cho nhận xét/hỗ trợ tớ nhé!';
+    if (options && options.isVedalMode) {
+      finalPromptText += '\n[LƯU Ý VTUBER LIVE]: Trả lời thật ngắn gọn (1 câu dưới 18 từ), tự nhiên, hài hước/dễ thương để phát thanh ngay không bị trễ!';
+    }
+
     parts.push({
-      text: userText || 'Hãy nhìn hình ảnh/tệp tài liệu này và cho nhận xét/hỗ trợ tớ nhé!'
+      text: finalPromptText
     });
 
     const isComplexTask = (options && options.deepResearch) ||
@@ -381,7 +397,7 @@ Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/
         userText.length > 200 ||
         /tổng hợp|công thức|phân tích|nghiên cứu|chi tiết|bài toán|giải|chứng minh|tóm tắt|tài liệu|giải thích|pdf|toán|thống kê|định lý|ước lượng/i.test(userText)
       )) || (options && options.attachedFile);
-    const maxTokens = isComplexTask ? 4096 : 1500;
+    const maxTokens = isComplexTask ? 4096 : (options && options.isVedalMode ? 160 : 1500);
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 

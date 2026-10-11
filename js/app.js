@@ -3121,6 +3121,80 @@ window.AisaApp = {
     }
   },
 
+  async sendAudioPrompt(audioBase64, mimeType = 'audio/webm') {
+    if (this.state.isGenerating) return;
+
+    if (window.AisaVoice && window.AisaVoice.isSpeaking) {
+      window.AisaVoice.interruptSpeech();
+    }
+
+    if (window.AisaLive2D && typeof window.AisaLive2D.setStreamStatus === 'function') {
+      window.AisaLive2D.setStreamStatus('thinking', '💭 Đang nghe và suy nghĩ...');
+    }
+
+    // Add user voice note to messages
+    const userMsg = {
+      id: 'msg-' + Date.now(),
+      role: 'user',
+      time: this.getCurrentTimeString(),
+      text: '🎙️ [Giọng nói từ Sakura]',
+      isVoice: true
+    };
+    this.state.messages.push(userMsg);
+    this.renderMessages();
+    this.showTypingIndicator('Đang nghe giọng nói của cậu...', false);
+
+    this.state.isGenerating = true;
+
+    try {
+      const replies = await window.AisaEngine.chat(
+        'Hãy lắng nghe đoạn âm thanh này của Sakura và đối đáp lại thật tự nhiên, dễ thương và ngắn gọn (1 câu dưới 18 từ).',
+        this.state.mode,
+        this.state.scope,
+        null,
+        {
+          audioBase64: audioBase64,
+          audioMimeType: mimeType,
+          isVedalMode: true,
+          history: (this.state.messages && this.state.messages.length > 1) ? this.state.messages.slice(0, -1) : []
+        }
+      );
+
+      this.hideTypingIndicator();
+
+      if (replies && replies.length > 0) {
+        replies.forEach((rep, idx) => {
+          const clean = window.AisaEngine ? window.AisaEngine.cleanReply(rep.text) : rep.text;
+          this.state.messages.push({
+            id: 'msg-rep-' + (Date.now() + idx),
+            role: 'assistant',
+            speaker: rep.speaker,
+            avatar: rep.avatar || (rep.speaker === 'HARMONY' ? '🌸' : '😈'),
+            time: this.getCurrentTimeString(),
+            text: clean
+          });
+        });
+
+        this.saveState();
+        this.renderMessages();
+
+        if (window.AisaVoice && window.AisaVoice.isVedalMode) {
+          window.AisaVoice.speakVedalReplies(replies);
+        }
+      }
+    } catch (err) {
+      this.hideTypingIndicator();
+      console.error('[sendAudioPrompt error]:', err);
+      if (window.AisaVoice && window.AisaVoice.isVedalMode) {
+        window.AisaVoice.speak('Tớ nghe chưa rõ lắm, Sakura nói lại với tớ một lần nữa nha! 🌸', 'HARMONY', null, () => {
+          window.AisaVoice.resumeVedalListening();
+        });
+      }
+    } finally {
+      this.state.isGenerating = false;
+    }
+  },
+
   async handleSendMessage() {
     if (this.state.isGenerating) return;
 
@@ -3242,6 +3316,7 @@ window.AisaApp = {
           webSearch: this.state.isWebSearch,
           thinking: this.state.isThinking,
           attachedFile: attachedFile,
+          isVedalMode: !!(window.AisaVoice && window.AisaVoice.isVedalMode),
           history: (this.state.messages && this.state.messages.length > 1) ? this.state.messages.slice(0, -1) : []
         }
       );
