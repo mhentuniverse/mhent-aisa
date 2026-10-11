@@ -286,3 +286,190 @@ body.live-studio-active .sanctuary-sidebar {
     height: calc(50vh - 54px) !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   5. VEDAL VTUBER STREAM OVERLAY HUD & CLOSED CAPTION SUBTITLES
+   -------------------------------------------------------------------------- */
+.vedal-stream-hud {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 20 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 16px 20px !important;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.35s ease, transform 0.35s ease !important;
+}
+
+body.vedal-mode-active .vedal-stream-hud,
+#live2d-stage-container.live-studio-mode .vedal-stream-hud {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.vedal-hud-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  pointer-events: auto !important;
+}
+
+.vedal-live-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: rgba(239, 68, 68, 0.18) !important;
+  border: 1px solid rgba(239, 68, 68, 0.55) !important;
+  border-radius: 9999px !important;
+  padding: 4px 12px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  color: #fca5a5 !important;
+  letter-spacing: 0.06em !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.3) !important;
+}
+
+.vedal-live-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #ef4444 !important;
+  box-shadow: 0 0 8px #ef4444 !important;
+  animation: vedalDotPulse 1.2s infinite ease-in-out !important;
+}
+
+@keyframes vedalDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.4); box-shadow: 0 0 12px #ef4444; }
+}
+
+.vedal-status-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(18, 18, 24, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 9999px !important;
+  padding: 5px 14px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+  transition: all 0.25s ease !important;
+}
+
+.vedal-status-chip.thinking {
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  color: #fcd34d !important;
+}
+
+.vedal-status-chip.speaking {
+  border-color: rgba(236, 72, 153, 0.6) !important;
+  color: #f472b6 !important;
+}
+
+/* Floating VTuber Closed-Caption Banner */
+.vedal-subtitle-banner {
+  pointer-events: auto !important;
+  max-width: 90% !important;
+  min-width: 280px !important;
+  margin: 0 auto 16px auto !important;
+  background: rgba(14, 14, 20, 0.9) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 18px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 24px rgba(236, 72, 153, 0.2) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  animation: vedalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes vedalSlideUp {
+  0% { transform: translateY(16px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.vedal-sub-speaker {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  min-width: 54px !important;
+}
+
+.vedal-sub-avatar {
+  font-size: 1.35rem !important;
+  line-height: 1 !important;
+}
+
+.vedal-sub-name {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #f472b6 !important;
+}
+
+.vedal-sub-content {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.vedal-sub-text {
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
+  color: #ffffff !important;
+  word-break: break-word !important;
+}
+
+/* Audio Wave Visualizer Bars */
+.vedal-audio-wave {
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+.vedal-audio-wave span {
+  width: 3px !important;
+  height: 6px !important;
+  background: #ec4899 !important;
+  border-radius: 2px !important;
+  transition: height 0.15s ease !important;
+  animation: vedalWaveAnim 0.8s infinite ease-in-out alternate !important;
+}
+
+.vedal-audio-wave span:nth-child(2) { animation-delay: 0.15s; }
+.vedal-audio-wave span:nth-child(3) { animation-delay: 0.3s; }
+.vedal-audio-wave span:nth-child(4) { animation-delay: 0.45s; }
+.vedal-audio-wave span:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes vedalWaveAnim {
+  0% { height: 4px; opacity: 0.4; }
+  100% { height: 18px; opacity: 1; }
+}
+
+.btn-vedal-live-indicator.active {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.75) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.45) !important;
+}
+

@@ -233,11 +233,11 @@
         </span>
       </button>
 
-      <!-- Gemini Live Studio Mode Trigger -->
+      <!-- Vedal VTuber Live Mode Trigger -->
       <button type="button" class="btn-gemini-live-pill" id="btn-toggle-live-studio"
-        title="Bật/Tắt Sân khấu Gemini Live Studio (Song Hành 🌸😈)" onclick="window.AisaLive2D && window.AisaLive2D.toggleLiveStudio()">
+        title="Bật/Tắt Chế độ Vedal & AI VTuber (Voice-to-Voice Rảnh tay)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">
         <span class="live-studio-dot"></span>
-        <span class="live-studio-label">Gemini Live</span>
+        <span class="live-studio-label">🔴 LIVE VTuber</span>
       </button>
 
       <!-- Live2D Mascot Toggle Button -->
@@ -705,6 +705,9 @@
         <span id="live2d-speaker-name">Song Hành 🌸😈</span>
       </div>
       <div class="live2d-stage-controls">
+        <button type="button" id="btn-vedal-mode-toggle" class="btn-live2d-ctrl" title="Bật/Tắt Mic Rảnh tay (Vedal Mode Loop)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">
+          🎙️
+        </button>
         <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi chế độ (Song Hành 🌸😈 ⇋ Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">
           🔄
         </button>
@@ -725,6 +728,34 @@
     <div class="live2d-canvas-wrap">
       <canvas id="live2d-canvas"></canvas>
       <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
+
+      <!-- VTuber Stream Overlay HUD -->
+      <div id="vedal-stream-hud" class="vedal-stream-hud">
+        <div class="vedal-hud-top">
+          <div class="vedal-live-badge" id="vedal-live-badge">
+            <span class="vedal-live-dot"></span>
+            <span class="vedal-live-text">VEDAL LIVE</span>
+          </div>
+          <div class="vedal-status-chip" id="vedal-status-chip">
+            <span class="vedal-status-icon">🎙️</span>
+            <span class="vedal-status-text">Đang lắng nghe Sakura...</span>
+          </div>
+        </div>
+
+        <!-- Floating VTuber Subtitles Banner (Stream Closed Captions) -->
+        <div id="vedal-subtitle-banner" class="vedal-subtitle-banner" style="display: none;">
+          <div class="vedal-sub-speaker" id="vedal-sub-speaker">
+            <span class="vedal-sub-avatar" id="vedal-sub-avatar">🌸</span>
+            <span class="vedal-sub-name" id="vedal-sub-name">Yachiyo</span>
+          </div>
+          <div class="vedal-sub-content">
+            <div class="vedal-sub-text" id="vedal-sub-text"></div>
+            <div class="vedal-audio-wave" id="vedal-audio-wave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="live-studio-hints">
         <span>🖱️ Kéo chuột: Di chuyển (Pan)</span>
         <span>•</span>

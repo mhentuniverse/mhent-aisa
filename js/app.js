@@ -3276,6 +3276,12 @@ window.AisaApp = {
       this.saveState();
       this.renderSessionsList();
       this.renderMessages();
+
+      // 🔴 If in Vedal Mode: Auto-speak replies sequentially & resume hands-free listening!
+      if (window.AisaVoice && window.AisaVoice.isVedalMode) {
+        const toSpeak = replies && replies.length > 0 ? replies : [{ speaker: 'HARMONY', text: 'Dạ em đã ghi nhận yêu cầu của cậu rồi nà! 🌸' }];
+        window.AisaVoice.speakVedalReplies(toSpeak);
+      }
     } catch (e) {
       this.hideTypingIndicator();
       console.error(e);
@@ -3288,6 +3294,12 @@ window.AisaApp = {
         text: `⚠️ Đường truyền Neural Link bị gián đoạn một chút. Cậu thử gửi lại xem sao nha! 🌸`
       });
       this.renderMessages();
+
+      if (window.AisaVoice && window.AisaVoice.isVedalMode) {
+        window.AisaVoice.speak('Đường truyền Neural Link bị gián đoạn một chút. Cậu nói lại giúp tớ nha! 🌸', 'HARMONY', null, () => {
+          window.AisaVoice.resumeVedalListening();
+        });
+      }
     } finally {
       this.state.isGenerating = false;
     }
@@ -3314,6 +3326,10 @@ window.AisaApp = {
         avatar = '😈';
         label = mentionsEcho ? 'Echo đang suy nghĩ câu trả lời cho cậu... 😈' : 'Echo đang suy nghĩ... 😈';
       }
+    }
+
+    if (window.AisaLive2D && typeof window.AisaLive2D.setStreamStatus === 'function') {
+      window.AisaLive2D.setStreamStatus('thinking', label);
     }
 
     const typingEl = document.createElement('div');

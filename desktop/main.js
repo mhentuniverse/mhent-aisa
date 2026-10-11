@@ -209,6 +209,16 @@ async function createWindow() {
     }
   });
 
+  // Automatically grant media permissions (Microphone) for seamless Hands-free Vedal VTuber mode
+  mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission) => {
+    if (permission === 'media') return true;
+    return true;
+  });
+  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'media') return callback(true);
+    callback(true);
+  });
+
   // Strip Referer & Origin headers on Google user content (avatars) so CDN does not return 403 Forbidden
   mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
     { urls: ['*://*.googleusercontent.com/*', '*://lh3.googleusercontent.com/*'] },

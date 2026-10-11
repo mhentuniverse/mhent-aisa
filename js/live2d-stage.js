@@ -639,7 +639,7 @@ window.AisaLive2D = {
   toggleLiveStudio() {
     this.isLiveStudio = !this.isLiveStudio;
     const container = document.getElementById('live2d-stage-container');
-    const headerBtn = document.getElementById('btn-toggle-gemini-live');
+    const headerBtn = document.getElementById('btn-toggle-live-studio') || document.getElementById('btn-toggle-gemini-live');
 
     if (this.isLiveStudio) {
       if (container) container.classList.add('live-studio-mode');
@@ -662,6 +662,84 @@ window.AisaLive2D = {
       requestAnimationFrame(() => this.syncCanvasSize());
       setTimeout(() => this.syncCanvasSize(), 120);
     }
+  },
+
+  setStreamStatus(status = 'listening', text = '') {
+    const chip = document.getElementById('vedal-status-chip');
+    if (!chip) return;
+    chip.classList.remove('thinking', 'speaking');
+    if (status === 'thinking') chip.classList.add('thinking');
+    if (status === 'speaking') chip.classList.add('speaking');
+
+    const iconEl = chip.querySelector('.vedal-status-icon');
+    const textEl = chip.querySelector('.vedal-status-text');
+
+    const icons = {
+      listening: '🎙️',
+      thinking: '💭',
+      speaking: '🗣️',
+      idle: '✨'
+    };
+
+    if (iconEl) iconEl.textContent = icons[status] || '🎙️';
+    if (textEl) textEl.textContent = text || (status === 'listening' ? 'Đang lắng nghe Sakura...' : (status === 'thinking' ? 'Đang suy nghĩ...' : 'Đang trò chuyện...'));
+  },
+
+  updateLiveSubtitle(speaker = 'harmony', text = '', isInterim = false) {
+    const banner = document.getElementById('vedal-subtitle-banner');
+    if (!banner) return;
+    if (!text || !text.trim()) {
+      this.hideLiveSubtitle();
+      return;
+    }
+
+    const isEcho = (speaker || '').toLowerCase().includes('echo');
+    const isSakura = (speaker || '').toLowerCase().includes('sakura') || (speaker || '').toLowerCase().includes('user');
+
+    const avatarEl = document.getElementById('vedal-sub-avatar');
+    const nameEl = document.getElementById('vedal-sub-name');
+    const textEl = document.getElementById('vedal-sub-text');
+    const waveEl = document.getElementById('vedal-audio-wave');
+
+    if (isSakura) {
+      if (avatarEl) avatarEl.textContent = '🎙️';
+      if (nameEl) { nameEl.textContent = 'Sakura'; nameEl.style.color = '#38bdf8'; }
+    } else if (isEcho) {
+      const charName = this.mascots && this.mascots.echo ? this.mascots.echo.name : 'Echo';
+      if (avatarEl) avatarEl.textContent = '😈';
+      if (nameEl) { nameEl.textContent = charName; nameEl.style.color = '#a78bfa'; }
+    } else {
+      const charName = this.mascots && this.mascots.harmony ? this.mascots.harmony.name : 'Harmony';
+      if (avatarEl) avatarEl.textContent = '🌸';
+      if (nameEl) { nameEl.textContent = charName; nameEl.style.color = '#f472b6'; }
+    }
+
+    if (textEl) {
+      textEl.textContent = text;
+      textEl.style.fontStyle = isInterim ? 'italic' : 'normal';
+      textEl.style.opacity = isInterim ? '0.85' : '1.0';
+    }
+
+    if (waveEl) {
+      waveEl.style.display = (isInterim || !isSakura) ? 'flex' : 'none';
+    }
+
+    banner.style.display = 'flex';
+
+    if (this._subTimer) clearTimeout(this._subTimer);
+    if (!isInterim && isSakura) {
+      this._subTimer = setTimeout(() => this.hideLiveSubtitle(), 3500);
+    }
+  },
+
+  hideLiveSubtitle() {
+    const banner = document.getElementById('vedal-subtitle-banner');
+    if (banner) banner.style.display = 'none';
+  },
+
+  setLiveStudio(enable) {
+    if (this.isLiveStudio === !!enable) return;
+    this.toggleLiveStudio();
   },
 
   toggleVisibility() {

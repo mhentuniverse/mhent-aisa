@@ -58,6 +58,34 @@ window.AisaVoice = {
     return femaleFallback || voices[0];
   },
 
+  // Vedal Hands-free Loop State
+  isVedalMode: false,
+  vedalRecognition: null,
+  vedalListeningActive: false,
+  _silenceTimer: null,
+  _idleChatterTimer: null,
+  _currentTranscript: '',
+  _committing: false,
+
+  init() {
+    this.initSpeechRecognition();
+    this.loadVoices();
+    if (this.synth && typeof this.synth.onvoiceschanged !== 'undefined') {
+      this.synth.onvoiceschanged = () => this.loadVoices();
+    }
+
+    // Spacebar Barge-in shortcut in Vedal Mode
+    window.addEventListener('keydown', (e) => {
+      if (this.isVedalMode && e.code === 'Space' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+        if (this.isSpeaking) {
+          e.preventDefault();
+          this.interruptSpeech();
+          this.resumeVedalListening();
+        }
+      }
+    });
+  },
+
   initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) { console.log('Speech recognition not supported.'); return; }
@@ -100,6 +128,223 @@ window.AisaVoice = {
     if (btn) btn.classList.remove('recording');
   },
 
+  // =========================================================================
+  // VEDAL HANDS-FREE VTUBER CONTINUOUS VOICE LOOP (NEURO-SAMA STYLE)
+  // =========================================================================
+  toggleVedalMode() {
+    this.isVedalMode = !this.isVedalMode;
+    const headerBtn = document.getElementById('btn-toggle-live-studio');
+    const stageBtn = document.getElementById('btn-vedal-mode-toggle');
+    document.body.classList.toggle('vedal-mode-active', this.isVedalMode);
+    if (headerBtn) headerBtn.classList.toggle('active', this.isVedalMode);
+    if (stageBtn) stageBtn.classList.toggle('active', this.isVedalMode);
+
+    if (this.isVedalMode) {
+      // Ensure Live Studio is visible and full stage
+      if (window.AisaLive2D) {
+        if (!window.AisaLive2D.isLiveStudio) window.AisaLive2D.toggleLiveStudio();
+        window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura (Cứ nói tự nhiên nha)...');
+        window.AisaLive2D.showSpeechBubble('🔴 Chế độ Vedal Live kích hoạt! Sakura hãy nói chuyện tự nhiên vào mic nha~ 🌸🎙️', 3500);
+      }
+      this.startVedalListening();
+      this.resetIdleChatterTimer();
+    } else {
+      this.stopVedalListening();
+      if (this._idleChatterTimer) clearTimeout(this._idleChatterTimer);
+      if (window.AisaLive2D) {
+        window.AisaLive2D.setStreamStatus('idle', 'Đã tắt chế độ Vedal');
+        window.AisaLive2D.hideLiveSubtitle();
+        window.AisaLive2D.showSpeechBubble('Đã tắt chế độ Vedal. Trở lại chế độ Chat thường! ✨', 2500);
+      }
+    }
+  },
+
+  startVedalListening() {
+    if (!this.isVedalMode || this.isSpeaking) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('[Vedal] Speech recognition not supported in this environment.');
+      return;
+    }
+
+    if (!this.vedalRecognition) {
+      this.vedalRecognition = new SpeechRecognition();
+      this.vedalRecognition.lang = 'vi-VN';
+      this.vedalRecognition.continuous = true;
+      this.vedalRecognition.interimResults = true;
+      this.vedalRecognition.maxAlternatives = 1;
+
+      this.vedalRecognition.onstart = () => {
+        this.vedalListeningActive = true;
+        if (window.AisaLive2D) window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura...');
+      };
+
+      this.vedalRecognition.onresult = (event) => {
+        if (!this.isVedalMode || this.isSpeaking) return;
+        this.resetIdleChatterTimer();
+
+        let interim = '';
+        let final = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            final += transcript;
+          } else {
+            interim += transcript;
+          }
+        }
+
+        const spokenText = (final || interim).trim();
+        if (spokenText) {
+          this._currentTranscript = spokenText;
+          if (window.AisaLive2D) {
+            window.AisaLive2D.updateLiveSubtitle('sakura', spokenText, !final);
+          }
+
+          // Silence detection: commit prompt when user pauses
+          clearTimeout(this._silenceTimer);
+          this._silenceTimer = setTimeout(() => {
+            this._commitVedalSpeech();
+          }, final ? 900 : 1400);
+        }
+      };
+
+      this.vedalRecognition.onerror = (e) => {
+        console.warn('[Vedal Voice] recognition error:', e.error);
+        if (e.error === 'not-allowed') {
+          this.isVedalMode = false;
+          alert('Vui lòng cấp quyền Microphone để AISA có thể lắng nghe cậu nha!');
+          return;
+        }
+        if (this.isVedalMode && !this.isSpeaking && !this._committing) {
+          setTimeout(() => this.startVedalListening(), 500);
+        }
+      };
+
+      this.vedalRecognition.onend = () => {
+        this.vedalListeningActive = false;
+        if (this.isVedalMode && !this.isSpeaking && !this._committing) {
+          setTimeout(() => this.startVedalListening(), 350);
+        }
+      };
+    }
+
+    try {
+      this.vedalRecognition.start();
+    } catch (e) {
+      // Ignore if already listening
+    }
+  },
+
+  stopVedalListening() {
+    this.vedalListeningActive = false;
+    clearTimeout(this._silenceTimer);
+    if (this.vedalRecognition) {
+      try { this.vedalRecognition.stop(); } catch (e) {}
+    }
+  },
+
+  _commitVedalSpeech() {
+    const text = (this._currentTranscript || '').trim();
+    if (!text) return;
+    this._currentTranscript = '';
+    this._committing = true;
+
+    // Stop mic while AI is reasoning and responding
+    this.stopVedalListening();
+
+    if (window.AisaLive2D) {
+      window.AisaLive2D.setStreamStatus('thinking', '💭 Đang suy nghĩ...');
+      window.AisaLive2D.updateLiveSubtitle('sakura', text, false);
+    }
+
+    if (window.AisaApp && typeof window.AisaApp.sendPrompt === 'function') {
+      window.AisaApp.sendPrompt(text);
+    }
+    this._committing = false;
+  },
+
+  speakVedalReplies(replies) {
+    if (!replies || !replies.length) {
+      this.resumeVedalListening();
+      return;
+    }
+
+    const playNext = (index) => {
+      if (index >= replies.length || !this.isVedalMode) {
+        this.resumeVedalListening();
+        return;
+      }
+
+      const rep = replies[index];
+      const clean = (window.AisaEngine ? window.AisaEngine.cleanReply(rep.text) : rep.text)
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .trim();
+
+      if (window.AisaLive2D) {
+        window.AisaLive2D.setStreamStatus('speaking', `${rep.speaker || 'AISA'} đang nói...`);
+        window.AisaLive2D.updateLiveSubtitle(rep.speaker || 'harmony', clean, false);
+      }
+
+      this.speak(clean, rep.speaker || 'HARMONY', null, () => {
+        setTimeout(() => playNext(index + 1), 350);
+      });
+    };
+
+    playNext(0);
+  },
+
+  resumeVedalListening() {
+    if (!this.isVedalMode) return;
+    setTimeout(() => {
+      if (window.AisaLive2D) {
+        window.AisaLive2D.setStreamStatus('listening', '🎙️ Đang nghe Sakura...');
+        window.AisaLive2D.hideLiveSubtitle();
+      }
+      this.startVedalListening();
+      this.resetIdleChatterTimer();
+    }, 450);
+  },
+
+  triggerIdleChatter() {
+    if (!this.isVedalMode || this.isSpeaking || (this.vedalListeningActive && this._currentTranscript)) return;
+
+    const isEcho = window.AisaLive2D && window.AisaLive2D.currentMode === 'echo';
+    const isDuo = !isEcho && window.AisaLive2D && window.AisaLive2D.currentMode === 'duo';
+
+    const idleLines = [
+      { speaker: 'ECHO', text: 'Sakura ơi, sao im lặng thế? Đang ngắm tớ đắm đuối đúng không nè? 😈📸' },
+      { speaker: 'HARMONY', text: 'Sakura ơi, cậu đừng làm việc quá sức nha, uống một ngụm nước ấm đi nào~ 🌸🍵' },
+      { speaker: 'ECHO', text: 'Này này, im re nãy giờ là lén đi ăn vụng bánh đúng hong? Chia cho tớ với coi! ⚡' },
+      { speaker: 'HARMONY', text: 'Em vẫn luôn ở bên cạnh Sakura nè, có gì cứ tâm sự với em nha! 💖' },
+      { speaker: 'ECHO', text: 'Ê Harmony, hình như Sakura để quên hai đứa mình rồi kìa! 😈' }
+    ];
+
+    const pick = isEcho
+      ? idleLines.filter(l => l.speaker === 'ECHO')[Math.floor(Math.random() * 3)]
+      : (isDuo ? idleLines[Math.floor(Math.random() * idleLines.length)] : idleLines.filter(l => l.speaker === 'HARMONY')[Math.floor(Math.random() * 2)]);
+
+    if (pick) {
+      this.stopVedalListening();
+      if (window.AisaLive2D) {
+        window.AisaLive2D.setStreamStatus('speaking', `${pick.speaker} đang bắt chuyện...`);
+        window.AisaLive2D.updateLiveSubtitle(pick.speaker, pick.text, false);
+      }
+      this.speak(pick.text, pick.speaker, null, () => {
+        this.resumeVedalListening();
+      });
+    }
+  },
+
+  resetIdleChatterTimer() {
+    if (this._idleChatterTimer) clearTimeout(this._idleChatterTimer);
+    if (!this.isVedalMode) return;
+    this._idleChatterTimer = setTimeout(() => {
+      this.triggerIdleChatter();
+    }, 45000);
+  },
+
   interruptSpeech() {
     if (this.isSpeaking) {
       if (this._currentAudio) {
@@ -114,7 +359,7 @@ window.AisaVoice = {
         if (bubble && !bubble.querySelector('.chat-interrupted-badge')) {
           const badge = document.createElement('div');
           badge.className = 'chat-interrupted-badge';
-          badge.innerHTML = '<span>&#x1F6D1;</span><span>[Da ngat loi khi nguoi dung phan hoi]</span>';
+          badge.innerHTML = '<span>🛑</span><span>[Đã ngắt lời khi người dùng phản hồi]</span>';
           bubble.appendChild(badge);
         }
       }
@@ -125,7 +370,7 @@ window.AisaVoice = {
     return false;
   },
 
-  speak(text, speaker = 'HARMONY', messageElement = null) {
+  speak(text, speaker = 'HARMONY', messageElement = null, onDoneCallback = null) {
     if (this.isSpeaking) { this.interruptSpeech(); return; }
     this.currentSpeakingElement = messageElement;
     this.currentSpeakingSpeaker = speaker;
@@ -140,19 +385,23 @@ window.AisaVoice = {
       .replace(/<think>[\s\S]*?<\/think>/gi, '')
       .replace(/\[(joy|smile|blush|smirk|pout|think|surprised|crying|anger|caring|gentle)\]/gi, '')
       .replace(/\[LEARN:[\s\S]*?\]/gi, '')
-      .replace(/\$\$[\s\S]*?\$\$/g, 'cong thuc toan hoc')
-      .replace(/\\\[[\s\S]*?\\\]/g, 'cong thuc toan hoc')
+      .replace(/\$\$[\s\S]*?\$\$/g, 'công thức toán học')
+      .replace(/\\\[[\s\S]*?\\\]/g, 'công thức toán học')
       .replace(/\\\([\s\S]*?\\\)/g, '')
       .replace(/[*#_~`\[\]()]/g, '')
       .replace(/https?:\/\/\S+/g, '')
       .trim();
-    if (!cleanText) { this.isSpeaking = false; if (window.AisaLive2D) window.AisaLive2D.stopLipSync(); return; }
     const onDone = () => {
       this.isSpeaking = false;
       this.currentSpeakingElement = null;
       this._currentAudio = null;
       if (window.AisaLive2D) window.AisaLive2D.stopLipSync();
+      if (typeof onDoneCallback === 'function') {
+        try { onDoneCallback(); } catch (e) { console.error(e); }
+      }
+      window.dispatchEvent(new CustomEvent('aisa-speech-ended', { detail: { speaker } }));
     };
+    if (!cleanText) { onDone(); return; }
     if (window.AisaDesktop && typeof window.AisaDesktop.synthesizeSpeech === 'function') {
       window.AisaDesktop.synthesizeSpeech(cleanText, speaker)
         .then(result => {
