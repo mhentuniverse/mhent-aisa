@@ -49,7 +49,13 @@ window.AisaVision = {
 
   handleSelectedFile(file) {
     if (!file.type.startsWith('image/')) {
-      alert('Vui lòng chọn tệp hình ảnh (PNG, JPG, WebP).');
+      if (window.AisaDialog?.alert) {
+        window.AisaDialog.alert({ title: 'Định Dạng Tệp', message: 'Vui lòng chọn tệp hình ảnh (PNG, JPG, WebP).', okText: 'Đã hiểu' });
+      } else if (typeof showToast === 'function') {
+        showToast('Định dạng tệp', 'Vui lòng chọn tệp hình ảnh (PNG, JPG, WebP).', 'warning');
+      } else {
+        if (window.AisaDialog?.alert) { window.AisaDialog.alert({ title: 'Định Dạng Tệp', message: 'Vui lòng chọn tệp hình ảnh (PNG, JPG, WebP).', okText: 'Đã hiểu' }); } else if (typeof showToast === 'function') { showToast('Định dạng tệp', 'Vui lòng chọn tệp hình ảnh (PNG, JPG, WebP).', 'warning'); } else { alert('Vui lòng chọn tệp hình ảnh (PNG, JPG, WebP).'); }
+      }
       return;
     }
     this.currentFile = file;

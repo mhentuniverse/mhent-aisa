@@ -150,10 +150,17 @@ window.AisaAuth = {
       }).then(confirmed => {
         if (confirmed) this.logout();
       });
+    } else if (window.AisaDialog?.confirm) {
+      window.AisaDialog.confirm({
+        title: "Khóa Màn Hình",
+        message: "Cậu có muốn khóa màn hình Sanctuary lại không?",
+        confirmText: "Khóa ngay",
+        cancelText: "Ở lại"
+      }).then(ok => {
+        if (ok) this.logout();
+      });
     } else {
-      if (confirm("Cậu có muốn khóa màn hình Sanctuary lại không?")) {
-        this.logout();
-      }
+      this.logout();
     }
   },
 
