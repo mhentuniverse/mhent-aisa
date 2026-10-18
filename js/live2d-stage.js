@@ -762,10 +762,12 @@ window.AisaLive2D = {
     this.isVisible = !this.isVisible;
     const container = document.getElementById('live2d-stage-container');
     const toggleBtn = document.getElementById('btn-toggle-live2d');
+    const topBtn = document.getElementById('btn-top-toggle-mascot');
     if (container) {
       if (this.isVisible) {
         container.classList.remove('hidden');
         if (toggleBtn) toggleBtn.classList.add('active');
+        if (topBtn) topBtn.classList.add('active');
         if (!this.isInitialized) {
           this.init();
         } else {
@@ -774,6 +776,7 @@ window.AisaLive2D = {
       } else {
         container.classList.add('hidden');
         if (toggleBtn) toggleBtn.classList.remove('active');
+        if (topBtn) topBtn.classList.remove('active');
         this.stopLipSync();
       }
     }

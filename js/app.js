@@ -2877,14 +2877,8 @@ window.AisaApp = {
       container.innerHTML = `
         <div class="gemini-hero-greeting-container sanctuary-hero-aura">
           <div class="gemini-hero-greeting" id="gemini-hero-greeting">
-            <h1 class="gemini-gradient-headline">
-              <span class="gradient-text">Xin chào,</span>
-              <span id="hero-user-name" class="editable-user-tag" title="Nhấp để đổi tên xưng hô">
-                <span class="hero-user-name-text">${this.escapeHtml(userName)}</span>
-                <span class="edit-name-badge">✎</span>
-              </span>
-            </h1>
-            <p class="gemini-sub-headline">AISA Orbit Studio luôn sẵn sàng tự động hóa công việc và song hành cùng cậu hôm nay ✨</p>
+            <h1 class="gemini-gradient-headline">Where should we start?</h1>
+            <p class="gemini-sub-headline">AISA Orbit Studio • Song hành cùng ${this.escapeHtml(userName)} ✨</p>
             
             <div class="gemini-prompt-cards-grid sanctuary-cards-grid">
               <!-- Card 1: Harmony Chữa lành -->
