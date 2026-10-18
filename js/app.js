@@ -2884,7 +2884,7 @@ window.AisaApp = {
                 <span class="edit-name-badge">✎</span>
               </span>
             </h1>
-            <p class="gemini-sub-headline">AISA Sanctuary luôn sẵn sàng lắng nghe và đồng hành cùng cậu hôm nay ✨</p>
+            <p class="gemini-sub-headline">AISA Orbit Studio luôn sẵn sàng tự động hóa công việc và song hành cùng cậu hôm nay ✨</p>
             
             <div class="gemini-prompt-cards-grid sanctuary-cards-grid">
               <!-- Card 1: Harmony Chữa lành -->
@@ -2924,22 +2924,11 @@ window.AisaApp = {
                 </div>
               </div>
 
-              <!-- Card 3: Yume Tsukai Precure & Phối beat -->
-              <div class="gemini-prompt-card sanctuary-card card-music quick-prompt-btn" data-prompt="Thảo luận ý tưởng kịch bản và phối beat nhạc cho Yume Tsukai Precure!">
-                <div class="gemini-card-text">Phối beat và thảo luận kịch bản Yume Tsukai Precure!...</div>
+              <!-- Card 3: Agent Terminal Launcher -->
+              <div class="gemini-prompt-card sanctuary-card card-music quick-prompt-btn" data-prompt="/cmd dir">
+                <div class="gemini-card-text">⚡ Chạy lệnh hệ thống: Kiểm tra thư mục dự án với /cmd dir...</div>
                 <div class="sanctuary-card-icon-box icon-box-music">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18V5L20 3V16" stroke="url(#musicAmberGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="6" cy="18" r="3" fill="#f59e0b"/>
-                    <circle cx="17" cy="16" r="3" fill="#ec4899"/>
-                    <path d="M9 9L20 7" stroke="#ffffff" stroke-width="1.5"/>
-                    <defs>
-                      <linearGradient id="musicAmberGrad" x1="9" y1="3" x2="20" y2="18" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#f59e0b"/>
-                        <stop offset="1" stop-color="#ec4899"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
                 </div>
               </div>
 

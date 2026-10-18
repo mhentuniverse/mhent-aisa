@@ -4,30 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AISA Orbit — AI Agent Companion Studio | MHEnt Universe</title>
+  <title>AISA Orbit — AI Executive Companion Studio | MHEnt Universe</title>
 
-  <!-- Meta & SEO -->
-  <meta name="description"
-    content="AISA Orbit – AI Agent Companion Studio đa nhiệm với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
-  <meta name="theme-color" content="#08090d">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Meta & App Config -->
+  <meta name="description" content="AISA Orbit – AI Agent Companion Studio đa nhiệm với nhân cách song hành Harmony & Echo dành riêng cho Founder Yurika và vũ trụ MHEnt. Universe.">
+  <meta name="theme-color" content="#07080c">
   <link rel="icon" type="image/png" href="assets/logo-design.png">
-  <link rel="manifest" href="manifest.json">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Firebase SDK Compat (Matches MHEnt Universe & Workspace) -->
+  <!-- Firebase SDK Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- KaTeX Mathematical Typography -->
+  <!-- KaTeX Typography -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
   <link rel="stylesheet" href="css/katex.min.css">
 
@@ -36,42 +30,52 @@
   <link rel="stylesheet" href="css/chat.css?v=2.5">
   <link rel="stylesheet" href="css/components.css?v=2.5">
   <link rel="stylesheet" href="css/orbit-desktop.css?v=2.5">
-  <link rel="stylesheet" href="css/mhent-mobile.css?v=2.5">
-  <link rel="stylesheet" href="css/live2d.css?v=2.5">
 </head>
 
 <body>
 
   <!-- ========================================================================
-       AISA ORBIT NATIVE DESKTOP TITLEBAR (FRAMELESS WINDOW)
+       1. AISA ORBIT NATIVE FRAMELESS TITLEBAR (ELECTRON DRAG REGION)
        ======================================================================== -->
-  <div class="aisa-orbit-titlebar" id="aisa-orbit-titlebar">
+  <header class="aisa-orbit-titlebar" id="aisa-orbit-titlebar">
     <div class="titlebar-left">
       <div class="titlebar-brand">
         <img src="assets/logo-design.png" alt="AISA Orbit Logo" class="titlebar-logo-icon">
         <span class="titlebar-title">AISA ORBIT</span>
-        <span class="titlebar-badge">AGENT v2.0</span>
+        <span class="titlebar-badge">STUDIO v2.0</span>
       </div>
     </div>
 
+    <!-- Center Mode Switcher Pills (Duo / Harmony / Echo) -->
     <div class="titlebar-center">
-      <div class="titlebar-search-pill" id="titlebar-quick-command" title="Mở danh sách lệnh nhanh (/)">
-        <span>⚡ MHEnt Universe Studio</span>
+      <div class="orbit-mode-pill-group">
+        <button type="button" class="orbit-mode-btn mode-btn active" data-mode="duo" id="orbit-mode-duo" title="Song Hành: Harmony & Echo cùng trò chuyện">
+          <span>💫</span>
+          <span>Song Hành</span>
+        </button>
+        <button type="button" class="orbit-mode-btn mode-btn" data-mode="harmony" id="orbit-mode-harmony" title="Harmony: Ngọt ngào, dịu dàng & vỗ về">
+          <span>🌸</span>
+          <span>Harmony</span>
+        </button>
+        <button type="button" class="orbit-mode-btn mode-btn" data-mode="echo" id="orbit-mode-echo" title="Echo: Sắc sảo, bóc mẽ & cà khịa thông minh">
+          <span>😈</span>
+          <span>Echo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Controls: Vedal Mic, /cmd Quick Launcher, Window Controls -->
+    <div class="titlebar-right">
+      <div class="orbit-vedal-indicator" id="top-vedal-toggle" title="Nhấp để Bật/Tắt Mic Đàm thoại Liên tục (Vedal Mode)">
+        <span class="orbit-vedal-dot"></span>
+        <span id="top-vedal-text">Vedal Mic</span>
+      </div>
+
+      <div class="titlebar-search-pill" id="titlebar-quick-command" title="Chạy lệnh hệ thống nhanh (/cmd)">
+        <span>⚡ Lệnh /cmd</span>
         <kbd>/</kbd>
       </div>
-    </div>
 
-    <div class="titlebar-right">
-      <div class="titlebar-status-indicators">
-        <div class="titlebar-status-item" title="Live2D Companion Sẵn sàng">
-          <span class="titlebar-status-dot pulsing"></span>
-          <span>Live2D</span>
-        </div>
-        <div class="titlebar-status-item" title="AI Agent Engine Sẵn sàng">
-          <span class="titlebar-status-dot"></span>
-          <span>Agent</span>
-        </div>
-      </div>
       <div class="titlebar-window-controls" id="titlebar-window-controls">
         <button type="button" class="window-btn btn-min" id="btn-win-min" title="Thu nhỏ">
           <svg width="10" height="2" viewBox="0 0 10 2"><rect width="10" height="2" fill="currentColor"/></svg>
@@ -84,413 +88,59 @@
         </button>
       </div>
     </div>
-  </div>
-
-  <!-- ========================================================================
-       TOP HEADER: SLEEK, CLEAN & BREATHABLE
-       ======================================================================== -->
-  <header class="sanctuary-header">
-    <div class="header-left">
-      <!-- Sidebar Toggle (Gemini style) -->
-      <button type="button" class="btn-sidebar-toggle" id="btn-toggle-sidebar"
-        title="Đóng/Mở thanh điều khiển (Ctrl+B)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-
-      <!-- Brand -->
-      <a href="https://mhentuniverse.com" class="brand-badge" title="MHEnt Universe Portal">
-        <img src="assets/logo-design.png" alt="AISA Logo" class="brand-logo-img">
-        <div class="brand-info">
-          <h1>AISA Orbit</h1>
-        </div>
-      </a>
-
-      <!-- Gemini-style Model Selector Dropdown -->
-      <div class="model-selector-container" id="model-selector-container">
-        <button type="button" class="btn-model-selector" id="btn-model-selector" aria-haspopup="true"
-          aria-expanded="false" title="Chọn mô hình AISA Multiverse">
-          <span class="model-sparkle">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z" />
-            </svg>
-          </span>
-          <span class="model-name" id="current-model-name">AISA v1</span>
-          <span class="model-arrow">▾</span>
-        </button>
-        <div class="model-dropdown-menu" id="model-dropdown-menu">
-          <div class="model-dropdown-header">Chọn mô hình AISA Multiverse</div>
-          <div class="model-option active" data-model="aisa-v1">
-            <div class="model-opt-info">
-              <div class="model-opt-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="#f472b6"/></svg>
-                <span>AISA v1</span>
-                <span class="model-badge">Mặc định</span>
-              </div>
-              <div class="model-opt-desc">Companion Song Hành • Harmony & Echo</div>
-            </div>
-            <span class="model-check">✓</span>
-          </div>
-          <div class="model-option" data-model="aisa-scholar-v1">
-            <div class="model-opt-info">
-              <div class="model-opt-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                <span>AISA Scholar v1</span>
-              </div>
-              <div class="model-opt-desc">Nghiên cứu & Học thuật Ngoại ngữ MHEnt Study</div>
-            </div>
-            <span class="model-check"></span>
-          </div>
-          <div class="model-option" data-model="aisa-workspace-v1">
-            <div class="model-opt-info">
-              <div class="model-opt-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                <span>AISA Workspace v1</span>
-              </div>
-              <div class="model-opt-desc">Điều hành, Lịch trình & Mail MHEnt Workspace</div>
-            </div>
-            <span class="model-check"></span>
-          </div>
-          <div class="model-option" data-model="aisa-universe-v1">
-            <div class="model-opt-info">
-              <div class="model-opt-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="6"/><path d="M3 12c0-3.3 4-6 9-6s9 2.7 9 6-4 6-9 6-9-2.7-9-6z"/></svg>
-                <span>AISA Universe v1</span>
-              </div>
-              <div class="model-opt-desc">Cổng Thông tin & Dịch vụ Vũ trụ Universe</div>
-            </div>
-            <span class="model-check"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Central Persona Mode Pill (Spacious Luxury Segmented Style) -->
-    <div class="header-mode-pill" aria-label="AISA Persona Selector">
-      <button type="button" class="mode-btn active" data-mode="duo"
-        title="Cả Harmony và Echo cùng trò chuyện song hành">
-        <span class="mode-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradDuoSpark)"
-              stroke="rgba(255,255,255,0.6)" stroke-width="0.8" />
-            <circle cx="12" cy="11" r="2.2" fill="#ffffff" />
-            <defs>
-              <linearGradient id="gradDuoSpark" x1="3" y1="2" x2="21" y2="20" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#f472b6" />
-                <stop offset="1" stop-color="#a78bfa" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </span>
-        <span class="mode-label">Song Hành</span>
-      </button>
-      <button type="button" class="mode-btn" data-mode="harmony" title="Chỉ trò chuyện cùng Harmony ngọt ngào & vỗ về">
-        <span class="mode-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M12 6.5C11.5 4 9.5 2.5 7.5 3.5C5.5 4.5 6 7 7.5 8.5C6 7.5 4 8.5 4 11C4 13.5 6.5 13.5 8 12.5C7 14 8 16.5 10.5 16C13 15.5 12.5 13 11.5 11.5C13 12.5 15 11.5 15 9C15 6.5 12.5 6.5 12 6.5Z"
-              fill="#f472b6" />
-            <circle cx="10" cy="10" r="2.2" fill="#ffffff" />
-          </svg>
-        </span>
-        <span class="mode-label">Harmony</span>
-      </button>
-      <button type="button" class="mode-btn" data-mode="echo" title="Chỉ trò chuyện cùng Echo sắc sảo & cà khịa">
-        <span class="mode-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 5L7.5 9C9 7.5 10.5 7 12 7C13.5 7 15 7.5 16.5 9L19 5C17 2.5 15 1.5 12 1.5C9 1.5 7 2.5 5 5Z"
-              fill="#a78bfa" />
-            <circle cx="12" cy="14" r="6.5" fill="#8b5cf6" fill-opacity="0.35" stroke="#a78bfa" stroke-width="1.4" />
-            <circle cx="9.8" cy="13" r="1.3" fill="#ffffff" />
-            <circle cx="14.2" cy="13" r="1.3" fill="#ffffff" />
-            <path d="M10 16.5C10.8 17.5 13.2 17.5 14 16.5" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round" />
-          </svg>
-        </span>
-        <span class="mode-label">Echo</span>
-      </button>
-    </div>
-
-    <!-- Preserved Scope Selector Tabs (Hidden for JS compatibility) -->
-    <nav class="header-scope-tabs" aria-label="AISA Scope Selector" style="display: none;">
-      <button type="button" class="scope-tab-btn active" data-scope="personal">Sanctuary</button>
-      <button type="button" class="scope-tab-btn" data-scope="workspace">Workspace</button>
-      <button type="button" class="scope-tab-btn" data-scope="study">Study</button>
-      <button type="button" class="scope-tab-btn" data-scope="portal">Portal</button>
-    </nav>
-
-    <!-- Header Right Controls (Gemini clean action bar with Vector Icons) -->
-    <div class="header-actions">
-      <!-- Ambient Synthesizer Button -->
-      <button type="button" class="btn-header-action btn-ambient-toggle" id="btn-toggle-ambient"
-        title="Bật âm thanh môi trường thư giãn 432Hz">
-        <span class="ambient-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18V5l12-2v13"></path>
-            <circle cx="6" cy="18" r="3"></circle>
-            <circle cx="18" cy="16" r="3"></circle>
-          </svg>
-        </span>
-      </button>
-
-      <!-- Memory Vault Trigger -->
-      <button type="button" class="btn-header-action" id="btn-open-memory" title="Mở Ngân hàng Ký ức">
-        <span class="nav-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path
-              d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z" />
-            <path
-              d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z" />
-          </svg>
-        </span>
-        <span class="badge-counter" id="memory-count-badge">3</span>
-      </button>
-
-      <!-- Cloud Sync Trigger (Đồng bộ đa thiết bị) -->
-      <button type="button" class="btn-header-action" id="btn-cloud-sync"
-        title="Đồng bộ Đám mây Đa Thiết Bị (Điện thoại ⇋ Máy tính)">
-        <span id="cloud-sync-icon" class="sync-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
-            <path d="M12 13v6m-3-3 3 3 3-3" />
-          </svg>
-        </span>
-        <span id="cloud-sync-text" style="display: none;">Đồng bộ</span>
-      </button>
-
-      <!-- Settings Trigger (Desktop quick access) -->
-      <button type="button" class="btn-header-action" id="btn-open-settings"
-        title="Cài đặt hệ thống & Cấu hình Gemini Key">
-        <span class="nav-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-            </path>
-          </svg>
-        </span>
-      </button>
-
-      <!-- Vedal VTuber Live Mode Trigger -->
-      <button type="button" class="btn-gemini-live-pill" id="btn-toggle-live-studio"
-        title="Bật/Tắt Chế độ Vedal & AI VTuber (Voice-to-Voice Rảnh tay)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">
-        <span class="live-studio-dot"></span>
-        <span class="live-studio-label">🔴 LIVE VTuber</span>
-      </button>
-
-      <!-- Live2D Mascot Toggle Button -->
-      <button type="button" class="btn-header-action active" id="btn-toggle-live2d"
-        title="Bật/Tắt Mascot Live2D (Harmony 🌸 / Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">
-        <span class="nav-icon-svg">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a8 8 0 0 0-8 8c0 4.418 3.582 8 8 8s8-3.582 8-8a8 8 0 0 0-8-8z"/>
-            <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
-            <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
-            <path d="M10 14a2 2 0 0 0 4 0"/>
-          </svg>
-        </span>
-      </button>
-
-      <!-- Gemini Mobile/Desktop New Chat Pen Trigger -->
-      <button type="button" class="btn-header-action btn-new-chat-top" id="btn-new-chat-top" title="Cuộc trò chuyện mới">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9"/>
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </button>
-
-      <!-- Master Profile & Utilities Hub (Gemini User Avatar Menu) -->
-      <div class="header-user-badge" id="header-user-badge" style="display: none;">
-        <button type="button" class="user-badge-inner" id="user-badge-inner" title="Hồ sơ Master Yurika & Tiện ích Sanctuary">
-          <span class="user-badge-avatar" id="header-user-avatar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </span>
-          <span class="user-badge-name" id="header-user-name" style="display: none;">User</span>
-          <span class="user-badge-status-dot"></span>
-        </button>
-
-        <!-- Dropdown Menu inside User Avatar -->
-        <div class="user-profile-dropdown" id="user-profile-dropdown">
-          <div class="user-profile-header">
-            <div class="uprof-avatar-box">
-              <span class="uprof-avatar-badge" id="uprof-avatar-badge">🌸</span>
-            </div>
-            <div class="uprof-meta">
-              <div class="uprof-name" id="uprof-display-name">Master Yurika</div>
-              <div class="uprof-sub">Founder • MHEnt Universe</div>
-            </div>
-          </div>
-          <div class="uprof-divider"></div>
-
-          <div class="uprof-menu-group">
-            <button type="button" class="more-menu-item" id="more-item-ambient">
-              <span class="more-item-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 18V5l12-2v13"></path>
-                  <circle cx="6" cy="18" r="3"></circle>
-                  <circle cx="18" cy="16" r="3"></circle>
-                </svg>
-              </span>
-              <div class="more-item-text">
-                <span class="more-item-title">Âm hưởng 432Hz</span>
-                <span class="more-item-sub">Âm thanh thư giãn sóng não</span>
-              </div>
-              <span class="more-item-badge" id="more-badge-ambient">Tắt</span>
-            </button>
-            <button type="button" class="more-menu-item" id="more-item-cloud">
-              <span class="more-item-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-                  <path d="M12 13v6m-3-3 3 3 3-3"/>
-                </svg>
-              </span>
-              <div class="more-item-text">
-                <span class="more-item-title">Đồng bộ Đám mây</span>
-                <span class="more-item-sub">Cloudflare D1 Multi-device</span>
-              </div>
-            </button>
-            <button type="button" class="more-menu-item" id="more-item-memory">
-              <span class="more-item-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"></path>
-                  <path d="M19 11v1a7 7 0 0 1-14 0v-1"></path>
-                  <line x1="12" y1="19" x2="12" y2="23"></line>
-                  <line x1="8" y1="23" x2="16" y2="23"></line>
-                </svg>
-              </span>
-              <div class="more-item-text">
-                <span class="more-item-title">Ngân hàng Ký ức</span>
-                <span class="more-item-sub">Trí nhớ dài hạn Master Yurika</span>
-              </div>
-              <span class="more-item-counter" id="more-badge-memory">3</span>
-            </button>
-            <button type="button" class="more-menu-item" id="more-item-clear">
-              <span class="more-item-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </span>
-              <div class="more-item-text">
-                <span class="more-item-title">Dọn dẹp phiên chat</span>
-                <span class="more-item-sub">Làm mới hội thoại hiện tại</span>
-              </div>
-            </button>
-            <button type="button" class="more-menu-item" id="more-item-settings">
-              <span class="more-item-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-              </span>
-              <div class="more-item-text">
-                <span class="more-item-title">Cài đặt Sanctuary</span>
-                <span class="more-item-sub">Cấu hình & Google Gemini Key</span>
-              </div>
-            </button>
-          </div>
-
-          <div class="uprof-divider"></div>
-          <button type="button" class="more-menu-item uprof-logout-btn" id="btn-user-menu-logout" title="Đăng xuất khỏi Sanctuary">
-            <span class="more-item-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </span>
-            <div class="more-item-text">
-              <span class="more-item-title" style="color: #f87171;">Đăng xuất khỏi Sanctuary</span>
-              <span class="more-item-sub">Kết thúc phiên làm việc an toàn</span>
-            </div>
-          </button>
-        </div>
-
-        <button type="button" class="btn-header-logout" id="btn-header-logout" style="display: none;"></button>
-      </div>
-    </div>
   </header>
 
   <!-- ========================================================================
-       MAIN APP STAGE (GEMINI 2-COLUMN: COLLAPSIBLE DRAWER + IMMERSIVE CHAT)
+       2. THREE-PANE DESKTOP STUDIO WORKSPACE
        ======================================================================== -->
-  <main class="sanctuary-stage">
+  <div class="orbit-studio-workspace" id="orbit-studio-workspace">
 
-    <!-- 1. LEFT SIDEBAR: GEMINI COLLAPSIBLE DRAWER -->
+    <!-- --------------------------------------------------------------------
+         PANE 1: LEFT SIDEBAR (SESSIONS & STUDIO TOOLS)
+         -------------------------------------------------------------------- -->
     <aside class="sanctuary-sidebar-left" id="sanctuary-sidebar-left">
-      <!-- 1. Gemini-style Header Row (Brand Pill + Mobile Close Button) -->
-      <div class="sidebar-header-row">
-        <div class="sidebar-brand-pill">
-          <span class="sidebar-brand-sparkle">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradSidebarSpark)"/>
-              <circle cx="12" cy="11" r="2.2" fill="#ffffff"/>
-              <defs>
-                <linearGradient id="gradSidebarSpark" x1="3" y1="2" x2="21" y2="20">
-                  <stop stop-color="#f472b6"/>
-                  <stop offset="1" stop-color="#a78bfa"/>
-                </linearGradient>
-              </defs>
+      <!-- Action: New Chat Button -->
+      <div class="sidebar-action-wrap">
+        <button type="button" class="btn-new-session" id="btn-new-session">
+          <div class="btn-new-session-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-          </span>
-          <span class="sidebar-brand-title">AISA Sanctuary</span>
-        </div>
-        <button type="button" class="btn-sidebar-close-mobile" id="btn-close-sidebar-mobile" aria-label="Đóng thanh điều khiển" title="Đóng thanh điều khiển">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+            <span>Cuộc trò chuyện mới</span>
+          </div>
+          <kbd>Ctrl+N</kbd>
         </button>
       </div>
 
-      <!-- 2. Gemini New Chat Button -->
-      <button type="button" class="btn-new-session" id="btn-new-session">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Cuộc trò chuyện mới</span>
-      </button>
-
-      <!-- 3. Real-time Search Box (Gemini Search Chats) -->
+      <!-- Real-time Search Box -->
       <div class="sidebar-search-box">
         <span class="search-box-icon">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </span>
-        <input type="text" id="sidebar-session-search" class="sidebar-search-input" placeholder="Tìm kiếm cuộc trò chuyện..." autocomplete="off" spellcheck="false">
+        <input type="text" id="sidebar-session-search" class="sidebar-search-input" placeholder="Tìm kiếm phiên chat..." autocomplete="off" spellcheck="false">
         <button type="button" class="btn-clear-search" id="btn-clear-session-search" style="display: none;" title="Xóa tìm kiếm">✕</button>
       </div>
 
-      <!-- 4. Quick Navigation Hub (Gemini Images/Library style) -->
-      <div class="sidebar-quick-nav">
+      <!-- System & Studio Quick Navigation Strip -->
+      <div class="sidebar-nav-strip">
         <button type="button" class="sidebar-nav-item" id="btn-nav-media" title="Thư viện tệp, ảnh & phân tích Vision">
           <span class="nav-item-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
               <circle cx="8.5" cy="8.5" r="1.5"/>
               <polyline points="21 15 16 10 5 21"/>
             </svg>
           </span>
-          <span class="nav-item-label">Thư viện Tệp & Ảnh</span>
+          <span class="nav-item-label">Thư viện Tệp & Vision</span>
         </button>
 
         <button type="button" class="sidebar-nav-item" id="btn-nav-memory" title="Ngân hàng Ký ức Master Yurika">
           <span class="nav-item-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
               <path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"></path>
               <path d="M19 11v1a7 7 0 0 1-14 0v-1"></path>
               <line x1="12" y1="19" x2="12" y2="23"></line>
@@ -501,41 +151,52 @@
           <span class="nav-item-badge" id="sidebar-memory-badge">3</span>
         </button>
 
-        <button type="button" class="sidebar-nav-item" id="btn-nav-chat-logs" title="Quản lý và Mở thư mục Log Chat Local (tệp JSON)">
+        <button type="button" class="sidebar-nav-item" id="btn-nav-chat-logs" title="Quản lý và Mở thư mục Log Chat Local (JSON)">
           <span class="nav-item-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
               <line x1="16" y1="13" x2="8" y2="13"/>
               <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
             </svg>
           </span>
           <span class="nav-item-label">Log Chat JSON</span>
         </button>
-      </div>
 
-      <!-- 5. Sessions Stream (Dynamically partitioned into Favorites & Recents) -->
-      <div class="sidebar-sessions-list" id="sidebar-sessions-list">
-        <!-- Rendered dynamically via app.js -->
-      </div>
-
-      <!-- 6. Gemini Minimal Bottom Drawer Utilities & Master Profile -->
-      <div class="sidebar-bottom-tools">
-        <!-- Elite Status Pill -->
-        <div class="sidebar-elite-pill" id="btn-sidebar-cloud-sync" title="Đồng bộ đa thiết bị Cloudflare D1">
-          <span class="elite-pill-icon">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        <button type="button" class="sidebar-nav-item btn-ambient-toggle" id="btn-toggle-ambient" title="Bật âm thanh môi trường thư giãn 432Hz">
+          <span class="nav-item-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
             </svg>
           </span>
-          <span class="elite-pill-text">AISA Elite • Cloudflare D1</span>
-          <span class="elite-pill-status">Active</span>
+          <span class="nav-item-label">Âm hưởng 432Hz</span>
+        </button>
+
+        <button type="button" class="sidebar-nav-item" id="btn-open-settings" title="Cài đặt hệ thống & Gemini API Key">
+          <span class="nav-item-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </span>
+          <span class="nav-item-label">Cài đặt Studio</span>
+        </button>
+      </div>
+
+      <!-- Sessions Stream (Dynamically partitioned into Favorites & Recents) -->
+      <div class="sidebar-sessions-list" id="sidebar-sessions-list"></div>
+
+      <!-- Sidebar Bottom Profile Dock -->
+      <div class="sidebar-bottom-tools">
+        <div class="sidebar-elite-pill" id="btn-sidebar-cloud-sync" title="Đồng bộ đa thiết bị Cloudflare D1">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Cloudflare D1 • Active</span>
         </div>
 
-        <!-- User Profile Footer Bar (Gemini style) -->
         <div class="sidebar-user-footer">
-          <div class="sfooter-user-btn" id="sfooter-user-btn" title="Hồ sơ cá nhân">
+          <div class="sfooter-user-btn" id="sfooter-user-btn" title="Hồ sơ Founder Sakura">
             <div class="sfooter-avatar-wrap">
               <span class="sfooter-avatar" id="sfooter-avatar">🌸</span>
               <span class="sfooter-online-dot"></span>
@@ -545,55 +206,24 @@
               <div class="sfooter-role">Founder • MHEnt Universe</div>
             </div>
           </div>
-          <button type="button" class="btn-sidebar-gear" id="btn-sidebar-gear" title="Cài đặt Sanctuary">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
+          <button type="button" class="btn-sidebar-gear" id="btn-sidebar-gear" title="Cài đặt">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
-        </div>
-
-        <!-- Hidden elements preserved for 100% JS backward compatibility -->
-        <div style="display: none;">
-          <div id="persona-card-harmony"></div>
-          <div id="persona-card-echo"></div>
-          <span id="sanctuary-greeting-time"></span>
-          <button type="button" id="btn-quick-open-vault"></button>
-          <form id="form-quick-add-fact">
-            <input type="text" id="input-sidebar-fact">
-            <button type="submit" class="btn-sidebar-add-fact">+</button>
-          </form>
-          <button type="button" class="btn-ambient-toggle" id="btn-sidebar-ambient"></button>
-          <button type="button" id="btn-sidebar-memory" onclick="document.getElementById('btn-open-memory')?.click()"></button>
-          <button type="button" id="btn-sidebar-settings" onclick="document.getElementById('btn-open-settings')?.click()"></button>
-          <div class="ambient-visualizer" id="ambient-visualizer"><span></span><span></span><span></span></div>
         </div>
       </div>
     </aside>
 
-    <!-- 2. CENTER STAGE: GEMINI IMMERSIVE CHAT STREAM -->
-    <section class="sanctuary-chat-center">
-      <!-- Hidden Stream Top Bar (Kept for JS references while maximizing canvas) -->
-      <div class="chat-stream-header" style="display: none;">
-        <div class="stream-scope-badge" id="current-scope-label">
-          ✨ AISA Sanctuary • Song Hành (Harmony 🌸 & Echo 😈)
-        </div>
-        <div class="stream-actions">
-          <button type="button" class="btn-stream-tool" id="btn-clear-chat" title="Dọn dẹp phiên trò chuyện hiện tại">
-            <span>🗑️ Dọn dẹp</span>
-          </button>
-        </div>
-      </div>
+    <!-- --------------------------------------------------------------------
+         PANE 2: CENTER ACTION CANVAS (MESSAGES & INPUT CAPSULE)
+         -------------------------------------------------------------------- -->
+    <main class="sanctuary-chat-center sanctuary-stage" id="sanctuary-stage">
+      <!-- Chat Messages Container -->
+      <div class="chat-messages-wrap" id="chat-messages-wrap"></div>
 
-      <!-- Messages Container (Centered & Spacious) -->
-      <div class="chat-messages-wrap" id="chat-messages-wrap">
-        <!-- Rendered reactively via app.js -->
-      </div>
-
-      <!-- Signature Gemini Floating Capsule Input Station -->
+      <!-- Signature Floating Input Station -->
       <div class="chat-input-station">
         <div class="input-station-inner">
-          <!-- Attachment Preview Above Input (Supports Images, Documents, Code, PDF) -->
+          <!-- Attachment Preview Pill -->
           <div class="chat-attached-preview" id="chat-attached-preview" style="display: none;">
             <div class="attached-file-card" id="attached-file-card">
               <div class="attached-file-icon-box" id="attached-file-icon-box">
@@ -604,68 +234,47 @@
                 <span class="attached-img-name" id="attached-img-name">tài_liệu.pdf</span>
                 <span class="attached-img-size" id="attached-img-size">120 KB</span>
               </div>
-              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment"
-                title="Gỡ tệp đính kèm">&times;</button>
+              <button type="button" class="btn-remove-attachment" id="btn-remove-attachment" title="Gỡ tệp đính kèm">&times;</button>
             </div>
           </div>
 
-          <!-- Capsule Pill Wrapper (Google Gemini Signature) -->
+          <!-- Capsule Box -->
           <div class="gemini-input-capsule" id="gemini-input-capsule">
-            <!-- Multi-format File Input (Images, Documents, Code, PDF, Sheets) -->
-            <input type="file" id="chat-file-input"
-              accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.html,.css,.sql" style="display: none;">
+            <input type="file" id="chat-file-input" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.html,.css,.sql" style="display: none;">
 
-            <!-- Grouped Tools Trigger & Popover Menu (4 Tools: Upload, Web Search, Deep Research, Thinking) -->
+            <!-- Grouped Tools Trigger & Popover Menu -->
             <div class="capsule-tools-group" id="capsule-tools-group">
-              <button type="button" class="btn-capsule-tool btn-capsule-plus" id="btn-capsule-tools"
-                title="Công cụ thông minh & Tệp đính kèm (+)">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round" class="icon-tools-plus">
+              <button type="button" class="btn-capsule-tool" id="btn-capsule-tools" title="Công cụ thông minh & Tệp đính kèm (+)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
               </button>
 
-              <!-- Popover with the 4 Grouped Tools -->
               <div class="capsule-tools-popover" id="capsule-tools-popover">
                 <div class="capsule-tools-popover-title">Công cụ & Tệp đính kèm</div>
-
-                <!-- 1. Tải lên tệp / ảnh -->
                 <button type="button" class="capsule-tool-item" id="tool-item-upload" title="Tải tệp tin hoặc ảnh">
                   <span class="tool-item-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-                    </svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                   </span>
                   <div class="tool-item-info">
                     <span class="tool-item-title">Tải tệp / Hình ảnh</span>
                     <span class="tool-item-sub">Ảnh, PDF, TXT, Docx, Code...</span>
                   </div>
                 </button>
-
-                <!-- 2. Tra cứu Web -->
-                <button type="button" class="capsule-tool-item" id="tool-item-web" title="Bật/Tắt tìm kiếm Web">
+                <button type="button" class="capsule-tool-item" id="tool-item-web" title="Bật/Tắt tra cứu Web">
                   <span class="tool-item-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                    </svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                   </span>
                   <div class="tool-item-info">
                     <span class="tool-item-title">Tra cứu Web</span>
-                    <span class="tool-item-sub">Tìm kiếm thông tin thời gian thực</span>
+                    <span class="tool-item-sub">Thông tin thời gian thực</span>
                   </div>
                   <span class="tool-item-status" id="status-popover-web">Tắt</span>
                 </button>
-
-                <!-- 3. Deep Research -->
                 <button type="button" class="capsule-tool-item" id="tool-item-research" title="Bật/Tắt Deep Research">
                   <span class="tool-item-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-                    </svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                   </span>
                   <div class="tool-item-info">
                     <span class="tool-item-title">Deep Research</span>
@@ -673,15 +282,9 @@
                   </div>
                   <span class="tool-item-status" id="status-popover-research">Tắt</span>
                 </button>
-
-                <!-- 4. Tư duy sâu -->
                 <button type="button" class="capsule-tool-item" id="tool-item-thinking" title="Bật/Tắt tư duy sâu">
                   <span class="tool-item-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 2a6 6 0 0 0-6 6c0 2.2 1.2 4.1 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.8-1.1 3-3 3-5.2a6 6 0 0 0-6-6z"></path>
-                      <path d="M9 21h6"></path>
-                      <path d="M10 18h4"></path>
-                    </svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M12 2a6 6 0 0 0-6 6c0 2.2 1.2 4.1 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.8-1.1 3-3 3-5.2a6 6 0 0 0-6-6z"/><path d="M9 21h6"/><path d="M10 18h4"/></svg>
                   </span>
                   <div class="tool-item-info">
                     <span class="tool-item-title">Tư duy sâu</span>
@@ -692,35 +295,24 @@
               </div>
             </div>
 
-            <!-- Active Pills container (Shows active tools inside the input capsule) -->
+            <!-- Active Tools Container -->
             <div class="capsule-active-pills" id="capsule-active-pills"></div>
 
-            <!-- Hidden backup triggers for legacy bindings -->
-            <button type="button" id="btn-attach-image" style="display: none;"></button>
-            <button type="button" id="btn-tool-deep-research" style="display: none;"><span id="badge-deep-research">Tắt</span></button>
-            <button type="button" id="btn-tool-web-search" style="display: none;"><span id="badge-web-search">Tắt</span></button>
-            <button type="button" id="btn-tool-thinking" style="display: none;"><span id="badge-thinking">Tắt</span></button>
-
             <!-- Textarea -->
-            <textarea id="chat-input" class="gemini-textarea" placeholder="Nhập câu hỏi hoặc tâm sự cùng AISA..."
-              rows="1"></textarea>
+            <textarea id="chat-input" class="gemini-textarea" placeholder="Nhập câu hỏi, tâm sự hoặc lệnh /cmd cho AISA Orbit..." rows="1"></textarea>
 
+            <!-- Right Controls: Mic & Send -->
             <div class="capsule-right-tools">
-              <!-- Voice Input Button (STT) -->
-              <button type="button" class="btn-capsule-tool btn-voice-capsule" id="btn-voice-input"
-                title="Nói bằng giọng nói (Microphone)">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="btn-capsule-tool" id="btn-voice-input" title="Nói bằng giọng nói (Microphone)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                   <line x1="12" x2="12" y1="19" y2="22" />
                 </svg>
               </button>
 
-              <!-- Send Button -->
               <button type="button" class="btn-capsule-send" id="btn-send" title="Gửi tin nhắn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                  stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="12" y1="19" x2="12" y2="5" />
                   <polyline points="5 12 12 5 19 12" />
                 </svg>
@@ -728,246 +320,157 @@
             </div>
           </div>
 
-
-
-          <!-- MHEnt Sanctuary Signature Footer Disclaimer -->
-          <div class="gemini-disclaimer-text sanctuary-identity-text">
-            <span>✨ AISA Sanctuary • Song hành cùng Harmony 🌸 & Echo 😈 • Dự án độc quyền MHEnt Universe</span>
+          <div class="sanctuary-identity-text">
+            <span>✨ AISA Orbit Studio • Harmony 🌸 & Echo 😈 • Dự án độc quyền MHEnt. Universe</span>
           </div>
         </div>
       </div>
-    </section>
+    </main>
 
-  </main>
-
-  <!-- ========================================================================
-       LIVE2D MASCOT STAGE (OPEN-LLM-VTUBER COMPANION EDITION)
-       ======================================================================== -->
-  <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot">
-    <div class="live2d-stage-header">
-      <div class="live2d-stage-title">
-        <span class="live2d-status-dot"></span>
-        <span id="live2d-speaker-name">Song Hành 🌸😈</span>
-      </div>
-      <div class="live2d-stage-controls">
-        <button type="button" id="btn-vedal-mode-toggle" class="btn-live2d-ctrl" title="Bật/Tắt Mic Rảnh tay (Vedal Mode Loop)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">
-          🎙️
-        </button>
-        <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi chế độ (Song Hành 🌸😈 ⇋ Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">
-          🔄
-        </button>
-        <button type="button" id="btn-swap-pairing" class="btn-live2d-ctrl" title="Đổi hoán đổi vai Model (Yachiyo 🌸 ⇋ March 7th 😈)" onclick="window.AisaLive2D && window.AisaLive2D.swapPairing()">
-          🎭
-        </button>
-        <button type="button" id="btn-reset-transform" class="btn-live2d-ctrl" title="Đặt lại góc nhìn / vị trí (Reset Pan & Zoom)" onclick="window.AisaLive2D && window.AisaLive2D.resetTransform()">
-          ↺
-        </button>
-        <button type="button" id="btn-toggle-studio-mode" class="btn-live2d-ctrl" title="Phóng to / Thu nhỏ Sân khấu Gemini Live Studio" onclick="window.AisaLive2D && window.AisaLive2D.toggleLiveStudio()">
-          ⛶
-        </button>
-        <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Ẩn Mascot" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">
-          ✕
-        </button>
-      </div>
-    </div>
-    <div class="live2d-canvas-wrap">
-      <canvas id="live2d-canvas"></canvas>
-      <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
-
-      <!-- VTuber Stream Overlay HUD -->
-      <div id="vedal-stream-hud" class="vedal-stream-hud">
-        <div class="vedal-hud-top">
-          <div class="vedal-live-badge" id="vedal-live-badge">
-            <span class="vedal-live-dot"></span>
-            <span class="vedal-live-text">VEDAL LIVE</span>
-          </div>
-          <div class="vedal-status-chip" id="vedal-status-chip">
-            <span class="vedal-status-icon">🎙️</span>
-            <span class="vedal-status-text">Đang lắng nghe Sakura...</span>
-          </div>
+    <!-- --------------------------------------------------------------------
+         PANE 3: RIGHT DOCKED MASCOT STAGE (LIVE2D & VTUBER HUD)
+         -------------------------------------------------------------------- -->
+    <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot">
+      <div class="live2d-stage-header">
+        <div class="live2d-stage-title">
+          <span class="live2d-status-dot"></span>
+          <span id="live2d-speaker-name">Song Hành 🌸😈</span>
         </div>
+        <div class="live2d-stage-controls">
+          <button type="button" id="btn-vedal-mode-toggle" class="btn-live2d-ctrl" title="Bật/Tắt Mic Rảnh tay (Vedal Mode)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">🎙️</button>
+          <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi chế độ (Song Hành 🌸😈 ⇋ Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">🔄</button>
+          <button type="button" id="btn-swap-pairing" class="btn-live2d-ctrl" title="Hoán đổi vai Model (Yachiyo 🌸 ⇋ March 7th 😈)" onclick="window.AisaLive2D && window.AisaLive2D.swapPairing()">🎭</button>
+          <button type="button" id="btn-reset-transform" class="btn-live2d-ctrl" title="Đặt lại góc nhìn (Reset Pan & Zoom)" onclick="window.AisaLive2D && window.AisaLive2D.resetTransform()">↺</button>
+          <button type="button" id="btn-toggle-studio-mode" class="btn-live2d-ctrl" title="Phóng to sân khấu Studio" onclick="window.AisaLive2D && window.AisaLive2D.toggleLiveStudio()">⛶</button>
+          <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Thu gọn Mascot Stage" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">✕</button>
+        </div>
+      </div>
 
-        <!-- Floating VTuber Subtitles Banner (Stream Closed Captions) -->
-        <div id="vedal-subtitle-banner" class="vedal-subtitle-banner" style="display: none;">
-          <div class="vedal-sub-speaker" id="vedal-sub-speaker">
-            <span class="vedal-sub-avatar" id="vedal-sub-avatar">🌸</span>
-            <span class="vedal-sub-name" id="vedal-sub-name">Yachiyo</span>
+      <div class="live2d-canvas-wrap">
+        <canvas id="live2d-canvas"></canvas>
+        <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
+
+        <!-- VTuber Stream Overlay HUD -->
+        <div id="vedal-stream-hud" class="vedal-stream-hud">
+          <div class="vedal-hud-top">
+            <div class="vedal-live-badge" id="vedal-live-badge">
+              <span class="vedal-live-dot"></span>
+              <span class="vedal-live-text">VEDAL LIVE</span>
+            </div>
+            <div class="vedal-status-chip" id="vedal-status-chip">
+              <span class="vedal-status-icon">🎙️</span>
+              <span class="vedal-status-text">Đang lắng nghe Sakura...</span>
+            </div>
           </div>
-          <div class="vedal-sub-content">
-            <div class="vedal-sub-text" id="vedal-sub-text"></div>
-            <div class="vedal-audio-wave" id="vedal-audio-wave">
-              <span></span><span></span><span></span><span></span><span></span>
+
+          <div id="vedal-subtitle-banner" class="vedal-subtitle-banner" style="display: none;">
+            <div class="vedal-sub-speaker" id="vedal-sub-speaker">
+              <span class="vedal-sub-avatar" id="vedal-sub-avatar">🌸</span>
+              <span class="vedal-sub-name" id="vedal-sub-name">Harmony</span>
+            </div>
+            <div class="vedal-sub-content">
+              <div class="vedal-sub-text" id="vedal-sub-text"></div>
+              <div class="vedal-audio-wave" id="vedal-audio-wave">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
             </div>
           </div>
         </div>
+
+        <div class="live-studio-hints">
+          <span>🖱️ Kéo chuột: Pan</span>
+          <span>•</span>
+          <span>🔍 Cuộn chuột: Zoom</span>
+          <span>•</span>
+          <span>🌸😈 Live2D Studio</span>
+        </div>
       </div>
-      <div class="live-studio-hints">
-        <span>🖱️ Kéo chuột: Di chuyển (Pan)</span>
-        <span>•</span>
-        <span>🔍 Cuộn chuột: Phóng to/Thu nhỏ (Zoom)</span>
-        <span>•</span>
-        <span>🌸😈 Sân khấu Song Hành</span>
-      </div>
-    </div>
-  </aside>
+    </aside>
+
+  </div>
 
   <!-- ========================================================================
-       MODAL 1: MEMORY VAULT (LONG-TERM FACTS & EDGE D1 CHAT LOGS)
+       3. MODALS, UTILITIES & AUTH GATEKEEPER
        ======================================================================== -->
-  <div class="modal-backdrop" id="modal-memory" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
+
+  <!-- Modal 1: Memory Vault -->
+  <div class="modal-backdrop" id="modal-memory" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title" id="memory-modal-title" style="display: flex; align-items: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"></path>
-            <path d="M19 11v1a7 7 0 0 1-14 0v-1"></path>
-            <line x1="12" y1="19" x2="12" y2="23"></line>
-            <line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"></path><path d="M19 11v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
           <span>Ngân Hàng Ký Ức (Memory Vault)</span>
         </div>
-        <button type="button" class="btn-modal-close" id="btn-close-memory" aria-label="Đóng">&times;</button>
+        <button type="button" class="btn-modal-close" id="btn-close-memory">&times;</button>
       </div>
       <div class="modal-body">
-        <!-- Form thêm ký ức mới -->
-        <div class="memory-form-card">
-          <div class="memory-form-title" style="display: flex; align-items: center; gap: 6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Ghim Ký Ức / Thói Quen Mới Cho AISA Nhớ</span>
-          </div>
-          <form id="form-add-fact" class="memory-input-row" style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="text" id="input-new-fact" class="memory-text-input"
-              placeholder="Ví dụ: Tớ thích uống cà phê ít đường vào buổi sáng..." required style="flex: 1; min-width: 180px;">
-            <select id="select-fact-target" class="memory-select" aria-label="Ghi nhớ cho ai" style="width: auto;">
-              <option value="both">🌸😈 Cả hai em</option>
-              <option value="harmony">🌸 Harmony</option>
-              <option value="echo">😈 Echo</option>
-            </select>
-            <select id="select-fact-category" class="memory-select" aria-label="Phân loại ký ức" style="width: auto;">
-              <option value="identity">Cá nhân</option>
-              <option value="preference">Sở thích</option>
-              <option value="habit">Thói quen</option>
-              <option value="personality">Tính cách</option>
-              <option value="project">Dự án</option>
-              <option value="plan">Kế hoạch</option>
-              <option value="general">Khác</option>
-            </select>
-            <button type="submit" class="btn-add-fact">Lưu lại</button>
-          </form>
-        </div>
+        <form id="form-add-fact" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+          <input type="text" id="input-new-fact" class="memory-text-input" placeholder="Ví dụ: Tớ thích uống matcha đá xay ít ngọt..." required style="flex: 1; min-width: 180px;">
+          <select id="select-fact-target" class="memory-select" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px;">
+            <option value="both">🌸😈 Cả hai em</option>
+            <option value="harmony">🌸 Harmony</option>
+            <option value="echo">😈 Echo</option>
+          </select>
+          <select id="select-fact-category" class="memory-select" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 6px 10px;">
+            <option value="identity">Cá nhân</option>
+            <option value="preference">Sở thích</option>
+            <option value="habit">Thói quen</option>
+            <option value="personality">Tính cách</option>
+            <option value="project">Dự án</option>
+            <option value="general">Khác</option>
+          </select>
+          <button type="submit" class="btn-add-fact">Lưu lại</button>
+        </form>
 
-        <!-- Danh sách ký ức dài hạn -->
-        <div class="memory-section-label" style="display: flex; align-items: center; gap: 6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
-          <span>Ký Ức Dài Hạn Đã Ghi Nhớ</span>
-        </div>
-        <div class="memory-facts-list" id="memory-facts-list">
-          <!-- Rendered via memory.js -->
-        </div>
+        <div style="font-size: 0.78rem; font-weight: 700; color: var(--orbit-cyan); margin: 14px 0 8px 0;">Ký Ức Đã Ghi Nhớ</div>
+        <div class="memory-facts-list" id="memory-facts-list"></div>
 
-        <!-- Lịch sử đồng bộ từ Edge D1 -->
-        <div class="memory-section-label" style="display: flex; align-items: center; gap: 6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-          <span>Nhật Ký Hội Thoại Edge D1 (Gần Đây)</span>
-        </div>
-        <div class="memory-logs-list" id="memory-logs-list">
-          <!-- Rendered via memory.js -->
-        </div>
+        <div style="font-size: 0.78rem; font-weight: 700; color: var(--echo-purple); margin: 18px 0 8px 0;">Nhật Ký Đồng Bộ Edge D1</div>
+        <div class="memory-logs-list" id="memory-logs-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================
-       MODAL 2: SETTINGS & SYSTEM CONFIGURATION (GEMINI KEY CONFIG)
-       ======================================================================== -->
-  <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true"
-    aria-labelledby="settings-modal-title">
+  <!-- Modal 2: Settings & API Key -->
+  <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title" id="settings-modal-title" style="display: flex; align-items: center; gap: 8px;">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <span>Cài Đặt Hệ Thống & Cấu Trúc AISA</span>
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Cài Đặt Hệ Thống AISA Orbit</span>
         </div>
-        <button type="button" class="btn-modal-close" id="btn-close-settings" aria-label="Đóng">&times;</button>
+        <button type="button" class="btn-modal-close" id="btn-close-settings">&times;</button>
       </div>
       <div class="modal-body">
-        <!-- Gemini Direct Key Configuration -->
-        <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="m21 2-2 2m-1.5 1.5L16 7l-1.5-1.5-3 3 1.5 1.5-2 2m-2-2-4.5 4.5a3.5 3.5 0 1 0 5 5L15 15.5l1.5 1.5 3-3-1.5-1.5 1.5-1.5Z"/></svg>
-            <span>Google Gemini API Key (Đa Nhiệm & Siêu Tốc Độ)</span>
-          </div>
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.45;">
-            Nhập Gemini API Key của cậu để AISA chạy thẳng mô hình <strong>Gemini 2.0 / 1.5 Flash Multimodal</strong>,
-            xử lý hình ảnh và trò chuyện với tốc độ ánh sáng! (Nếu để trống, AISA sẽ sử dụng Cloudflare Backend mặc
-            định).
-          </div>
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #f59e0b; margin-bottom: 4px;">Google Gemini API Key</div>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">Nhập Gemini Key để chạy trực tiếp Gemini 2.0 / 1.5 Multimodal tốc độ ánh sáng!</div>
           <div style="display: flex; gap: 8px;">
             <input type="password" id="input-gemini-key" class="memory-text-input" placeholder="AIzaSy...">
             <button type="button" class="btn-add-fact" id="btn-save-gemini-key">Lưu Key</button>
           </div>
         </div>
 
-        <!-- Master Passcode Configuration -->
-        <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>Mã Mở Khóa Sanctuary (Master Passcode)</span>
-          </div>
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.45;">
-            Mã khóa cá nhân để vào Sanctuary theo phong cách màn hình máy tính (Mặc định: <code>2006</code> hoặc <code>sakura</code>).
-          </div>
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--harmony-pink); margin-bottom: 4px;">Mã Mở Khóa Sanctuary (Master Passcode)</div>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">Mã bảo mật cá nhân (Mặc định: <code>2006</code> hoặc <code>sakura</code>).</div>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-master-passcode" class="memory-text-input" placeholder="Nhập mã mới (ví dụ: 06122006, sakura...)">
+            <input type="text" id="input-master-passcode" class="memory-text-input" placeholder="Mã mới (ví dụ: sakura)">
             <button type="button" class="btn-add-fact" id="btn-save-passcode">Đổi Mã</button>
           </div>
         </div>
 
-        <!-- Ollama RTX 4050 & Cloudflare Tunnel Endpoint Configuration -->
-        <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-            <span>Địa Chỉ GPU Ollama (Local hoặc Cloudflare Tunnel)</span>
-          </div>
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.45;">
-            Khi dùng trên máy tính: <code>http://localhost:11434</code>. Khi dùng từ xa trên điện thoại / web ngoài, dán đường link HTTPS Cloudflare Tunnel (ví dụ: <code>https://xxx.trycloudflare.com</code>) từ file <code>start-gpu-tunnel.bat</code> để kết nối card RTX 4050!
-          </div>
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--orbit-cyan); margin-bottom: 4px;">GPU Ollama / Cloudflare Tunnel URL</div>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">Địa chỉ Ollama trên RTX 4050 (mặc định: <code>http://localhost:11434</code>).</div>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-ollama-url" class="memory-text-input" placeholder="http://localhost:11434 hoặc https://xxx.trycloudflare.com">
-            <button type="button" class="btn-add-fact" id="btn-save-ollama-url">Lưu Endpoint</button>
-          </div>
-        </div>
-
-        <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>Thông Tin Đồng Hành</span>
-          </div>
-          <div style="font-size: 0.86rem; color: #f8fafc; margin-top: 8px; line-height: 1.6;">
-            <strong>Người sáng lập:</strong> Master Yurika 🌸<br>
-            <strong>Tổ chức:</strong> Miyazaki Haruto Entertainment Co., Ltd.<br>
-            <strong>Dự án:</strong> Project MHEnt. Universe • AISA Sanctuary
-          </div>
-        </div>
-
-        <div class="memory-card" style="margin-bottom: 16px;">
-          <div class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-            <span>Giọng Nói Trí Tuệ Nhân Tạo (TTS)</span>
-          </div>
-          <div style="font-size: 0.82rem; color: var(--text-medium); margin-top: 6px; line-height: 1.5;">
-            • <strong>Harmony:</strong> Pitch 1.15x (Trong trẻo, ấm áp, vỗ về)<br>
-            • <strong>Echo:</strong> Pitch 0.90x, Rate 1.05x (Sắc nét, tinh nghịch, cà khịa)<br>
-            • <strong>Ambience:</strong> 432Hz Binaural Sine Wave giúp xoa dịu tâm trí.
+            <input type="text" id="input-ollama-url" class="memory-text-input" placeholder="http://localhost:11434">
+            <button type="button" class="btn-add-fact" id="btn-save-ollama-url">Lưu URL</button>
           </div>
         </div>
 
         <div style="text-align: right; margin-top: 20px;">
-          <button type="button" class="btn-stream-tool" id="btn-reset-all-data"
-            style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+          <button type="button" class="btn-stream-tool" id="btn-reset-all-data" style="color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); background: transparent; padding: 6px 12px; border-radius: 8px; cursor: pointer;">
             ⚠️ Đặt lại toàn bộ dữ liệu máy khách
           </button>
         </div>
@@ -975,361 +478,141 @@
     </div>
   </div>
 
-  <!-- ========================================================================
-       MODAL 3: MHENT UNIVERSE LUXURY CONFIRM & ALERT DIALOG
-       ======================================================================== -->
-  <div class="modal-backdrop" id="modal-custom-dialog" role="dialog" aria-modal="true"
-    aria-labelledby="dialog-title-text">
-    <div class="modal-dialog modal-dialog-confirm">
-      <div class="modal-header dialog-header">
+  <!-- Modal 3: Custom Alert & Confirm Dialog -->
+  <div class="modal-backdrop" id="modal-custom-dialog" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-confirm" style="max-width: 440px;">
+      <div class="modal-header">
         <div class="modal-title" id="dialog-header-title">
-          <span id="dialog-icon-badge" class="dialog-icon-svg-wrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z"
-                fill="#f472b6" />
-            </svg>
-          </span>
+          <span id="dialog-icon-badge">✨</span>
           <span id="dialog-title-text">Xác Nhận</span>
         </div>
-        <button type="button" class="btn-modal-close" id="btn-dialog-close-x" aria-label="Đóng">&times;</button>
+        <button type="button" class="btn-modal-close" id="btn-dialog-close-x">&times;</button>
       </div>
-      <div class="modal-body dialog-body">
-        <div class="dialog-icon-circle" id="dialog-icon-circle">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M12 4C10.5 1.5 7 1.5 5 4C3 6.5 4 10 7 12C4 12 1 15 2 18.5C3 22 7.5 21 10 19C10.5 21.5 13.5 21.5 14 19C16.5 21 21 22 22 18.5C23 15 20 12 17 12C20 10 21 6.5 19 4C17 1.5 13.5 1.5 12 4Z"
-              fill="#f472b6" />
-          </svg>
-        </div>
-        <h3 class="dialog-prompt-heading" id="dialog-prompt-heading">Cậu có chắc chắn không nè?</h3>
-        <p class="dialog-prompt-sub" id="dialog-prompt-sub"></p>
-
-        <!-- Prompt Input Wrapper for custom prompt modal -->
-        <div class="dialog-input-container" id="dialog-input-container"
-          style="display: none; width: 100%; margin-top: 14px;">
-          <input type="text" id="dialog-prompt-input" class="dialog-prompt-input" placeholder="Nhập tại đây..."
-            autocomplete="off" spellcheck="false">
+      <div class="modal-body dialog-body" style="text-align: center; padding: 24px 20px;">
+        <div id="dialog-icon-circle" style="font-size: 2.2rem; margin-bottom: 12px;">✨</div>
+        <h3 id="dialog-prompt-heading" style="margin: 0 0 8px 0; font-size: 1.1rem; color: #fff;">Cậu có chắc chắn không?</h3>
+        <p id="dialog-prompt-sub" style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;"></p>
+        <div id="dialog-input-container" style="display: none; margin-top: 14px;">
+          <input type="text" id="dialog-prompt-input" class="memory-text-input" placeholder="Nhập tại đây...">
         </div>
       </div>
-      <div class="dialog-actions-row">
-        <button type="button" class="btn-dialog-action btn-dialog-cancel" id="btn-dialog-cancel">
-          Hủy Bỏ
-        </button>
-        <button type="button" class="btn-dialog-action btn-dialog-confirm" id="btn-dialog-confirm">
-          Xác Nhận
-        </button>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border-subtle);">
+        <button type="button" id="btn-dialog-cancel" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-subtle); background: transparent; color: var(--text-secondary); cursor: pointer;">Hủy Bỏ</button>
+        <button type="button" id="btn-dialog-confirm" style="padding: 8px 16px; border-radius: 8px; border: none; background: var(--harmony-gradient); color: #fff; font-weight: 600; cursor: pointer;">Xác Nhận</button>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================
-       MODAL 4: AUTH GATEKEEPER OVERLAY (EXCLUSIVE FOR MASTER YURIKA)
-       ======================================================================== -->
-  <!-- ========================================================================
-       MODAL 4: MASTER LOCK SCREEN (EXCLUSIVELY FOR MASTER YURIKA)
-       ======================================================================== -->
-  <div id="auth-gatekeeper-overlay" class="gatekeeper-overlay active" style="display: flex;">
-    <div class="gatekeeper-card" style="text-align: center; max-width: 380px;">
-      <div class="gatekeeper-emblem-wrap" style="margin-bottom: 24px;">
-        <div class="gatekeeper-emblem" style="width: 76px; height: 76px; font-size: 36px; border: 2px solid rgba(244, 114, 182, 0.6); box-shadow: 0 0 30px rgba(236, 72, 153, 0.4); margin-bottom: 14px;">
-          🌸
+  <!-- Modal 4: Gatekeeper Lock Screen -->
+  <div id="auth-gatekeeper-overlay" class="gatekeeper-overlay active" style="position: fixed; inset: 0; background: rgba(5,6,9,0.94); backdrop-filter: blur(24px); z-index: 999999; display: flex; align-items: center; justify-content: center;">
+    <div style="text-align: center; max-width: 360px; width: 100%; padding: 24px;">
+      <div style="width: 74px; height: 74px; font-size: 36px; border-radius: 50%; border: 2px solid rgba(244, 114, 182, 0.6); box-shadow: 0 0 30px rgba(244, 114, 182, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; background: rgba(244, 114, 182, 0.1);">🌸</div>
+      <h2 style="font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 4px 0; color: #fff;">Master <span style="color: var(--harmony-pink);">Yurika</span></h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 18px 0;">AISA Orbit Studio • MHEnt. Universe</p>
+      <div id="gate-error-banner" style="display: none; color: #f87171; font-size: 0.78rem; margin-bottom: 12px;"></div>
+      <form id="gate-login-form" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="position: relative; display: flex; align-items: center;">
+          <input type="password" id="gate-login-pass" placeholder="Nhập mã truy cập..." autocomplete="current-password" autofocus required style="width: 100%; padding: 12px 48px 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(244, 114, 182, 0.35); color: #fff; outline: none; font-size: 0.9rem;">
+          <button type="submit" id="btn-gate-submit" title="Mở khóa" style="position: absolute; right: 6px; width: 32px; height: 32px; border-radius: 8px; background: var(--harmony-gradient); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
         </div>
-        <h2 class="gatekeeper-title" style="font-size: 1.45rem; margin-bottom: 4px;">Master <span>Yurika</span></h2>
-        <p class="gatekeeper-subtitle" style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">Sanctuary Lock Screen • MHEnt Universe</p>
-        <div class="gatekeeper-badge" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>Bảo mật Không gian Riêng tư</span>
-        </div>
-      </div>
-
-      <!-- Alert Banner -->
-      <div id="gate-error-banner" class="gate-error-banner" style="display: none; margin-bottom: 14px;"></div>
-
-      <!-- Form Mở Khóa Bằng Mật Khẩu Truy Cập -->
-      <form id="gate-login-form" class="gate-form" style="display: flex; flex-direction: column; gap: 14px;">
-        <div class="gate-field" style="margin: 0;">
-          <div class="gate-input-wrapper" style="position: relative; display: flex; align-items: center;">
-            <span class="gate-input-icon" style="position: absolute; left: 14px; color: rgba(244, 114, 182, 0.7);">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </span>
-            <input type="password" class="gate-input" id="gate-login-pass" placeholder="Nhập mã truy cập..."
-              autocomplete="current-password" autofocus required
-              style="width: 100%; padding: 13px 48px 13px 40px; font-size: 15px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(244, 114, 182, 0.35); color: #fff; outline: none; transition: border-color 0.2s;">
-            <button type="submit" id="btn-gate-submit" title="Mở khóa"
-              style="position: absolute; right: 8px; width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255, 255, 255, 0.6); padding: 0 4px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); padding: 0 4px;">
           <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
-            <input type="checkbox" id="gate-remember-device" checked style="accent-color: #ec4899; cursor: pointer;">
-            <span>Nhớ thiết bị này (Tự mở khóa)</span>
+            <input type="checkbox" id="gate-remember-device" checked style="accent-color: var(--harmony-pink);">
+            <span>Tự mở khóa thiết bị này</span>
           </label>
         </div>
-
-        <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.4); text-align: center; margin-top: 4px;">
-          * Mật khẩu mặc định: <code style="color: #f472b6; background: rgba(244,114,182,0.15); padding: 2px 6px; border-radius: 4px;">2006</code> hoặc <code style="color: #f472b6; background: rgba(244,114,182,0.15); padding: 2px 6px; border-radius: 4px;">sakura</code>
-        </div>
       </form>
+    </div>
+  </div>
 
-      <div class="gate-security-notice" style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 22px; font-size: 12px; color: rgba(255, 255, 255, 0.5);">
-        <span>Chỉ Master Yurika mới có quyền giải mã & đồng hành cùng Harmony & Echo.</span>
+  <!-- Modal 5: Media & Vision Gallery -->
+  <div class="modal-backdrop" id="modal-media-gallery" role="dialog" aria-modal="true">
+    <div class="modal-dialog" style="max-width: 640px;">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Thư Viện Tệp & Vision (Media Hub)</span>
+        </div>
+        <button type="button" class="btn-modal-close" id="btn-close-media-gallery">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px;">
+        <div class="media-gallery-grid" id="media-gallery-grid"></div>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================
-       MOBILE COMPONENTS: OVERLAY, BOTTOM NAV & SCOPE PICKER
-       ======================================================================== -->
-  <div class="mhent-aisa-overlay" id="mhent-aisa-overlay"></div>
-
-  <!-- Scope Picker Modal for Mobile -->
-  <div class="scope-picker-modal" id="modal-scope-picker">
-    <div class="scope-picker-box">
-      <div class="scope-picker-title">Chọn Không Gian Trò Chuyện 🪐</div>
-      <div class="scope-picker-option" data-scope="personal">
-        <span>💖</span>
-        <div>
-          <div>Sanctuary</div>
-          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Cá nhân & Tâm sự riêng tư</div>
-        </div>
-      </div>
-      <div class="scope-picker-option" data-scope="workspace">
-        <span>💼</span>
-        <div>
-          <div>Workspace</div>
-          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Công việc, Mail, Task & Lịch
-          </div>
-        </div>
-      </div>
-      <div class="scope-picker-option" data-scope="study">
-        <span>📚</span>
-        <div>
-          <div>Study</div>
-          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Học ngoại ngữ CJK & Anh ngữ</div>
-        </div>
-      </div>
-      <div class="scope-picker-option" data-scope="portal">
-        <span>🌌</span>
-        <div>
-          <div>Portal</div>
-          <div style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Vũ trụ MHEnt Universe</div>
-        </div>
-      </div>
-      <button type="button" class="btn-tool-outline"
-        style="margin-top: 6px; padding: 10px; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-muted);"
-        id="btn-close-scope-picker">
-        Đóng
-      </button>
-    </div>
-  </div>
-
-  <!-- Companion & Model Selector Modal (Gemini Style) -->
-  <div class="modal-backdrop modal-companion-backdrop" id="modal-companion-model" role="dialog" aria-modal="true" style="display: none;">
+  <!-- Modal 6: Companion & Model Selector -->
+  <div class="modal-backdrop" id="modal-companion-model" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-companion-card">
       <div class="modal-header">
-        <div class="modal-title-wrap">
-          <div class="modal-subtitle">AISA Sanctuary Core</div>
-          <h2 class="modal-title" style="margin: 0;">Mô hình & Người đồng hành</h2>
-        </div>
-        <button type="button" class="btn-modal-close" id="btn-close-companion-modal" title="Đóng">&times;</button>
+        <h2 class="modal-title">Mô hình & Người đồng hành</h2>
+        <button type="button" class="btn-modal-close" id="btn-close-companion-modal">&times;</button>
       </div>
-
-      <div class="modal-body companion-modal-body">
-        <!-- Section 1: Companion Persona -->
-        <div class="companion-section-title">
-          <span>🌸 Người đồng hành (Persona Mode)</span>
-          <span class="companion-section-sub">Chọn phong cách đối thoại cùng bạn</span>
-        </div>
-        <div class="companion-persona-grid">
-          <!-- Duo -->
-          <div class="companion-persona-card active" data-companion="duo">
-            <div class="companion-card-header">
-              <span class="companion-card-icon duo-spark-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="url(#gradModDuo)"/>
-                  <circle cx="12" cy="11" r="2.2" fill="#ffffff"/>
-                  <defs>
-                    <linearGradient id="gradModDuo" x1="3" y1="2" x2="21" y2="20">
-                      <stop stop-color="#f472b6"/><stop offset="1" stop-color="#a78bfa"/>
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
-              <span class="companion-check">✓</span>
-            </div>
-            <div class="companion-card-info">
-              <div class="companion-card-name">Song Hành (Harmony & Echo)</div>
-              <div class="companion-card-desc">Cân bằng trọn vẹn: hòa quyện ngọt ngào vỗ về và sắc sảo phản biện đa chiều.</div>
-            </div>
+      <div class="modal-body">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--harmony-pink); margin-bottom: 8px;">🌸 Người đồng hành</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px;">
+          <div class="companion-persona-card active" data-companion="duo" style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); cursor: pointer;">
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">💫</div>
+            <div style="font-weight: 700; font-size: 0.8rem; color: #fff;">Song Hành</div>
+            <span class="companion-check" style="color: var(--harmony-pink); font-size: 0.75rem;">✓</span>
           </div>
-
-          <!-- Harmony -->
-          <div class="companion-persona-card" data-companion="harmony">
-            <div class="companion-card-header">
-              <span class="companion-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#f472b6"/>
-                </svg>
-              </span>
-              <span class="companion-check"></span>
-            </div>
-            <div class="companion-card-info">
-              <div class="companion-card-name">Harmony</div>
-              <div class="companion-card-desc">Dịu dàng, ấm áp, thấu cảm, xoa dịu áp lực và luôn bên cạnh chia sẻ tâm tư.</div>
-            </div>
+          <div class="companion-persona-card" data-companion="harmony" style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); cursor: pointer;">
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">🌸</div>
+            <div style="font-weight: 700; font-size: 0.8rem; color: #fff;">Harmony</div>
+            <span class="companion-check" style="color: var(--harmony-pink); font-size: 0.75rem;"></span>
           </div>
-
-          <!-- Echo -->
-          <div class="companion-persona-card" data-companion="echo">
-            <div class="companion-card-header">
-              <span class="companion-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#a78bfa"/>
-                </svg>
-              </span>
-              <span class="companion-check"></span>
-            </div>
-            <div class="companion-card-info">
-              <div class="companion-card-name">Echo</div>
-              <div class="companion-card-desc">Sắc sảo, logic, bóc mẽ lỗi sai, cà khịa thông minh và thúc đẩy tiến độ.</div>
-            </div>
+          <div class="companion-persona-card" data-companion="echo" style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); cursor: pointer;">
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">😈</div>
+            <div style="font-weight: 700; font-size: 0.8rem; color: #fff;">Echo</div>
+            <span class="companion-check" style="color: var(--harmony-pink); font-size: 0.75rem;"></span>
           </div>
         </div>
 
-        <!-- Section 2: AI Core Engine Model -->
-        <div class="companion-section-title" style="margin-top: 22px;">
-          <span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;">
-              <circle cx="12" cy="12" r="6"/><path d="M3 12c0-3.3 4-6 9-6s9 2.7 9 6-4 6-9 6-9-2.7-9-6z"/>
-            </svg>
-            Phiên bản Trí tuệ AI (Model)
-          </span>
-          <span class="companion-section-sub">Chọn mô hình phù hợp với tác vụ</span>
-        </div>
-        <div class="companion-models-list">
-          <div class="companion-model-item active" data-engine-model="aisa-v1">
-            <div class="cmodel-info">
-              <div class="cmodel-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill="#f472b6"/></svg>
-                <span>AISA v1</span>
-                <span class="cmodel-badge">Cloud</span>
-              </div>
-              <div class="cmodel-desc">Companion Song Hành • Cloudflare D1 + Google Gemini</div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--echo-purple); margin-bottom: 8px;">⚡ Phiên bản AI Model</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div class="companion-model-item active" data-engine-model="aisa-v1" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.82rem; color: #fff;">AISA v1 (Cloud)</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Mặc định • Google Gemini 2.0 / 1.5 Flash</div>
             </div>
-            <span class="cmodel-check">✓</span>
+            <span class="cmodel-check" style="color: var(--harmony-pink);">✓</span>
           </div>
-
-          <div class="companion-model-item" data-engine-model="aisa-local-3b">
-            <div class="cmodel-info">
-              <div class="cmodel-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span>AISA Local 3B</span>
-                <span class="cmodel-badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15;">RTX 4050 ⚡</span>
-              </div>
-              <div class="cmodel-desc">Chạy offline trên máy • Siêu nhẹ, siêu nhanh (Gaming & FL Studio mode)</div>
+          <div class="companion-model-item" data-engine-model="aisa-local-3b" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.82rem; color: #fff;">AISA Local 3B ⚡</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">RTX 4050 GPU Offline siêu nhẹ</div>
             </div>
-            <span class="cmodel-check"></span>
-          </div>
-
-          <div class="companion-model-item" data-engine-model="aisa-local-7b">
-            <div class="cmodel-info">
-              <div class="cmodel-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.5 2.2 6.5 5.3 7.6.4.1.7.5.7.9V20a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-1.5c0-.4.3-.8.7-.9C17.8 16.5 20 13.5 20 10a8 8 0 0 0-8-8z"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>
-                <span>AISA Local 7B</span>
-                <span class="cmodel-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">RTX 4050 🧠</span>
-              </div>
-              <div class="cmodel-desc">Chạy offline trên máy • Trí tuệ sâu sắc, thấu cảm & lập luận cao cấp</div>
-            </div>
-            <span class="cmodel-check"></span>
-          </div>
-
-          <div class="companion-model-item" data-engine-model="aisa-scholar-v1">
-            <div class="cmodel-info">
-              <div class="cmodel-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                <span>AISA Scholar v1</span>
-              </div>
-              <div class="cmodel-desc">Nghiên cứu học thuật, từ vựng JLPT/IELTS & MHEnt Study</div>
-            </div>
-            <span class="cmodel-check"></span>
-          </div>
-
-          <div class="companion-model-item" data-engine-model="aisa-workspace-v1">
-            <div class="cmodel-info">
-              <div class="cmodel-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                <span>AISA Workspace v1</span>
-              </div>
-              <div class="cmodel-desc">Điều hành, công việc, xử lý tài liệu & lịch trình</div>
-            </div>
-            <span class="cmodel-check"></span>
-          </div>
-
-          <div class="companion-model-item" data-engine-model="aisa-universe-v1">
-            <div class="cmodel-info">
-              <div class="cmodel-title" style="display: flex; align-items: center; gap: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="6"/><path d="M3 12c0-3.3 4-6 9-6s9 2.7 9 6-4 6-9 6-9-2.7-9-6z"/></svg>
-                <span>AISA Universe v1</span>
-              </div>
-              <div class="cmodel-desc">Cổng thông tin vũ trụ & dịch vụ giải trí MHEnt Universe</div>
-            </div>
-            <span class="cmodel-check"></span>
+            <span class="cmodel-check" style="color: var(--harmony-pink);"></span>
           </div>
         </div>
       </div>
-
-      <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-        <button type="button" class="btn-tool-solid" id="btn-confirm-companion" style="padding: 10px 24px; border-radius: 20px; font-weight: 600; cursor: pointer;">
-          Xác nhận & Bắt đầu trò chuyện
+      <div style="padding: 12px 20px; border-top: 1px solid var(--border-subtle); text-align: right;">
+        <button type="button" class="btn-tool-solid" id="btn-confirm-companion" style="padding: 8px 18px; border-radius: 10px; border: none; background: var(--harmony-gradient); color: #fff; font-weight: 600; cursor: pointer;">
+          Xác nhận
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Retired Mobile Bottom Nav (Kept hidden for backward JS references) -->
-  <nav class="aisa-bottom-nav" id="aisa-bottom-nav" style="display: none !important;"></nav>
-
-  <!-- ========================================================================
-       FLOATING TOUCH & LONG-PRESS CONTEXT MENU (FAVORITE / RENAME / DELETE)
-       ======================================================================== -->
+  <!-- Floating Context Menu -->
   <div class="session-context-menu" id="session-context-menu" style="display: none;">
     <button type="button" class="ctx-menu-item" id="ctx-item-favorite">
-      <span class="ctx-item-icon" id="ctx-fav-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      </span>
+      <span class="ctx-item-icon" id="ctx-fav-icon">⭐</span>
       <span class="ctx-item-label" id="ctx-fav-label">Ghim vào Yêu thích</span>
     </button>
     <button type="button" class="ctx-menu-item" id="ctx-item-rename">
-      <span class="ctx-item-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </span>
+      <span class="ctx-item-icon">✏️</span>
       <span class="ctx-item-label">Đổi tên cuộc trò chuyện</span>
     </button>
     <button type="button" class="ctx-menu-item" id="ctx-item-export-json">
-      <span class="ctx-item-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </span>
+      <span class="ctx-item-icon">💾</span>
       <span class="ctx-item-label">Xuất Log Chat (.JSON)</span>
     </button>
     <div class="ctx-menu-divider"></div>
     <button type="button" class="ctx-menu-item ctx-menu-danger" id="ctx-item-delete">
-      <span class="ctx-item-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-        </svg>
-      </span>
+      <span class="ctx-item-icon">🗑️</span>
       <span class="ctx-item-label">Xóa cuộc trò chuyện</span>
     </button>
   </div>
@@ -1338,34 +621,56 @@
   <input type="file" id="input-import-chat-json" accept=".json,application/json" style="display: none;">
 
   <!-- ========================================================================
-       MODAL: MEDIA & VISION FILES GALLERY HUB
+       4. HIDDEN COMPATIBILITY BACKUP ELEMENTS (ENSURES 100% JS NO-CRASH)
        ======================================================================== -->
-  <div class="modal-backdrop" id="modal-media-gallery" role="dialog" aria-modal="true" style="display: none;">
-    <div class="modal-dialog" style="max-width: 640px;">
-      <div class="modal-header">
-        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-          <span>Thư Viện Tệp & Ảnh (Media Hub)</span>
-        </div>
-        <button type="button" class="btn-modal-close" id="btn-close-media-gallery" aria-label="Đóng">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 16px 20px;">
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
-          Tất cả hình ảnh & tài liệu thị giác mà cậu đã tải lên và phân tích cùng AISA.
-        </div>
-        <div class="media-gallery-grid" id="media-gallery-grid">
-          <!-- Dynamically populated via app.js -->
-        </div>
+  <div style="display: none !important;" aria-hidden="true">
+    <button type="button" id="btn-toggle-sidebar"></button>
+    <button type="button" id="btn-close-sidebar-mobile"></button>
+    <div id="mhent-aisa-overlay"></div>
+    <div id="modal-scope-picker"><button type="button" id="btn-close-scope-picker"></button></div>
+    <button type="button" id="btn-model-selector"><span id="current-model-name">AISA v1</span></button>
+    <div id="model-dropdown-menu"></div>
+    <button type="button" id="btn-toggle-live-studio"></button>
+    <button type="button" id="btn-toggle-live2d"></button>
+    <button type="button" id="btn-new-chat-top"></button>
+    <div id="header-user-badge">
+      <button type="button" id="user-badge-inner"></button>
+      <div id="user-profile-dropdown">
+        <button type="button" id="more-item-ambient"><span id="more-badge-ambient"></span></button>
+        <button type="button" id="more-item-cloud"></button>
+        <button type="button" id="more-item-memory"><span id="more-badge-memory"></span></button>
+        <button type="button" id="more-item-clear"></button>
+        <button type="button" id="more-item-settings"></button>
+        <button type="button" id="btn-user-menu-logout"></button>
       </div>
     </div>
+    <button type="button" id="btn-attach-image"></button>
+    <button type="button" id="btn-tool-deep-research"><span id="badge-deep-research">Tắt</span></button>
+    <button type="button" id="btn-tool-web-search"><span id="badge-web-search">Tắt</span></button>
+    <button type="button" id="btn-tool-thinking"><span id="badge-thinking">Tắt</span></button>
+    <button type="button" id="btn-clear-chat"></button>
+    <div id="current-scope-label"></div>
+    <span id="memory-count-badge"></span>
+    <span id="sidebar-vault-count"></span>
+    <span id="count-all-mem"></span>
+    <span id="count-harmony-mem"></span>
+    <span id="count-echo-mem"></span>
+    <span id="count-shared-mem"></span>
+    <button type="button" id="btn-cloud-sync"><span id="cloud-sync-icon"></span><span id="cloud-sync-text"></span></button>
+    <div id="persona-card-harmony"></div>
+    <div id="persona-card-echo"></div>
+    <span id="sanctuary-greeting-time"></span>
+    <button type="button" id="btn-quick-open-vault"></button>
+    <form id="form-quick-add-fact"><input type="text" id="input-sidebar-fact"></form>
+    <button type="button" id="btn-sidebar-ambient"></button>
+    <button type="button" id="btn-sidebar-memory"></button>
+    <button type="button" id="btn-sidebar-settings"></button>
+    <div id="ambient-visualizer"></div>
+    <nav id="aisa-bottom-nav"></nav>
   </div>
 
   <!-- ========================================================================
-       JAVASCRIPT MODULES IN EXECUTION ORDER
+       5. JAVASCRIPT MODULES IN ORDER
        ======================================================================== -->
   <script src="js/pdf.min.js"></script>
   <script src="js/katex.min.js"></script>
@@ -1373,7 +678,7 @@
   <script src="js/auth.js"></script>
   <script src="js/markdown.js"></script>
   <script src="js/ai-engine.js"></script>
-  <script src="js/voice.js?v=2.4"></script>
+  <script src="js/voice.js?v=2.5"></script>
   <script src="js/memory.js"></script>
   <script src="js/vision.js"></script>
   <!-- Live2D Cubism Core & PixiJS Display -->
@@ -1381,10 +686,9 @@
   <script src="js/live2d/live2d.min.js"></script>
   <script src="js/live2d/pixi.min.js"></script>
   <script src="js/live2d/pixi-live2d-display.min.js"></script>
-  <script src="js/live2d-stage.js?v=2.4"></script>
-
-  <script src="js/app.js?v=2.4"></script>
-  <script src="js/desktop-bridge.js"></script>
+  <script src="js/live2d-stage.js?v=2.5"></script>
+  <script src="js/app.js?v=2.5"></script>
+  <script src="js/desktop-bridge.js?v=2.5"></script>
 
 </body>
 

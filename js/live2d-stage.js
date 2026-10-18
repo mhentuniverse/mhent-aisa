@@ -636,6 +636,22 @@ window.AisaLive2D = {
     this.updateModelsLayout();
   },
 
+  syncCanvasSize() {
+    const container = document.getElementById('live2d-stage-container');
+    const canvas = document.getElementById('live2d-canvas');
+    if (!container || !canvas || !this.app) return;
+    const wrap = container.querySelector('.live2d-canvas-wrap') || container;
+    const rect = wrap.getBoundingClientRect();
+    const w = Math.max(280, Math.floor(rect.width || 340));
+    const h = Math.max(340, Math.floor(rect.height || 500));
+    if (this.app.renderer) {
+      this.app.renderer.resize(w, h);
+    }
+    canvas.width = w;
+    canvas.height = h;
+    this.updateModelsLayout();
+  },
+
   toggleLiveStudio() {
     this.isLiveStudio = !this.isLiveStudio;
     const container = document.getElementById('live2d-stage-container');

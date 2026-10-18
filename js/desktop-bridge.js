@@ -73,8 +73,34 @@ window.AisaDesktopBridge = {
       quickCmd.addEventListener('click', () => {
         const input = document.getElementById('chat-input');
         if (input) {
-          input.value = '/';
+          input.value = '/cmd ';
           input.focus();
+        }
+      });
+    }
+
+    // Titlebar Mode Selector Pills (Duo / Harmony / Echo)
+    const modeBtns = document.querySelectorAll('.orbit-mode-btn');
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-mode');
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (window.AisaApp && typeof window.AisaApp.setMode === 'function') {
+          window.AisaApp.setMode(mode);
+        }
+      });
+    });
+
+    // Titlebar Vedal Mic Toggle
+    const vedalToggle = document.getElementById('top-vedal-toggle');
+    const vedalText = document.getElementById('top-vedal-text');
+    if (vedalToggle) {
+      vedalToggle.addEventListener('click', () => {
+        if (window.AisaVoice && typeof window.AisaVoice.toggleVedalMode === 'function') {
+          const isActive = window.AisaVoice.toggleVedalMode();
+          vedalToggle.classList.toggle('active', isActive);
+          if (vedalText) vedalText.textContent = isActive ? 'Vedal Live 🔴' : 'Vedal Mic';
         }
       });
     }
