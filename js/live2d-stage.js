@@ -51,20 +51,20 @@ window.AisaLive2D = {
       displayName: 'Yachiyo Kaguya-hime',
       path: 'assets/live2d-models/yachiyo_kaguya/【雪熊企划】八千代辉夜姬/八千代辉夜姬.model3.json',
       miniScale: 0.046,
-      duoMiniScale: 0.036,
+      duoMiniScale: 0.038,
       studioScale: 0.096,
       duoStudioScale: 0.076,
-      yOffset: 25,
+      yOffset: 26,
       type: 'yachiyo'
     },
     march_7th: {
       displayName: 'March 7th',
       path: 'assets/live2d-models/march_7th/March 7th/march 7th.model3.json',
-      miniScale: 0.096,
-      duoMiniScale: 0.076,
-      studioScale: 0.192,
-      duoStudioScale: 0.152,
-      yOffset: 25,
+      miniScale: 0.076,
+      duoMiniScale: 0.054,
+      studioScale: 0.170,
+      duoStudioScale: 0.130,
+      yOffset: 28,
       type: 'march'
     }
   },
@@ -403,8 +403,8 @@ window.AisaLive2D = {
       if (!targetWidth || targetWidth < 300) targetWidth = expectedW;
       if (!targetHeight || targetHeight < 300) targetHeight = expectedH;
     } else {
-      targetWidth = 280;
-      targetHeight = 338;
+      targetWidth = wrap.clientWidth || 290;
+      targetHeight = wrap.clientHeight || 355;
     }
 
     this.app.renderer.resize(targetWidth, targetHeight);
@@ -446,7 +446,7 @@ window.AisaLive2D = {
           this.models.harmony.position.set(this.models.harmony.customX, this.models.harmony.customY);
         } else {
           const defaultX = isStudio ? (rw * 0.35) : (rw * 0.30);
-          const defaultY = isStudio ? (rh * 0.54 + this.mascots.harmony.yOffset) : (rh * 0.52 + this.mascots.harmony.yOffset);
+          const defaultY = isStudio ? (rh * 0.54 + this.mascots.harmony.yOffset) : (rh * 0.57 + this.mascots.harmony.yOffset);
           this.models.harmony.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
       } else if (this.currentMode === 'harmony') {
@@ -458,7 +458,7 @@ window.AisaLive2D = {
           this.models.harmony.position.set(this.models.harmony.customX, this.models.harmony.customY);
         } else {
           const defaultX = rw * 0.5;
-          const defaultY = isStudio ? (rh * 0.54 + this.mascots.harmony.yOffset) : (rh * 0.52 + this.mascots.harmony.yOffset);
+          const defaultY = isStudio ? (rh * 0.54 + this.mascots.harmony.yOffset) : (rh * 0.57 + this.mascots.harmony.yOffset);
           this.models.harmony.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
       } else {
@@ -477,7 +477,7 @@ window.AisaLive2D = {
           this.models.echo.position.set(this.models.echo.customX, this.models.echo.customY);
         } else {
           const defaultX = isStudio ? (rw * 0.65) : (rw * 0.70);
-          const defaultY = isStudio ? (rh * 0.54 + this.mascots.echo.yOffset) : (rh * 0.52 + this.mascots.echo.yOffset);
+          const defaultY = isStudio ? (rh * 0.54 + this.mascots.echo.yOffset) : (rh * 0.57 + this.mascots.echo.yOffset);
           this.models.echo.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
       } else if (this.currentMode === 'echo') {
@@ -489,7 +489,7 @@ window.AisaLive2D = {
           this.models.echo.position.set(this.models.echo.customX, this.models.echo.customY);
         } else {
           const defaultX = rw * 0.5;
-          const defaultY = isStudio ? (rh * 0.54 + this.mascots.echo.yOffset) : (rh * 0.52 + this.mascots.echo.yOffset);
+          const defaultY = isStudio ? (rh * 0.54 + this.mascots.echo.yOffset) : (rh * 0.57 + this.mascots.echo.yOffset);
           this.models.echo.position.set(defaultX + this.stagePan.x, defaultY + this.stagePan.y);
         }
       } else {

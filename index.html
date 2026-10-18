@@ -337,68 +337,67 @@
         </div>
       </div>
     </main>
-
-    <!-- --------------------------------------------------------------------
-         PANE 3: RIGHT DOCKED MASCOT STAGE (LIVE2D & VTUBER HUD)
-         -------------------------------------------------------------------- -->
-    <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot">
-      <div class="live2d-stage-header">
-        <div class="live2d-stage-title">
-          <span class="live2d-status-dot"></span>
-          <span id="live2d-speaker-name">Song Hành 🌸😈</span>
-        </div>
-        <div class="live2d-stage-controls">
-          <button type="button" id="btn-vedal-mode-toggle" class="btn-live2d-ctrl" title="Bật/Tắt Mic Rảnh tay (Vedal Mode)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">🎙️</button>
-          <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi chế độ (Song Hành 🌸😈 ⇋ Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">🔄</button>
-          <button type="button" id="btn-swap-pairing" class="btn-live2d-ctrl" title="Hoán đổi vai Model (Yachiyo 🌸 ⇋ March 7th 😈)" onclick="window.AisaLive2D && window.AisaLive2D.swapPairing()">🎭</button>
-          <button type="button" id="btn-reset-transform" class="btn-live2d-ctrl" title="Đặt lại góc nhìn (Reset Pan & Zoom)" onclick="window.AisaLive2D && window.AisaLive2D.resetTransform()">↺</button>
-          <button type="button" id="btn-toggle-studio-mode" class="btn-live2d-ctrl" title="Phóng to sân khấu Studio" onclick="window.AisaLive2D && window.AisaLive2D.toggleLiveStudio()">⛶</button>
-          <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Thu gọn Mascot Stage" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">✕</button>
-        </div>
-      </div>
-
-      <div class="live2d-canvas-wrap">
-        <canvas id="live2d-canvas"></canvas>
-        <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
-
-        <!-- VTuber Stream Overlay HUD -->
-        <div id="vedal-stream-hud" class="vedal-stream-hud">
-          <div class="vedal-hud-top">
-            <div class="vedal-live-badge" id="vedal-live-badge">
-              <span class="vedal-live-dot"></span>
-              <span class="vedal-live-text">VEDAL LIVE</span>
-            </div>
-            <div class="vedal-status-chip" id="vedal-status-chip">
-              <span class="vedal-status-icon">🎙️</span>
-              <span class="vedal-status-text">Đang lắng nghe Sakura...</span>
-            </div>
-          </div>
-
-          <div id="vedal-subtitle-banner" class="vedal-subtitle-banner" style="display: none;">
-            <div class="vedal-sub-speaker" id="vedal-sub-speaker">
-              <span class="vedal-sub-avatar" id="vedal-sub-avatar">🌸</span>
-              <span class="vedal-sub-name" id="vedal-sub-name">Harmony</span>
-            </div>
-            <div class="vedal-sub-content">
-              <div class="vedal-sub-text" id="vedal-sub-text"></div>
-              <div class="vedal-audio-wave" id="vedal-audio-wave">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="live-studio-hints">
-          <span>🖱️ Kéo chuột: Pan</span>
-          <span>•</span>
-          <span>🔍 Cuộn chuột: Zoom</span>
-          <span>•</span>
-          <span>🌸😈 Live2D Studio</span>
-        </div>
-      </div>
-    </aside>
-
   </div>
+
+  <!-- ========================================================================
+       LIVE2D MASCOT COMPANION (LUXURY FLOATING FROSTED CARD WIDGET)
+       ======================================================================== -->
+  <aside id="live2d-stage-container" class="live2d-stage-container" aria-label="AISA Live2D Mascot">
+    <div class="live2d-stage-header">
+      <div class="live2d-stage-title">
+        <span class="live2d-status-dot"></span>
+        <span id="live2d-speaker-name">Song Hành 🌸😈</span>
+      </div>
+      <div class="live2d-stage-controls">
+        <button type="button" id="btn-vedal-mode-toggle" class="btn-live2d-ctrl" title="Bật/Tắt Mic Rảnh tay (Vedal Mode)" onclick="window.AisaVoice && window.AisaVoice.toggleVedalMode()">🎙️</button>
+        <button type="button" id="btn-switch-mascot" class="btn-live2d-ctrl" title="Đổi chế độ (Song Hành 🌸😈 ⇋ Harmony 🌸 ⇋ Echo 😈)" onclick="window.AisaLive2D && window.AisaLive2D.switchMascot()">🔄</button>
+        <button type="button" id="btn-swap-pairing" class="btn-live2d-ctrl" title="Hoán đổi vai Model (Yachiyo 🌸 ⇋ March 7th 😈)" onclick="window.AisaLive2D && window.AisaLive2D.swapPairing()">🎭</button>
+        <button type="button" id="btn-reset-transform" class="btn-live2d-ctrl" title="Đặt lại góc nhìn (Reset Pan & Zoom)" onclick="window.AisaLive2D && window.AisaLive2D.resetTransform()">↺</button>
+        <button type="button" id="btn-toggle-studio-mode" class="btn-live2d-ctrl" title="Phóng to sân khấu Studio" onclick="window.AisaLive2D && window.AisaLive2D.toggleLiveStudio()">⛶</button>
+        <button type="button" id="btn-hide-mascot" class="btn-live2d-ctrl" title="Thu gọn Mascot Stage" onclick="window.AisaLive2D && window.AisaLive2D.toggleVisibility()">✕</button>
+      </div>
+    </div>
+
+    <div class="live2d-canvas-wrap">
+      <canvas id="live2d-canvas"></canvas>
+      <div id="live2d-speech-bubble" class="live2d-speech-bubble" style="display: none;"></div>
+
+      <!-- VTuber Stream Overlay HUD -->
+      <div id="vedal-stream-hud" class="vedal-stream-hud">
+        <div class="vedal-hud-top">
+          <div class="vedal-live-badge" id="vedal-live-badge">
+            <span class="vedal-live-dot"></span>
+            <span class="vedal-live-text">VEDAL LIVE</span>
+          </div>
+          <div class="vedal-status-chip" id="vedal-status-chip">
+            <span class="vedal-status-icon">🎙️</span>
+            <span class="vedal-status-text">Đang lắng nghe Sakura...</span>
+          </div>
+        </div>
+
+        <div id="vedal-subtitle-banner" class="vedal-subtitle-banner" style="display: none;">
+          <div class="vedal-sub-speaker" id="vedal-sub-speaker">
+            <span class="vedal-sub-avatar" id="vedal-sub-avatar">🌸</span>
+            <span class="vedal-sub-name" id="vedal-sub-name">Harmony</span>
+          </div>
+          <div class="vedal-sub-content">
+            <div class="vedal-sub-text" id="vedal-sub-text"></div>
+            <div class="vedal-audio-wave" id="vedal-audio-wave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="live2d-studio-hints">
+        <span>🖱️ Kéo chuột: Pan</span>
+        <span>•</span>
+        <span>🔍 Cuộn chuột: Zoom</span>
+        <span>•</span>
+        <span>🌸😈 Live2D Studio</span>
+      </div>
+    </div>
+  </aside>
 
   <!-- ========================================================================
        3. MODALS, UTILITIES & AUTH GATEKEEPER

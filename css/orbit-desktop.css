@@ -8,36 +8,37 @@
    1. DESIGN TOKENS & NATIVE APP RESET (GEMINI / ANTIGRAVITY OBSIDIAN DARK)
    ========================================================================== */
 :root {
-  /* Google Gemini & Antigravity Matte Dark Palette */
-  --bg-app: #131314;
-  --bg-sidebar: #18181b;
-  --bg-stage: #131314;
-  --bg-mascot: #161619;
-  --bg-capsule: rgba(28, 29, 36, 0.94);
-  --bg-card: rgba(255, 255, 255, 0.04);
-  --bg-card-hover: rgba(255, 255, 255, 0.07);
-  --bg-active-item: rgba(255, 255, 255, 0.08);
+  /* Google Gemini & Antigravity Obsidian Dark with Cosmic Depth */
+  --bg-app: #0d0e12;
+  --bg-sidebar: #13141a;
+  --bg-stage: radial-gradient(circle at 50% 18%, rgba(244, 114, 182, 0.12) 0%, rgba(168, 85, 247, 0.08) 35%, rgba(13, 14, 18, 0.98) 75%), #0c0d12;
+  --bg-mascot: rgba(18, 20, 30, 0.88);
+  --bg-capsule: rgba(24, 26, 36, 0.94);
+  --bg-card: rgba(255, 255, 255, 0.045);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --bg-active-item: rgba(255, 255, 255, 0.09);
 
-  /* Subtle, razor-thin borders */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-medium: rgba(255, 255, 255, 0.12);
-  --border-active: rgba(255, 255, 255, 0.22);
+  /* Subtle, razor-thin luminous borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-active: rgba(244, 114, 182, 0.45);
 
-  /* Clean Google Typography Colors */
-  --text-main: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-dim: #475569;
+  /* Clean High-Contrast Typography */
+  --text-main: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8492a6;
+  --text-dim: #526075;
 
-  /* Refined, Elegant Accents */
+  /* Signature MHEnt Accents & Aurora Gradients */
   --harmony-pink: #f472b6;
-  --harmony-pink-soft: rgba(244, 114, 182, 0.14);
-  --harmony-pink-glow: rgba(244, 114, 182, 0.2);
+  --harmony-pink-soft: rgba(244, 114, 182, 0.16);
+  --harmony-pink-glow: rgba(244, 114, 182, 0.28);
 
   --echo-purple: #a855f7;
-  --echo-purple-soft: rgba(168, 85, 247, 0.14);
-  --echo-purple-glow: rgba(168, 85, 247, 0.2);
+  --echo-purple-soft: rgba(168, 85, 247, 0.16);
+  --echo-purple-glow: rgba(168, 85, 247, 0.28);
 
+  --gemini-sakura-gradient: linear-gradient(135deg, #f472b6 0%, #ec4899 30%, #c084fc 65%, #38bdf8 100%);
   --gemini-spark: linear-gradient(135deg, #f472b6, #a855f7, #38bdf8);
   --orbit-cyan: #38bdf8;
   --orbit-amber: #f59e0b;
@@ -303,11 +304,17 @@ code, pre, input, textarea {
   transition: all 0.15s ease;
 }
 
-.titlebar-mascot-toggle:hover,
-.titlebar-mascot-toggle.active {
+.titlebar-mascot-toggle:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   border-color: var(--border-medium);
+}
+
+.titlebar-mascot-toggle.active {
+  background: rgba(244, 114, 182, 0.16);
+  color: #f472b6;
+  border-color: rgba(244, 114, 182, 0.4);
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.2);
 }
 
 .titlebar-search-pill {
@@ -752,13 +759,54 @@ code, pre, input, textarea {
 }
 
 /* ==========================================================================
-   4. WELCOME SCREEN (GOOGLE GEMINI DESKTOP STYLE)
+   4. WELCOME SCREEN (BREATHING GEMINI STUDIO & MULTI-TIER LUXURY)
    ========================================================================== */
 .gemini-hero-greeting-container {
-  max-width: 760px;
-  margin: auto auto 60px auto;
+  max-width: 920px;
+  margin: auto auto 48px auto;
   width: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  animation: heroFadeIn 0.35s ease-out;
+}
+
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ambient Cosmic Aurora Bloom */
+.sanctuary-hero-aura {
+  position: relative;
+}
+
+.sanctuary-hero-aura::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 720px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.16) 0%, rgba(168, 85, 247, 0.10) 45%, transparent 75%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  animation: auraPulse 6s infinite ease-in-out alternate;
+}
+
+@keyframes auraPulse {
+  0% { transform: translateX(-50%) scale(0.95); opacity: 0.7; }
+  100% { transform: translateX(-50%) scale(1.08); opacity: 1; }
+}
+
+.gemini-hero-greeting {
+  position: relative;
+  z-index: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -766,94 +814,179 @@ code, pre, input, textarea {
 
 .gemini-gradient-headline {
   font-family: var(--font-display);
-  font-size: 2.2rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0 0 10px 0;
-  line-height: 1.25;
+  line-height: 1.2;
   color: #fff;
 }
 
 .gradient-text {
-  color: #f1f5f9;
+  background: var(--gemini-sakura-gradient);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  animation: gradientShimmer 8s ease infinite alternate;
+}
+
+@keyframes gradientShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.gemini-sub-headline {
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 580px;
+  line-height: 1.5;
+  margin: 0 auto 32px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .editable-user-tag {
-  background: var(--harmony-pink);
+  background: linear-gradient(135deg, #f472b6, #fb7185);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  border-bottom: 2px dashed rgba(244, 114, 182, 0.5);
+  padding-bottom: 1px;
+  transition: all 0.2s ease;
+}
+
+.editable-user-tag:hover {
+  border-bottom-color: #f472b6;
+  text-shadow: 0 0 16px rgba(244, 114, 182, 0.6);
 }
 
 .edit-name-badge {
-  font-size: 0.8rem;
-  margin-left: 4px;
-  opacity: 0.4;
-  -webkit-text-fill-color: initial;
+  font-size: 0.75rem;
+  color: #f472b6;
+  opacity: 0.7;
+  -webkit-text-fill-color: #f472b6;
+  transition: opacity 0.2s;
 }
 
-.gemini-sub-headline {
-  font-size: 0.92rem;
-  color: var(--text-muted);
-  max-width: 500px;
-  line-height: 1.5;
-  margin: 0 auto 28px auto;
+.editable-user-tag:hover .edit-name-badge {
+  opacity: 1;
 }
 
-/* Compact Suggestion Chips (Clean & Unobtrusive) */
+/* 4 Luxury Suggestion Cards with Neon Glow on Hover */
 .sanctuary-cards-grid,
 .gemini-prompt-cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
   width: 100%;
-  max-width: 680px;
+  max-width: 900px;
 }
 
 .sanctuary-card,
 .gemini-prompt-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  padding: 16px 16px 14px 16px;
+  min-height: 136px;
+  border-radius: 18px;
+  background: rgba(22, 24, 34, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   cursor: pointer;
-  transition: all 0.18s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .sanctuary-card:hover,
 .gemini-prompt-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-medium);
-  transform: translateY(-1px);
+  transform: translateY(-5px);
+  background: rgba(28, 30, 44, 0.92);
+}
+
+.sanctuary-card.card-harmony:hover {
+  border-color: rgba(244, 114, 182, 0.6);
+  box-shadow: 0 14px 34px rgba(244, 114, 182, 0.28), 0 0 18px rgba(244, 114, 182, 0.18);
+}
+
+.sanctuary-card.card-echo:hover {
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 14px 34px rgba(168, 85, 247, 0.28), 0 0 18px rgba(168, 85, 247, 0.18);
+}
+
+.sanctuary-card.card-music:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 14px 34px rgba(245, 158, 11, 0.28), 0 0 18px rgba(245, 158, 11, 0.18);
+}
+
+.sanctuary-card.card-memory:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 14px 34px rgba(56, 189, 248, 0.28), 0 0 18px rgba(56, 189, 248, 0.18);
 }
 
 .gemini-card-text {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: var(--text-secondary);
-  line-height: 1.4;
-  padding-right: 10px;
+  line-height: 1.45;
+  transition: color 0.2s ease;
 }
 
 .sanctuary-card:hover .gemini-card-text {
-  color: var(--text-main);
+  color: #fff;
 }
 
 .sanctuary-card-icon-box {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: flex-end;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.04);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.sanctuary-card:hover .sanctuary-card-icon-box {
+  transform: scale(1.18) rotate(5deg);
+}
+
+.icon-box-harmony {
+  background: rgba(244, 114, 182, 0.15);
+  border: 1px solid rgba(244, 114, 182, 0.35);
+  box-shadow: 0 0 12px rgba(244, 114, 182, 0.2);
+}
+
+.icon-box-echo {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+}
+
+.icon-box-music {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+.icon-box-memory {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
 }
 
 /* ==========================================================================
@@ -1148,23 +1281,24 @@ code, pre, input, textarea {
   color: #ef4444;
 }
 
-/* Gemini Signature Input Capsule */
 .gemini-input-capsule {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  background: var(--bg-capsule);
-  border: 1px solid var(--border-medium);
-  border-radius: 20px;
-  padding: 8px 12px;
-  backdrop-filter: blur(24px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.15s ease;
+  background: rgba(22, 24, 34, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 8px 14px;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(244, 114, 182, 0.08);
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .gemini-input-capsule:focus-within {
-  border-color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(244, 114, 182, 0.55);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 28px rgba(244, 114, 182, 0.22);
 }
 
 .capsule-tools-group {
@@ -1333,22 +1467,24 @@ code, pre, input, textarea {
 }
 
 .btn-capsule-send {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: none;
-  background: #fff;
-  color: #000;
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(244, 114, 182, 0.35);
 }
 
 .btn-capsule-send:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 0 22px rgba(244, 114, 182, 0.6);
 }
 
 .sanctuary-identity-text {
@@ -1359,102 +1495,160 @@ code, pre, input, textarea {
 }
 
 /* ==========================================================================
-   7. LIVE2D MASCOT STUDIO (SEAMLESS COLLAPSIBLE SIDECAR PANEL)
+   7. LIVE2D MASCOT COMPANION (LUXURY FLOATING FROSTED CARD WIDGET)
    ========================================================================== */
+#live2d-stage-container,
 .live2d-stage-container {
-  width: 340px;
-  min-width: 340px;
-  max-width: 340px;
-  height: 100%;
-  background: var(--bg-mascot);
-  border-left: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s ease;
-  z-index: 45;
-}
-
-/* Collapsible behavior (Antigravity Review panel style) */
-.live2d-stage-container.hidden {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 28px !important;
+  width: 290px !important;
+  height: 395px !important;
+  background: rgba(18, 20, 30, 0.88) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border: 1px solid rgba(244, 114, 182, 0.3) !important;
+  border-radius: 22px !important;
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(244, 114, 182, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  z-index: 100 !important;
+  display: flex !important;
+  flex-direction: column !important;
   overflow: hidden !important;
-  border-left: none !important;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease !important;
+  user-select: none !important;
+  pointer-events: auto !important;
 }
 
+/* Collapsible behavior */
+#live2d-stage-container.hidden,
+.live2d-stage-container.hidden {
+  opacity: 0 !important;
+  transform: translateY(32px) scale(0.92) !important;
+  pointer-events: none !important;
+}
+
+/* Stage Header inside floating card */
 .live2d-stage-header {
-  height: 40px;
-  padding: 0 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
+  height: 40px !important;
+  padding: 0 12px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-shrink: 0 !important;
+  z-index: 20 !important;
 }
 
 .live2d-stage-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--text-main);
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: #f472b6 !important;
 }
 
 .live2d-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10b981;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #10b981 !important;
+  box-shadow: 0 0 8px #10b981 !important;
+  animation: live2dPulse 2s infinite ease-in-out !important;
+}
+
+@keyframes live2dPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
 }
 
 .live2d-stage-controls {
-  display: flex;
-  align-items: center;
-  gap: 2px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 2px !important;
 }
 
 .btn-live2d-ctrl {
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.78rem !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
 }
 
 .btn-live2d-ctrl:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  transform: scale(1.08) !important;
 }
 
-/* Canvas Wrap with Ambient Pedestal Illumination */
+/* Canvas Wrap with Pedestal Spotlight */
 .live2d-canvas-wrap {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  /* Ambient Floor Spotlight beneath characters */
-  background: radial-gradient(ellipse at 50% 90%, rgba(244, 114, 182, 0.12) 0%, rgba(168, 85, 247, 0.06) 40%, transparent 70%);
+  flex: 1 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  /* Ambient Floor Spotlight beneath characters to ground them firmly */
+  background: radial-gradient(ellipse at 50% 92%, rgba(244, 114, 182, 0.28) 0%, rgba(168, 85, 247, 0.14) 45%, transparent 75%) !important;
 }
 
 #live2d-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: auto;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  cursor: grab !important;
+  pointer-events: auto !important;
+}
+
+#live2d-canvas:active {
+  cursor: grabbing !important;
+}
+
+/* Speech Bubble */
+.live2d-speech-bubble {
+  position: absolute !important;
+  top: 10px !important;
+  left: 12px !important;
+  right: 12px !important;
+  background: rgba(26, 28, 38, 0.94) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(244, 114, 182, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  animation: bubblePopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 25 !important;
+}
+
+.live2d-speech-bubble.bubble-echo {
+  border-color: rgba(168, 85, 247, 0.6) !important;
+  color: #ddd6fe !important;
+}
+
+@keyframes bubblePopIn {
+  0% { transform: translateY(-8px) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 /* VTuber Stream Overlay HUD */
@@ -1467,6 +1661,7 @@ code, pre, input, textarea {
   flex-direction: column;
   gap: 6px;
   pointer-events: none;
+  z-index: 20;
 }
 
 .vedal-hud-top {
@@ -1502,7 +1697,7 @@ code, pre, input, textarea {
   gap: 5px;
   padding: 2px 8px;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   border: 1px solid var(--border-subtle);
   font-size: 0.68rem;
   color: var(--text-secondary);
@@ -1510,14 +1705,14 @@ code, pre, input, textarea {
 }
 
 .vedal-subtitle-banner {
-  background: rgba(18, 19, 26, 0.9);
+  background: rgba(18, 19, 26, 0.92);
   border: 1px solid var(--border-medium);
   border-radius: 8px;
   padding: 7px 10px;
   display: flex;
   gap: 6px;
   backdrop-filter: blur(14px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .vedal-sub-speaker {
@@ -1564,7 +1759,8 @@ code, pre, input, textarea {
   100% { height: 8px; }
 }
 
-.live-studio-hints {
+.live-studio-hints,
+.live2d-studio-hints {
   position: absolute;
   bottom: 6px;
   left: 0;
@@ -1577,6 +1773,34 @@ code, pre, input, textarea {
   justify-content: center;
   gap: 6px;
   pointer-events: none;
+  z-index: 10;
+}
+
+/* Gemini Live Studio Fullscreen Stage Mode */
+#live2d-stage-container.live-studio-mode {
+  position: fixed !important;
+  top: var(--titlebar-h) !important;
+  left: 0 !important;
+  right: 420px !important;
+  bottom: 0 !important;
+  width: calc(100vw - 420px) !important;
+  height: calc(100vh - var(--titlebar-h)) !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-right: 1px solid var(--border-medium) !important;
+  background: radial-gradient(circle at 50% 65%, rgba(45, 22, 55, 0.88) 0%, rgba(20, 16, 26, 0.96) 55%, #0f0e13 100%) !important;
+  box-shadow: none !important;
+  z-index: 100 !important;
+}
+
+body.live-studio-active .sanctuary-chat-center {
+  position: fixed !important;
+  top: var(--titlebar-h) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 420px !important;
+  height: calc(100vh - var(--titlebar-h)) !important;
+  border-left: 1px solid var(--border-medium) !important;
 }
 
 /* ==========================================================================

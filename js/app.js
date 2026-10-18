@@ -2877,8 +2877,8 @@ window.AisaApp = {
       container.innerHTML = `
         <div class="gemini-hero-greeting-container sanctuary-hero-aura">
           <div class="gemini-hero-greeting" id="gemini-hero-greeting">
-            <h1 class="gemini-gradient-headline">Where should we start?</h1>
-            <p class="gemini-sub-headline">AISA Orbit Studio • Song hành cùng ${this.escapeHtml(userName)} ✨</p>
+            <h1 class="gemini-gradient-headline"><span class="gradient-text">Where should we start?</span></h1>
+            <p class="gemini-sub-headline">AISA Orbit Studio • Song hành cùng <span class="editable-user-tag" id="btn-edit-user-name" onclick="window.AisaApp && window.AisaApp.promptChangeUserName()" title="Nhấp để đổi tên xưng hô">${this.escapeHtml(userName)}<span class="edit-name-badge">✎</span></span> ✨</p>
             
             <div class="gemini-prompt-cards-grid sanctuary-cards-grid">
               <!-- Card 1: Harmony Chữa lành -->
