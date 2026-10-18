@@ -3067,6 +3067,18 @@ window.AisaApp = {
                   </div>
                 ` : ''}
                 <div class="bubble-text">${window.AisaMarkdown.format(cleanText)}</div>
+                ${m.terminalCard ? `
+                  <div class="agent-terminal-card">
+                    <div class="agent-terminal-header">
+                      <span class="agent-terminal-title">⚡ PowerShell: ${this.escapeHtml(m.terminalCard.command)}</span>
+                      <span class="agent-terminal-status ${m.terminalCard.status}">${m.terminalCard.status.toUpperCase()}</span>
+                    </div>
+                    <div class="agent-terminal-body">
+                      <div class="cmd-line">&gt; ${this.escapeHtml(m.terminalCard.command)}</div>
+                      <div>${this.escapeHtml(m.terminalCard.output || '(Lệnh hoàn tất thành công)')}</div>
+                    </div>
+                  </div>
+                ` : ''}
                 <div class="bubble-actions">
                   <button type="button" class="btn-bubble-action" onclick="if (window.AisaVoice && window.AisaVoice.isSpeaking) { window.AisaVoice.interruptSpeech(); } else { window.AisaVoice.speak('${this.escapeQuotes(cleanText)}', '${m.speaker}', this.closest('.message-bubble')); }" title="Nghe giọng nói / Ngắt lời">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3230,6 +3242,59 @@ window.AisaApp = {
     // Xóa trạng thái preview sau khi đã lấy dữ liệu
     this.clearAttachedFile();
 
+    // Xử lý các Slash Commands đặc biệt của AISA Orbit
+    if (userText === '/clear') {
+      this.state.messages = [];
+      this.saveState();
+      this.renderMessages();
+      this.showToast('Đã làm sạch không gian trò chuyện ✨', '🧹');
+      return;
+    }
+
+    if (userText.startsWith('/cmd ') || userText.startsWith('/powershell ')) {
+      const cmd = userText.replace(/^\/(cmd|powershell)\s+/, '').trim();
+      const userMsg = {
+        id: 'msg-' + Date.now(),
+        role: 'user',
+        time: this.getCurrentTimeString(),
+        text: `⚡ /cmd ${cmd}`
+      };
+      this.state.messages.push(userMsg);
+      this.saveState();
+      this.renderMessages();
+      this.showTypingIndicator(`Đang chạy lệnh: ${cmd}...`, false);
+
+      const res = await (window.AisaDesktopBridge ? window.AisaDesktopBridge.runCommand(cmd) : { success: false, stderr: 'Tính năng chỉ hoạt động trên AISA Orbit Desktop' });
+      this.hideTypingIndicator();
+
+      const terminalCard = {
+        command: cmd,
+        status: res.success ? 'success' : 'error',
+        output: (res.stdout || res.stderr || '(Lệnh hoàn tất thành công không có đầu ra)').trim()
+      };
+
+      const replyText = res.success
+        ? `Tớ vừa chạy xong lệnh \`${cmd}\` trên PowerShell cho cậu nè! Kết quả ở thẻ bên dưới nha. 😈`
+        : `Lệnh \`${cmd}\` gặp sự cố rồi nè Sakura ơi! Xem chi tiết ở thẻ bên dưới nha. 😈`;
+
+      this.state.messages.push({
+        id: 'msg-rep-' + Date.now(),
+        role: 'assistant',
+        speaker: 'ECHO',
+        avatar: '😈',
+        time: this.getCurrentTimeString(),
+        text: replyText,
+        terminalCard: terminalCard
+      });
+
+      this.saveState();
+      this.renderMessages();
+      if (window.AisaVoice) {
+        window.AisaVoice.speak(replyText, 'ECHO');
+      }
+      return;
+    }
+
     // 1. Nếu chưa có phiên nào (đang ở màn hình chào mừng root), tạo phiên mới ngay khi gửi tin nhắn đầu tiên
     if (!this.state.currentSessionId) {
       const summaryText = userText || (attachedFile ? `Tệp: ${attachedFile.name}` : 'Hình ảnh');
@@ -3324,8 +3389,28 @@ window.AisaApp = {
       this.hideTypingIndicator();
 
       if (replies && replies.length > 0) {
-        replies.forEach((rep, idx) => {
-          const clean = window.AisaEngine ? window.AisaEngine.cleanReply(rep.text) : rep.text;
+        for (let idx = 0; idx < replies.length; idx++) {
+          const rep = replies[idx];
+          let clean = rep.text || '';
+          let terminalCard = null;
+
+          // Phát hiện thẻ gọi lệnh Agent [RUN_CMD: <command>]
+          const cmdMatch = clean.match(/\[RUN_CMD:\s*([\s\S]*?)\]/i);
+          if (cmdMatch && cmdMatch[1] && window.AisaDesktopBridge && window.AisaDesktopBridge.isAvailable()) {
+            const cmdToRun = cmdMatch[1].trim();
+            clean = clean.replace(/\[RUN_CMD:\s*[\s\S]*?\]/gi, '').trim();
+            this.showTypingIndicator(`Echo đang thực thi lệnh: ${cmdToRun}...`, false);
+            const cmdRes = await window.AisaDesktopBridge.runCommand(cmdToRun);
+            this.hideTypingIndicator();
+            terminalCard = {
+              command: cmdToRun,
+              status: cmdRes.success ? 'success' : 'error',
+              output: (cmdRes.stdout || cmdRes.stderr || '(Lệnh hoàn tất)').trim()
+            };
+          } else {
+            clean = window.AisaEngine ? window.AisaEngine.cleanReply(clean) : clean;
+          }
+
           this.state.messages.push({
             id: 'msg-rep-' + (Date.now() + idx),
             role: 'assistant',
@@ -3333,9 +3418,10 @@ window.AisaApp = {
             avatar: rep.avatar || (rep.speaker === 'HARMONY' ? '🌸' : '😈'),
             time: this.getCurrentTimeString(),
             text: clean,
+            terminalCard: terminalCard,
             isDeepResearch: isDeepResearch
           });
-        });
+        }
       } else {
         this.state.messages.push({
           id: 'msg-rep-' + Date.now(),

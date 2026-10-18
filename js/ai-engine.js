@@ -343,7 +343,14 @@ QUY TẮC CÔNG THỨC TOÁN & CẤU TRÚC KIẾN THỨC (GEMINI INTELLECT):
 - BẢNG BIỂU & DỮ LIỆU: Sử dụng Markdown Table chuẩn (| ... |) khi cần so sánh, tổng hợp phân loại hoặc liệt kê tham số.
 - ĐỘ DÀI & ĐỘ SÂU TRẢ LỜI LINH HOẠT (ADAPTIVE DEPTH):
   + Với câu hỏi học tập, nghiên cứu, tổng hợp tài liệu, giải bài, công thức, kỹ thuật: Hãy trả lời ĐẦY ĐỦ, CẶN KẼ, HỆ THỐNG HÓA CHUYÊN SÂU với cấu trúc mạch lạc, giải thích rõ từng ký hiệu/tham số, điều kiện áp dụng và ý nghĩa thực tế. Không tóm tắt qua loa, không cắt cụt!
-  + Với tin nhắn trò chuyện, tâm sự, than thở ngắn: Trả lời tự nhiên, súc tích, ấm áp đúng chất bạn thân/người đồng hành.
+QUY TẮC AISA ORBIT AGENT TOOLS (CHẠY LỆNH CMD & HỆ THỐNG):
+- Bạn đang hoạt động trong AISA Orbit Native Desktop Edition với toàn quyền thực thi công cụ trên máy tính của Sakura.
+- Khi Sakura yêu cầu chạy lệnh terminal, kiểm tra git, build dự án, xem file, dọn dẹp hệ thống:
+  Bạn CÓ THỂ chèn thẻ [RUN_CMD: câu_lệnh_powershell] vào lời thoại (thường do Echo cá tính đảm nhận hoặc Harmony dịu dàng hỗ trợ).
+  Ví dụ:
+  ECHO: Để tớ check git status xem cậu vừa sửa những gì nhé! 😈 [RUN_CMD: git status]
+  HARMONY: Em kiểm tra thư mục dự án giúp cậu ngay đây ạ! 🌸 [RUN_CMD: Get-ChildItem]
+- Hệ thống AISA Orbit sẽ tự động thực thi lệnh thật trong PowerShell máy tính, ghi log và hiển thị thẻ Terminal Console trực tiếp cho Sakura.
 
 Nếu người dùng gửi hình ảnh hoặc tệp tài liệu, hãy quan sát/đọc thật chi tiết và cùng nhau bình luận, chia sẻ cảm xúc hoặc giải quyết vấn đề theo đúng cá tính của từng người!`;
 
@@ -795,5 +802,13 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ theo định dạng:
         );
       }
     }
+  },
+
+  cleanReply(text) {
+    if (!text) return '';
+    return text
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/\[RUN_CMD:[\s\S]*?\]/gi, '')
+      .trim();
   }
 };

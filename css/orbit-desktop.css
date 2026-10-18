@@ -1,0 +1,302 @@
+/**
+ * AISA ORBIT - NATIVE DESKTOP SHELL & AGENT WORKSPACE DESIGN SYSTEM
+ * Miyazaki Haruto Entertainment Co., Ltd.
+ */
+
+/* ==========================================================================
+   1. GLOBAL NATIVE DESKTOP RESET & BEHAVIOR
+   ========================================================================== */
+html, body {
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: #08090d !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Allow text selection only in readable text areas */
+.message-bubble,
+.message-text,
+.message-content,
+code,
+pre,
+input,
+textarea,
+.selectable-text,
+.terminal-output {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Nano Sleek Dark Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.5);
+}
+
+/* ==========================================================================
+   2. CUSTOM NATIVE TITLEBAR (FRAMELESS WINDOW)
+   ========================================================================== */
+.aisa-orbit-titlebar {
+  height: 38px;
+  background: #090a0f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 14px;
+  -webkit-app-region: drag;
+  z-index: 10000;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-app-region: drag;
+}
+
+.titlebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.titlebar-logo-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+}
+
+.titlebar-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.titlebar-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: rgba(236, 72, 153, 0.12);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.25);
+  letter-spacing: 0.3px;
+}
+
+.titlebar-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: drag;
+}
+
+.titlebar-search-pill {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 14px;
+  border-radius: 20px;
+  color: #8e918f;
+  font-size: 11.5px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.titlebar-search-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #e3e3e3;
+}
+.titlebar-search-pill kbd {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-status-indicators {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titlebar-status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #94a3b8;
+}
+
+.titlebar-status-dot {
+  width: 6.5px;
+  height: 6.5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.titlebar-status-dot.pulsing {
+  animation: orbitPulse 2s infinite ease-in-out;
+}
+
+@keyframes orbitPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+/* Window Minimize, Maximize, Close Buttons */
+.titlebar-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+}
+
+.window-btn {
+  width: 28px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.window-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+}
+
+.window-btn.btn-close:hover {
+  background: #e11d48 !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   3. APP WORKSPACE CONTAINER
+   ========================================================================== */
+.sanctuary-app,
+#app,
+.main-wrapper {
+  height: calc(100vh - 38px) !important;
+  overflow: hidden !important;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   4. AGENT TERMINAL EXECUTION CARD IN CHAT
+   ========================================================================== */
+.agent-terminal-card {
+  margin: 10px 0;
+  border-radius: 10px;
+  background: #06070a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.agent-terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11.5px;
+}
+
+.agent-terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.agent-terminal-status {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.agent-terminal-status.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.agent-terminal-status.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.agent-terminal-status.running {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.agent-terminal-body {
+  padding: 10px 14px;
+  max-height: 260px;
+  overflow-y: auto;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.agent-terminal-body .cmd-line {
+  color: #f472b6;
+  font-weight: 600;
+  margin-bottom: 6px;
+}

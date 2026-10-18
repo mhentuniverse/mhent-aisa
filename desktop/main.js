@@ -192,12 +192,13 @@ async function createWindow() {
   }
 
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 840,
-    minWidth: 420,
-    minHeight: 600,
+    width: 1380,
+    height: 880,
+    minWidth: 680,
+    minHeight: 520,
+    frame: false, // Frameless for sleek custom native desktop titlebar
     backgroundColor: '#0a0a0f',
-    title: 'AISA — Personal Companion AI Sanctuary (MHEnt Universe)',
+    title: 'AISA Orbit — AI Agent Companion Studio (MHEnt Universe)',
     icon: path.join(__dirname, '..', 'assets', 'logo-design.png'),
     autoHideMenuBar: true,
     webPreferences: {
@@ -575,4 +576,38 @@ ipcMain.handle('desktop:tts-synthesize', async (event, { text, speaker, options 
     return { success: false, error: err.message };
   }
 });
+
+// 12. Agent Terminal Command Execution (PowerShell / CMD Engine)
+ipcMain.handle('desktop:run-command', async (event, { command, cwd, options = {} }) => {
+  try {
+    const { exec } = require('child_process');
+    const defaultWorkspace = path.resolve(__dirname, '..', '..');
+    const targetCwd = cwd || defaultWorkspace;
+    const timeoutMs = options.timeout || 45000;
+
+    return new Promise((resolve) => {
+      exec(
+        command,
+        {
+          cwd: targetCwd,
+          maxBuffer: 10 * 1024 * 1024,
+          shell: 'powershell.exe',
+          timeout: timeoutMs
+        },
+        (error, stdout, stderr) => {
+          resolve({
+            success: !error,
+            code: error ? (error.code || 1) : 0,
+            stdout: stdout || '',
+            stderr: stderr || (error ? error.message : ''),
+            cwd: targetCwd
+          });
+        }
+      );
+    });
+  } catch (err) {
+    return { success: false, code: 1, stdout: '', stderr: err.message };
+  }
+});
+
 

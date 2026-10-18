@@ -18,18 +18,73 @@ window.AisaDesktopBridge = {
     // 1. Thêm class nhận diện desktop cho body
     document.body.classList.add('aisa-desktop-mode');
 
-    // 2. Thêm huy hiệu Desktop Edition trên Header hoặc Sidebar
+    // 2. Gắn sự kiện điều khiển cửa sổ Native Titlebar (Minimize, Maximize, Close)
+    this.hookTitlebarControls();
+
+    // 3. Thêm huy hiệu Desktop Edition trên Header hoặc Sidebar
     this.injectDesktopIndicator();
 
-    // 3. Khởi tạo công cụ chọn thư mục làm việc (Workspace Picker)
+    // 4. Khởi tạo công cụ chọn thư mục làm việc (Workspace Picker)
     this.injectDesktopTools();
 
-    // 4. Lấy các đường dẫn hệ thống mặc định (Desktop, Documents, Downloads)
+    // 5. Lấy các đường dẫn hệ thống mặc định (Desktop, Documents, Downloads)
     try {
       this.specialPaths = await window.AisaDesktop.getSpecialPaths();
     } catch (e) {
       this.specialPaths = {};
     }
+  },
+
+  hookTitlebarControls() {
+    const btnMin = document.getElementById('btn-win-min');
+    const btnMax = document.getElementById('btn-win-max');
+    const btnClose = document.getElementById('btn-win-close');
+
+    if (btnMin) {
+      btnMin.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.AisaDesktop && window.AisaDesktop.minimizeWindow) {
+          window.AisaDesktop.minimizeWindow();
+        }
+      });
+    }
+
+    if (btnMax) {
+      btnMax.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.AisaDesktop && window.AisaDesktop.maximizeWindow) {
+          window.AisaDesktop.maximizeWindow();
+        }
+      });
+    }
+
+    if (btnClose) {
+      btnClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.AisaDesktop && window.AisaDesktop.closeWindow) {
+          window.AisaDesktop.closeWindow();
+        }
+      });
+    }
+
+    // Quick Command Trigger in Titlebar (/)
+    const quickCmd = document.getElementById('titlebar-quick-command');
+    if (quickCmd) {
+      quickCmd.addEventListener('click', () => {
+        const input = document.getElementById('chat-input');
+        if (input) {
+          input.value = '/';
+          input.focus();
+        }
+      });
+    }
+  },
+
+  async runCommand(command, cwd = null) {
+    if (!this.isAvailable() || typeof window.AisaDesktop.runCommand !== 'function') {
+      return { success: false, code: 1, stdout: '', stderr: 'Tính năng chỉ hoạt động trên AISA Orbit Desktop' };
+    }
+    return await window.AisaDesktop.runCommand(command, cwd);
   },
 
   injectDesktopIndicator() {

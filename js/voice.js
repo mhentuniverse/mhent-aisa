@@ -532,6 +532,7 @@ window.AisaVoice = {
       .replace(/<think>[\s\S]*?<\/think>/gi, '')
       .replace(/\[(joy|smile|blush|smirk|pout|think|surprised|crying|anger|caring|gentle)\]/gi, '')
       .replace(/\[LEARN:[\s\S]*?\]/gi, '')
+      .replace(/\[RUN_CMD:[\s\S]*?\]/gi, '')
       .replace(/\$\$[\s\S]*?\$\$/g, 'công thức toán học')
       .replace(/\\\[[\s\S]*?\\\]/g, 'công thức toán học')
       .replace(/\\\([\s\S]*?\\\)/g, '')

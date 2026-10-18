@@ -12,6 +12,10 @@ contextBridge.exposeInMainWorld('AisaDesktop', {
   readDirectory: (dirPath) => ipcRenderer.invoke('desktop:read-dir', dirPath),
   searchFiles: (dirPath, keyword) => ipcRenderer.invoke('desktop:search-files', { dirPath, keyword }),
 
+  // Terminal & Agent Shell Execution
+  runCommand: (command, cwd = null, options = {}) =>
+    ipcRenderer.invoke('desktop:run-command', { command, cwd, options }),
+
   // Dialogs
   openFileDialog: (options = {}) => ipcRenderer.invoke('desktop:open-file-dialog', options),
   openDirectoryDialog: (options = {}) => ipcRenderer.invoke('desktop:open-dir-dialog', options),

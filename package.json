@@ -1,7 +1,7 @@
 {
   "name": "mhent-aisa",
   "version": "1.1.0",
-  "description": "AISA — Personal Companion AI Desktop Edition (MHEnt Universe)",
+  "description": "AISA Orbit — AI Agent Companion Studio (MHEnt Universe)",
   "main": "desktop/main.js",
   "scripts": {
     "start": "electron .",
@@ -10,7 +10,9 @@
   },
   "keywords": [
     "aisa",
+    "orbit",
     "ai",
+    "agent",
     "companion",
     "desktop",
     "gemini",
@@ -23,8 +25,8 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.mhentuniverse.aisa",
-    "productName": "AISA Companion",
+    "appId": "com.mhentuniverse.aisa.orbit",
+    "productName": "AISA Orbit",
     "directories": {
       "output": "dist"
     },
@@ -47,7 +49,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "AISA Sanctuary"
+      "shortcutName": "AISA Orbit"
     }
   },
   "dependencies": {
